@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const ServerEnvSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-  PORT: z.string().transform((val) => parseInt(val, 10)).default('5000'),
+  PORT: z.string().transform((val) => parseInt(val, 10)).default('8000'),
   SUPABASE_URL: z.string().url(),
   SUPABASE_ANON_KEY: z.string().min(1),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
@@ -17,7 +17,7 @@ export const WebEnvSchema = z.object({
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().min(1),
   NEXT_PUBLIC_CLERK_SIGN_IN_URL: z.string().default('/admin/sign-in'),
   NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: z.string().default('/admin/dashboard'),
-  NEXT_PUBLIC_API_URL: z.string().url().default('http://localhost:5000/api/v1')
+  NEXT_PUBLIC_API_URL: z.string().url().default('http://localhost:8000/api/v1')
 });
 
 export type ServerEnv = z.infer<typeof ServerEnvSchema>;

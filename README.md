@@ -94,7 +94,7 @@ Execute [docs/seed.sql](file:///Users/dakshchaudhary/Developer/GalaxyToolsHub/do
 pnpm dev
 ```
 - Web App: `http://localhost:3000`
-- API Server: `http://localhost:5000/api/v1`
+- API Server: `http://localhost:8000/api/v1`
 
 ---
 
