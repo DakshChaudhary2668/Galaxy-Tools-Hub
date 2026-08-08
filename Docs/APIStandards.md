@@ -1,7 +1,18 @@
 # API Standards & Endpoint Specification — Galaxy Tools Hub
 
 ## Overview
-All REST API endpoints on `apps/server` follow strict REST conventions, Zod validation, and uniform JSON envelopes.
+All REST API endpoints on `apps/server` follow strict REST conventions, Zod validation, rate limiting, and uniform JSON envelopes.
+
+---
+
+## Global Headers & API Versioning
+
+All HTTP responses include:
+```http
+X-API-Version: v1
+X-Request-ID: <UUIDv4>
+Content-Type: application/json
+```
 
 ---
 
@@ -25,7 +36,7 @@ All REST API endpoints on `apps/server` follow strict REST conventions, Zod vali
 }
 ```
 
-### 2. Error Envelope (`400 Bad Request`, `401 Unauthorized`, `403 Forbidden`, `404 Not Found`, `500 Internal Error`)
+### 2. Standard Error Envelope (`400`, `401`, `403`, `404`, `429`, `500`)
 
 ```json
 {
@@ -43,85 +54,52 @@ All REST API endpoints on `apps/server` follow strict REST conventions, Zod vali
 
 ---
 
-## Phase 1 & Phase 2 API Catalog Summary
-
-### Authentication APIs (`/api/v1/auth`)
+## System & Health APIs (`/api/v1/health`)
 
 | Method | Endpoint | Auth | Purpose |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/api/v1/auth/customer/me` | Customer (Supabase Auth) | Fetch authenticated customer profile |
-| `GET` | `/api/v1/auth/admin/me` | Admin (Clerk Auth) | Fetch authenticated admin staff profile |
+| `GET` | `/api/v1/health` | Public | System uptime, version, & health check |
+
+#### Example Response: `GET /api/v1/health`
+
+```json
+{
+  "success": true,
+  "message": "Galaxy Tools Hub API is healthy",
+  "data": {
+    "status": "UP",
+    "version": "1.0.0",
+    "environment": "development",
+    "uptime": 12345,
+    "timestamp": "2026-08-08T13:26:00.000Z"
+  },
+  "meta": {
+    "requestId": "c1ce7280-1c7a-42d6-8e9b-d0e262587490"
+  }
+}
+```
 
 ---
 
-### Categories APIs (`/api/v1/categories`)
+## Catalog APIs Summary
 
-| Method | Endpoint | Auth | Purpose |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/api/v1/categories` | Public | List all categories |
-| `GET` | `/api/v1/categories/:slug` | Public | Get category details by slug |
-| `POST` | `/api/v1/categories/admin` | Admin (`Owner`/`Manager`) | Create category |
-| `PUT` | `/api/v1/categories/admin/:id` | Admin (`Owner`/`Manager`) | Update category |
-| `DELETE` | `/api/v1/categories/admin/:id` | Admin (`Owner`/`Manager`) | Delete category |
+### Categories (`/api/v1/categories`)
+- `GET /api/v1/categories`: Public category listing
+- `GET /api/v1/categories/:slug`: Category details by slug
+- `POST/PUT/DELETE /api/v1/categories/admin`: Admin CRUD operations
 
----
+### Brands (`/api/v1/brands`)
+- `GET /api/v1/brands`: Public brand listing
+- `GET /api/v1/brands/:slug`: Brand details by slug
+- `POST/PUT/DELETE /api/v1/brands/admin`: Admin CRUD operations
 
-### Brands APIs (`/api/v1/brands`)
+### Vendors (`/api/v1/vendors`)
+- `GET /api/v1/vendors`: Public vendor listing
+- `GET /api/v1/vendors/:id`: Vendor details by ID
+- `POST/PUT/DELETE /api/v1/vendors/admin`: Admin CRUD operations
 
-| Method | Endpoint | Auth | Purpose |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/api/v1/brands` | Public | List all brands |
-| `GET` | `/api/v1/brands/:slug` | Public | Get brand details by slug |
-| `POST` | `/api/v1/brands/admin` | Admin (`Owner`/`Manager`) | Create brand |
-| `PUT` | `/api/v1/brands/admin/:id` | Admin (`Owner`/`Manager`) | Update brand |
-| `DELETE` | `/api/v1/brands/admin/:id` | Admin (`Owner`/`Manager`) | Delete brand |
-
----
-
-### Vendors APIs (`/api/v1/vendors`)
-
-| Method | Endpoint | Auth | Purpose |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/api/v1/vendors` | Public / Admin | List all vendors |
-| `GET` | `/api/v1/vendors/:id` | Public / Admin | Get vendor details by ID |
-| `POST` | `/api/v1/vendors/admin` | Admin (`Owner`/`Manager`) | Create vendor |
-| `PUT` | `/api/v1/vendors/admin/:id` | Admin (`Owner`/`Manager`) | Update vendor |
-| `DELETE` | `/api/v1/vendors/admin/:id` | Admin (`Owner`/`Manager`) | Delete vendor |
-
----
-
-### Products APIs (`/api/v1/products`)
-
-| Method | Endpoint | Auth | Purpose |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/api/v1/products` | Public | List products with composable search, filter, sort, & pagination |
-| `GET` | `/api/v1/products/:slug` | Public | Get product specification by slug |
-| `POST` | `/api/v1/products/admin` | Admin (`Owner`/`Manager`) | Create product |
-| `PUT` | `/api/v1/products/admin/:id` | Admin (`Owner`/`Manager`) | Update product |
-| `DELETE` | `/api/v1/products/admin/:id` | Admin (`Owner`/`Manager`) | Delete product |
-
-#### `GET /api/v1/products` Query Parameters
-
-| Parameter | Type | Default | Description |
-| :--- | :--- | :--- | :--- |
-| `page` | integer | `1` | Page number |
-| `limit` | integer | `12` | Items per page (max 100) |
-| `search` | string | `undefined` | PostgreSQL Full-Text Search / ILIKE across name, description, model no, SKU, SEO fields |
-| `category` | string | `undefined` | Category slug or UUID |
-| `brand` | string | `undefined` | Brand slug or UUID |
-| `vendor` | string | `undefined` | Vendor code or UUID |
-| `minPrice` | numeric | `undefined` | Minimum price filter |
-| `maxPrice` | numeric | `undefined` | Maximum price filter |
-| `sort` | string | `latest` | Options: `price_asc`, `price_desc`, `latest`, `oldest`, `name_asc`, `name_desc`, `featured` |
-| `featured` | boolean | `undefined` | Filter featured products (`true`/`false`) |
-| `active` | boolean | `true` | Filter active status |
-
----
-
-### Product Images APIs (`/api/v1/products/:id/images`)
-
-| Method | Endpoint | Auth | Purpose |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/api/v1/products/:id/images` | Public | Get images for a product |
-| `POST` | `/api/v1/products/admin/:id/images` | Admin (`Owner`/`Manager`) | Attach image metadata (storage_path, public_url, alt_text, sort_order) |
-| `DELETE` | `/api/v1/products/admin/:id/images/:imageId` | Admin (`Owner`/`Manager`) | Remove product image metadata |
+### Products (`/api/v1/products`)
+- `GET /api/v1/products`: Public search, filter, sort, & pagination engine
+- `GET /api/v1/products/:slug`: Product specification detail by slug
+- `POST/PUT/DELETE /api/v1/products/admin`: Admin CRUD operations
+- `GET/POST/DELETE /api/v1/products/:id/images`: Product image metadata management

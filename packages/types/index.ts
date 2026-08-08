@@ -200,6 +200,32 @@ export type ProductDto = z.infer<typeof ProductSchema>;
 export const CreateProductSchema = ProductSchema.omit({ id: true, created_at: true, updated_at: true });
 export const UpdateProductSchema = CreateProductSchema.partial();
 
+// Optimized Product Card DTO (Listings, Search, Catalog grids)
+export const ProductCardSchema = ProductSchema.pick({
+  id: true,
+  category_id: true,
+  brand_id: true,
+  sku: true,
+  source_model_no: true,
+  name: true,
+  slug: true,
+  product_type: true,
+  pricing_type: true,
+  price: true,
+  compare_at_price: true,
+  is_purchasable: true,
+  is_featured: true,
+  is_active: true
+});
+export type ProductCardDto = z.infer<typeof ProductCardSchema>;
+
+// Detailed Product DTO (Product Details page)
+export const ProductDetailSchema = ProductSchema.extend({
+  images: z.array(z.unknown()).optional(),
+  inventory_quantity: z.number().int().optional()
+});
+export type ProductDetailDto = z.infer<typeof ProductDetailSchema>;
+
 // Product Query Filter Schema
 export const ProductQuerySchema = z.object({
   page: z.string().optional().transform((val) => (val ? parseInt(val, 10) : 1)),
