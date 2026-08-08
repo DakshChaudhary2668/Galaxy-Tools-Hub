@@ -1,0 +1,26 @@
+@use './variables' as *;
+
+@mixin industrial-border {
+  border: 1px solid $color-charcoal-border;
+}
+
+@mixin industrial-button {
+  background-color: $color-yellow-industrial;
+  color: $color-charcoal-dark;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: none;
+  border-radius: $radius-sm;
+  padding: 0.75rem 1.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+
+  &:hover {
+    background-color: $color-yellow-hover;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}

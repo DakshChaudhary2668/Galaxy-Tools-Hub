@@ -1,0 +1,67 @@
+@use '../../../../packages/ui/src/styles/variables' as *;
+@use '../../../../packages/ui/src/styles/mixins' as *;
+@use '../../../../packages/ui/src/styles/reset' as *;
+
+// Industrial App Styles
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.industrial-nav {
+  background-color: $color-charcoal-dark;
+  color: $color-white;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 3px solid $color-yellow-industrial;
+
+  .brand {
+    font-family: $font-family-heading;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: $color-yellow-industrial;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 1.5rem;
+    list-style: none;
+
+    a {
+      color: $color-white;
+      text-decoration: none;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      font-weight: 600;
+
+      &:hover {
+        color: $color-yellow-industrial;
+      }
+    }
+  }
+}
+
+.hero-banner {
+  background-color: $color-charcoal-light;
+  color: $color-white;
+  padding: 4rem 2rem;
+  text-align: center;
+
+  h1 {
+    font-family: $font-family-heading;
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: $color-white;
+  }
+
+  p {
+    font-size: 1.2rem;
+    color: $color-gray-300;
+    max-width: 600px;
+    margin: 0 auto 2rem;
+  }
+}

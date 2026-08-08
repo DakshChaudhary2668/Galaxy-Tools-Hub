@@ -1,0 +1,21 @@
+{
+  "name": "galaxy-tools-hub-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "type-check": "turbo run type-check",
+    "clean": "turbo run clean && rm -rf node_modules"
+  },
+  "devDependencies": {
+    "prettier": "^3.3.3",
+    "turbo": "^2.1.1",
+    "typescript": "^5.6.2"
+  },
+  "packageManager": "pnpm@9.10.0",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
