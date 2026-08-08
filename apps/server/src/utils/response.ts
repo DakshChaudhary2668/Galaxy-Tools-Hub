@@ -8,10 +8,23 @@ export function sendSuccess<T>(
   statusCode = 200,
   nextCursor?: string | null,
   hasMore?: boolean,
-  totalCount?: number
+  total?: number,
+  page?: number,
+  limit?: number,
+  totalPages?: number
 ): void {
   const requestId = (res.req as unknown as { requestId?: string }).requestId || '';
-  const responsePayload = createSuccessResponse(data, message, requestId, nextCursor, hasMore, totalCount);
+  const responsePayload = createSuccessResponse(
+    data,
+    message,
+    requestId,
+    nextCursor,
+    hasMore,
+    total,
+    page,
+    limit,
+    totalPages
+  );
   res.status(statusCode).json(responsePayload);
 }
 

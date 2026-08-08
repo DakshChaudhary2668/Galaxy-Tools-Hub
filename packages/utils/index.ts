@@ -36,7 +36,10 @@ export function createSuccessResponse<T>(
   requestId = '',
   nextCursor?: string | null,
   hasMore?: boolean,
-  totalCount?: number
+  total?: number,
+  page?: number,
+  limit?: number,
+  totalPages?: number
 ): ApiResponse<T> {
   return {
     success: true,
@@ -44,9 +47,12 @@ export function createSuccessResponse<T>(
     data,
     meta: {
       requestId,
+      page,
+      limit,
+      total,
+      totalPages,
       nextCursor,
-      hasMore,
-      totalCount
+      hasMore
     }
   };
 }
