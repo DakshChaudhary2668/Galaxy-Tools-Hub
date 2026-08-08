@@ -1,0 +1,152 @@
+
+
+{
+  "info": {
+    "_postman_id": "a9b8c7d6-e5f4-4321-8765-123456789abc",
+    "name": "Galaxy Tools Hub API Collection",
+    "description": "Production API Collection for Galaxy Tools Hub Industrial E-Commerce Platform.\nIncludes Auth, Categories, Brands, Vendors, Products, Product Images, and Storage.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "YOUR_CLERK_ADMIN_JWT",
+      "type": "string"
+    },
+    {
+      "key": "customerToken",
+      "value": "YOUR_SUPABASE_CUSTOMER_JWT",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Get Customer Profile (/auth/customer/me)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{customerToken}}", "type": "text" }
+            ],
+            "url": { "raw": "{{baseUrl}}/auth/customer/me", "host": ["{{baseUrl}}"], "path": ["auth", "customer", "me"] }
+          }
+        },
+        {
+          "name": "Get Admin Profile (/auth/admin/me)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}", "type": "text" }
+            ],
+            "url": { "raw": "{{baseUrl}}/auth/admin/me", "host": ["{{baseUrl}}"], "path": ["auth", "admin", "me"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "List Categories (Public)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/categories", "host": ["{{baseUrl}}"], "path": ["categories"] }
+          }
+        },
+        {
+          "name": "Get Category by Slug",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/categories/power-tools", "host": ["{{baseUrl}}"], "path": ["categories", "power-tools"] }
+          }
+        },
+        {
+          "name": "Create Category (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json", "type": "text" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Welding Equipment\",\n  \"slug\": \"welding-equipment\",\n  \"description\": \"TIG, MIG, and ARC industrial welding machines\",\n  \"sort_order\": 7,\n  \"is_active\": true\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/categories/admin", "host": ["{{baseUrl}}"], "path": ["categories", "admin"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Brands",
+      "item": [
+        {
+          "name": "List Brands (Public)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/brands", "host": ["{{baseUrl}}"], "path": ["brands"] }
+          }
+        },
+        {
+          "name": "Get Brand by Slug",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/brands/bosch", "host": ["{{baseUrl}}"], "path": ["brands", "bosch"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Vendors",
+      "item": [
+        {
+          "name": "List Vendors (Public/Admin)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/vendors", "host": ["{{baseUrl}}"], "path": ["vendors"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "Search & Filter Products",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/products?page=1&limit=12&category=power-tools&brand=bosch&search=drill&minPrice=1000&maxPrice=50000&sort=latest",
+              "host": ["{{baseUrl}}"],
+              "path": ["products"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "12" },
+                { "key": "category", "value": "power-tools" },
+                { "key": "brand", "value": "bosch" },
+                { "key": "search", "value": "drill" },
+                { "key": "minPrice", "value": "1000" },
+                { "key": "maxPrice", "value": "50000" },
+                { "key": "sort", "value": "latest" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Product by Slug",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/products/bosch-gbh-2-28-dv-rotary-hammer", "host": ["{{baseUrl}}"], "path": ["products", "bosch-gbh-2-28-dv-rotary-hammer"] }
+          }
+        }
+      ]
+    }
+  ]
+}
