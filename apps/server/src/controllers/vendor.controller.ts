@@ -9,7 +9,7 @@ const vendorRepository = new BaseRepository<VendorDto>('vendors');
 export async function getVendors(_req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const vendors = await vendorRepository.list(100);
-    sendSuccess(res, vendors, 'Vendors retrieved successfully');
+    sendSuccess(res, { data: vendors, message: 'Vendors retrieved successfully' });
   } catch (error) {
     next(error);
   }
@@ -21,7 +21,7 @@ export async function getVendorById(req: Request, res: Response, next: NextFunct
     if (!vendor) {
       return next(new AppError('Vendor not found', 404));
     }
-    sendSuccess(res, vendor, 'Vendor details retrieved successfully');
+    sendSuccess(res, { data: vendor, message: 'Vendor details retrieved successfully' });
   } catch (error) {
     next(error);
   }
@@ -30,7 +30,7 @@ export async function getVendorById(req: Request, res: Response, next: NextFunct
 export async function createVendor(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const newVendor = await vendorRepository.create(req.body);
-    sendSuccess(res, newVendor, 'Vendor created successfully', 201);
+    sendSuccess(res, { data: newVendor, message: 'Vendor created successfully', statusCode: 201 });
   } catch (error) {
     next(error);
   }
@@ -39,7 +39,7 @@ export async function createVendor(req: Request, res: Response, next: NextFuncti
 export async function updateVendor(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const updatedVendor = await vendorRepository.update(req.params.id, req.body);
-    sendSuccess(res, updatedVendor, 'Vendor updated successfully');
+    sendSuccess(res, { data: updatedVendor, message: 'Vendor updated successfully' });
   } catch (error) {
     next(error);
   }
@@ -48,7 +48,7 @@ export async function updateVendor(req: Request, res: Response, next: NextFuncti
 export async function deleteVendor(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     await vendorRepository.delete(req.params.id);
-    sendSuccess(res, { id: req.params.id }, 'Vendor deleted successfully');
+    sendSuccess(res, { data: { id: req.params.id }, message: 'Vendor deleted successfully' });
   } catch (error) {
     next(error);
   }

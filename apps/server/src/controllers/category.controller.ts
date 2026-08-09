@@ -9,7 +9,7 @@ const categoryRepository = new BaseRepository<CategoryDto>('categories');
 export async function getCategories(_req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const categories = await categoryRepository.list(100);
-    sendSuccess(res, categories, 'Categories retrieved successfully');
+    sendSuccess(res, { data: categories, message: 'Categories retrieved successfully' });
   } catch (error) {
     next(error);
   }
@@ -21,7 +21,7 @@ export async function getCategoryBySlug(req: Request, res: Response, next: NextF
     if (!category) {
       return next(new AppError('Category not found', 404));
     }
-    sendSuccess(res, category, 'Category details retrieved successfully');
+    sendSuccess(res, { data: category, message: 'Category details retrieved successfully' });
   } catch (error) {
     next(error);
   }
@@ -30,7 +30,7 @@ export async function getCategoryBySlug(req: Request, res: Response, next: NextF
 export async function createCategory(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const newCategory = await categoryRepository.create(req.body);
-    sendSuccess(res, newCategory, 'Category created successfully', 201);
+    sendSuccess(res, { data: newCategory, message: 'Category created successfully', statusCode: 201 });
   } catch (error) {
     next(error);
   }
@@ -39,7 +39,7 @@ export async function createCategory(req: Request, res: Response, next: NextFunc
 export async function updateCategory(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const updatedCategory = await categoryRepository.update(req.params.id, req.body);
-    sendSuccess(res, updatedCategory, 'Category updated successfully');
+    sendSuccess(res, { data: updatedCategory, message: 'Category updated successfully' });
   } catch (error) {
     next(error);
   }
@@ -48,7 +48,7 @@ export async function updateCategory(req: Request, res: Response, next: NextFunc
 export async function deleteCategory(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     await categoryRepository.delete(req.params.id);
-    sendSuccess(res, { id: req.params.id }, 'Category deleted successfully');
+    sendSuccess(res, { data: { id: req.params.id }, message: 'Category deleted successfully' });
   } catch (error) {
     next(error);
   }

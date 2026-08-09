@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
 import { AppError } from '../utils/app-error';
-import { env } from '../config/env';
 import { supabaseAdmin } from '../config/supabase';
 
 declare global {
@@ -21,28 +20,11 @@ declare global {
   }
 }
 
-// --- Admin Auth Guard (Clerk Auth) ---
-export async function adminAuthGuard(req: Request, _res: Response, next: NextFunction): Promise<void> {
-  try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return next(new AppError('Unauthorized: Missing or invalid Admin authentication token', 401));
-    }
-    // Verify Clerk token using env.CLERK_SECRET_KEY
-    if (!env.CLERK_SECRET_KEY) {
-      return next(new AppError('Server Authentication Misconfigured', 500));
-    }
-
-    // Attach admin user context
-    req.user = {
-      id: 'adm_00000000-0000-0000-0000-000000000001',
-      clerkId: 'clerk_admin_stub',
-      role: 'Owner'
-    };
-    next();
-  } catch (error) {
-    next(new AppError('Unauthorized: Admin authentication failed', 401));
-  }
+// --- Admin Auth Guard (Clerk JWT verification) ---
+// TODO: wire real Clerk JWT verification using @clerk/express verifyToken() before release.
+// Until implemented all admin routes correctly return 501.
+export async function adminAuthGuard(_req: Request, _res: Response, next: NextFunction): Promise<void> {
+  next(new AppError('Admin authentication not configured.', 501));
 }
 
 // --- Customer Auth Guard (Supabase Auth) ---

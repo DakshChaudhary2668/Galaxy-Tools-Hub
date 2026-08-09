@@ -10,7 +10,7 @@ export async function getOrders(req: Request, res: Response, next: NextFunction)
   try {
     const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 20;
     const orders = await orderRepository.list(limit);
-    sendSuccess(res, orders, 'Orders retrieved successfully');
+    sendSuccess(res, { data: orders, message: 'Orders retrieved successfully' });
   } catch (error) {
     next(error);
   }
@@ -22,7 +22,7 @@ export async function getOrderById(req: Request, res: Response, next: NextFuncti
     if (!order) {
       return next(new AppError('Order not found', 404));
     }
-    sendSuccess(res, order, 'Order details retrieved successfully');
+    sendSuccess(res, { data: order, message: 'Order details retrieved successfully' });
   } catch (error) {
     next(error);
   }

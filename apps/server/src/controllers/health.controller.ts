@@ -11,5 +11,5 @@ export function getHealth(_req: Request, res: Response): void {
     timestamp: new Date().toISOString()
   };
 
-  sendSuccess(res, healthData, 'Galaxy Tools Hub API is healthy');
+  sendSuccess(res, { data: healthData, message: 'Galaxy Tools Hub API is healthy' });
 }

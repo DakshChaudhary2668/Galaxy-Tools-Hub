@@ -13,7 +13,7 @@ export async function getCustomerMe(req: Request, res: Response, next: NextFunct
       return next(new AppError('Unauthorized: Customer session missing', 401));
     }
     const profile = await profileRepository.findById(req.customer.id);
-    sendSuccess(res, profile || req.customer, 'Customer profile retrieved successfully');
+    sendSuccess(res, { data: profile || req.customer, message: 'Customer profile retrieved successfully' });
   } catch (error) {
     next(error);
   }
@@ -25,7 +25,7 @@ export async function getAdminMe(req: Request, res: Response, next: NextFunction
       return next(new AppError('Unauthorized: Admin session missing', 401));
     }
     const adminUser = await adminUserRepository.findById(req.user.id);
-    sendSuccess(res, adminUser || req.user, 'Admin details retrieved successfully');
+    sendSuccess(res, { data: adminUser || req.user, message: 'Admin details retrieved successfully' });
   } catch (error) {
     next(error);
   }
