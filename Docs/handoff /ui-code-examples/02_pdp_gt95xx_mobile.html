@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Product Details - GALAXY TOOLS</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&amp;family=Noto+Sans+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary": "#00696f",
+                        "on-primary-fixed": "#221b00",
+                        "on-primary-container": "#705e00",
+                        "on-secondary-fixed-variant": "#474646",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "on-error-container": "#93000a",
+                        "surface-dim": "#dadada",
+                        "surface-container-low": "#f3f3f3",
+                        "outline-variant": "#d0c6ab",
+                        "on-tertiary-fixed-variant": "#004f54",
+                        "primary-container": "#ffd700",
+                        "tertiary-container": "#00f1ff",
+                        "error": "#ba1a1a",
+                        "tertiary-fixed-dim": "#00dbe8",
+                        "primary-fixed-dim": "#e9c400",
+                        "surface-container": "#eeeeee",
+                        "surface-tint": "#705d00",
+                        "tertiary-fixed": "#79f5ff",
+                        "secondary": "#5f5e5e",
+                        "inverse-surface": "#2f3131",
+                        "secondary-container": "#e5e2e1",
+                        "primary-fixed": "#ffe16d",
+                        "on-tertiary-fixed": "#002022",
+                        "surface-container-highest": "#e2e2e2",
+                        "surface-bright": "#f9f9f9",
+                        "on-secondary-container": "#656464",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "on-tertiary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-surface": "#1a1c1c",
+                        "on-surface-variant": "#4d4732",
+                        "outline": "#7e775f",
+                        "inverse-primary": "#e9c400",
+                        "surface": "#f9f9f9",
+                        "background": "#f9f9f9",
+                        "on-primary-fixed-variant": "#544600",
+                        "surface-variant": "#e2e2e2",
+                        "on-primary": "#ffffff",
+                        "surface-container-high": "#e8e8e8",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "primary": "#705d00",
+                        "inverse-on-surface": "#f1f1f1",
+                        "on-background": "#1a1c1c",
+                        "on-tertiary-container": "#006a70",
+                        "secondary-fixed": "#e5e2e1"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "stack-sm": "8px",
+                        "stack-lg": "24px",
+                        "columns": "4",
+                        "gutter": "12px",
+                        "unit": "4px",
+                        "margin": "16px",
+                        "stack-md": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Roboto"],
+                        "headline-md": ["Roboto"],
+                        "body-md": ["Roboto"],
+                        "label-caps": ["Roboto"],
+                        "headline-lg": ["Roboto"],
+                        "tech-data": ["Noto Sans Mono"],
+                        "body-lg": ["Roboto"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "1px", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.5px", "fontWeight": "700" }],
+                        "tech-data": ["13px", { "lineHeight": "18px", "fontWeight": "500" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body-md pb-[90px] antialiased">
+<!-- TopAppBar from JSON -->
+<header class="bg-surface text-primary border-b border-outline-variant flex items-center justify-between px-margin w-full z-50 sticky top-0 h-[56px] transition-colors">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary cursor-pointer hover:bg-surface-container-low transition-colors rounded-full p-1" data-icon="menu">menu</span>
+<span class="font-headline-md text-headline-md font-black text-on-surface">GALAXY TOOLS</span>
+</div>
+<span class="material-symbols-outlined text-primary cursor-pointer hover:bg-surface-container-low transition-colors rounded-full p-1" data-icon="shopping_cart">shopping_cart</span>
+</header>
+<main class="flex flex-col">
+<!-- Breadcrumbs & Badge -->
+<div class="px-margin pt-stack-md flex justify-between items-start">
+<div class="font-label-caps text-label-caps text-secondary uppercase tracking-widest flex items-center gap-1">
+<span>Home</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span>Testing &amp; Diagnostic</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-on-surface">Insulation Testers</span>
+</div>
+<span class="bg-inverse-surface text-inverse-on-surface font-label-caps text-label-caps px-2 py-1 rounded-sm uppercase tracking-wide">
+                G-Tech Instruments
+            </span>
+</div>
+<!-- Image Carousel -->
+<div class="mt-stack-sm relative w-full h-[320px] bg-surface-container-low flex items-center justify-center">
+<img class="object-contain h-[80%] w-auto drop-shadow-md" data-alt="A highly detailed studio photograph of a professional industrial insulation tester, model GT95xx, resting on a stark white surface. The equipment features a rugged grey and black casing with vibrant red accents and a clear digital LCD display showing precise technical readouts. The lighting is crisp, high-key, and meticulously highlights the mechanical texture and robust build quality of the device, conveying a sense of engineered perfection and premium manufacturing." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOVfrdBjt3vtlEyWy31s0zUKIQQl8LODgSScspSuQAOXkey4Z5Vcjl53nhzpIAtBl_EkZ9E9viyCVjO6JZ4a3cFQLEgU7PGA6zvwgykUSV1YDBIMizASvAsCPGngKTw3PUk4G-DAgcb4F3YcjsPk10rstYYNsQv_QaM6Hji8hPYrDOOQk6PzHCTyWRG_Qt0mAVZJCLfpoaDlTjgYmzkLTGFG_8B78ihLuON5Xz9vXmABUPxCGw_Lvr"/>
+<!-- Carousel Dots -->
+<div class="absolute bottom-4 left-0 w-full flex justify-center gap-2">
+<div class="w-2 h-2 rounded-full bg-outline-variant"></div>
+<div class="w-2 h-2 rounded-full bg-primary-container border border-primary"></div>
+<div class="w-2 h-2 rounded-full bg-outline-variant"></div>
+<div class="w-2 h-2 rounded-full bg-outline-variant"></div>
+</div>
+</div>
+<!-- Product Identity -->
+<div class="px-margin pt-stack-lg flex flex-col gap-stack-sm">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface leading-tight tracking-tight">
+                GT95XX Professional Series
+            </h1>
+<div class="flex items-center gap-2">
+<div class="flex text-primary-container">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star_half</span>
+</div>
+<span class="font-body-md text-body-md text-secondary font-medium">4.8 (12 Reviews)</span>
+</div>
+</div>
+<!-- Pricing -->
+<div class="px-margin pt-stack-md flex flex-col">
+<div class="flex items-baseline gap-3">
+<span class="font-headline-lg-mobile text-headline-lg-mobile font-black text-on-surface">₹6,785</span>
+<span class="font-body-lg text-body-lg text-secondary line-through">₹7,316</span>
+<span class="font-label-caps text-label-caps text-on-error-container bg-error-container px-2 py-1 rounded-sm">7% OFF</span>
+</div>
+<span class="font-label-caps text-label-caps text-secondary mt-1">Inclusive of 18% GST</span>
+</div>
+<!-- Spec Ribbon -->
+<div class="mt-stack-lg bg-surface-container py-3 px-margin border-y border-outline-variant flex flex-col gap-1">
+<p class="font-tech-data text-tech-data text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+                Resolved Model: GT9511 TRMS
+            </p>
+<p class="font-tech-data text-tech-data text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">speed</span>
+                Max Res: 20 G-OHMS
+            </p>
+<p class="font-tech-data text-tech-data text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">cable</span>
+                Includes Charger &amp; Probe Set
+            </p>
+</div>
+<!-- Variant Selectors -->
+<div class="px-margin pt-stack-lg flex flex-col gap-stack-lg">
+<!-- Group 1 -->
+<div class="flex flex-col gap-stack-sm">
+<span class="font-label-caps text-label-caps text-on-surface uppercase tracking-wider">Test Voltage Capability</span>
+<div class="flex flex-wrap gap-2">
+<button class="font-body-md text-body-md px-4 py-2 border border-outline-variant rounded-md text-secondary bg-surface-container-lowest hover:border-primary transition-colors">
+                        250V/500V/1000V (GT9510)
+                    </button>
+<button class="font-body-md text-body-md px-4 py-2 border border-primary rounded-md text-on-primary-container bg-primary-container font-bold shadow-sm">
+                        50V/100V/250V/500V/1000V (GT9511)
+                    </button>
+<button class="font-body-md text-body-md px-4 py-2 border border-outline-variant rounded-md text-secondary bg-surface-container-lowest hover:border-primary transition-colors">
+                        500V/1000V/2500V (GT9525)
+                    </button>
+</div>
+</div>
+<!-- Group 2 -->
+<div class="flex flex-col gap-stack-sm">
+<span class="font-label-caps text-label-caps text-on-surface uppercase tracking-wider">Power &amp; Features</span>
+<div class="flex flex-wrap gap-2">
+<button class="font-body-md text-body-md px-4 py-2 border border-outline-variant rounded-md text-secondary bg-surface-container-lowest hover:border-primary transition-colors">
+                        Standard Dry Cells
+                    </button>
+<button class="font-body-md text-body-md px-4 py-2 border border-primary rounded-md text-on-primary-container bg-primary-container font-bold shadow-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">battery_charging_full</span>
+                        Rechargeable + PI/DAR Timer
+                    </button>
+</div>
+</div>
+</div>
+<!-- Accordions -->
+<div class="mt-stack-lg border-t border-outline-variant">
+<div class="px-margin py-4 border-b border-outline-variant flex justify-between items-center bg-surface hover:bg-surface-container-low transition-colors cursor-pointer">
+<span class="font-body-md text-body-md font-bold uppercase text-on-surface">Detailed Technical Specifications</span>
+<span class="material-symbols-outlined text-secondary">expand_more</span>
+</div>
+<div class="px-margin py-4 border-b border-outline-variant flex justify-between items-center bg-surface hover:bg-surface-container-low transition-colors cursor-pointer">
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-bold uppercase text-on-surface">Shipping Tracker</span>
+<span class="font-label-caps text-label-caps text-primary mt-1">Add ₹878 more for FREE SHIPPING</span>
+</div>
+<span class="material-symbols-outlined text-secondary">expand_more</span>
+</div>
+<div class="px-margin py-4 border-b border-outline-variant flex justify-between items-center bg-surface hover:bg-surface-container-low transition-colors cursor-pointer">
+<span class="font-body-md text-body-md font-bold uppercase text-on-surface">Warranty Information</span>
+<span class="material-symbols-outlined text-secondary">expand_more</span>
+</div>
+</div>
+</main>
+<!-- Sticky Bottom Bar -->
+<div class="fixed bottom-0 left-0 w-full bg-surface-container-lowest border-t border-outline-variant p-4 flex gap-3 z-50 shadow-[0_-4px_16px_rgba(0,0,0,0.05)]">
+<!-- Qty Selector (40%) -->
+<div class="flex-shrink-0 w-[35%] flex items-center justify-between border border-outline-variant rounded-md px-3 py-3 bg-surface">
+<span class="material-symbols-outlined text-secondary cursor-pointer hover:text-on-surface">remove</span>
+<span class="font-headline-md text-headline-md text-on-surface">1</span>
+<span class="material-symbols-outlined text-secondary cursor-pointer hover:text-on-surface">add</span>
+</div>
+<!-- Add to Cart (60%) -->
+<button class="flex-grow bg-primary-container text-on-primary-container font-headline-md text-[16px] font-bold uppercase tracking-wider rounded-md flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-sm">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">shopping_bag</span>
+            ADD TO CART
+        </button>
+</div>
+</body></html>

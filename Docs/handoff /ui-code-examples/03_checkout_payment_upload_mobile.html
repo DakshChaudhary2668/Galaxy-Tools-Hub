@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Galaxy Tools - B2B Checkout</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&amp;family=Noto+Sans+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+                  "tertiary": "#00696f",
+                  "on-primary-fixed": "#221b00",
+                  "on-primary-container": "#705e00",
+                  "on-secondary-fixed-variant": "#474646",
+                  "on-secondary-fixed": "#1c1b1b",
+                  "on-error-container": "#93000a",
+                  "surface-dim": "#dadada",
+                  "surface-container-low": "#f3f3f3",
+                  "outline-variant": "#d0c6ab",
+                  "on-tertiary-fixed-variant": "#004f54",
+                  "primary-container": "#ffd700",
+                  "tertiary-container": "#00f1ff",
+                  "error": "#ba1a1a",
+                  "tertiary-fixed-dim": "#00dbe8",
+                  "primary-fixed-dim": "#e9c400",
+                  "surface-container": "#eeeeee",
+                  "surface-tint": "#705d00",
+                  "tertiary-fixed": "#79f5ff",
+                  "secondary": "#5f5e5e",
+                  "inverse-surface": "#2f3131",
+                  "secondary-container": "#e5e2e1",
+                  "primary-fixed": "#ffe16d",
+                  "on-tertiary-fixed": "#002022",
+                  "surface-container-highest": "#e2e2e2",
+                  "surface-bright": "#f9f9f9",
+                  "on-secondary-container": "#656464",
+                  "surface-container-lowest": "#ffffff",
+                  "on-secondary": "#ffffff",
+                  "error-container": "#ffdad6",
+                  "on-tertiary": "#ffffff",
+                  "on-error": "#ffffff",
+                  "on-surface": "#1a1c1c",
+                  "on-surface-variant": "#4d4732",
+                  "outline": "#7e775f",
+                  "inverse-primary": "#e9c400",
+                  "surface": "#f9f9f9",
+                  "background": "#f9f9f9",
+                  "on-primary-fixed-variant": "#544600",
+                  "surface-variant": "#e2e2e2",
+                  "on-primary": "#ffffff",
+                  "surface-container-high": "#e8e8e8",
+                  "secondary-fixed-dim": "#c8c6c5",
+                  "primary": "#705d00",
+                  "inverse-on-surface": "#f1f1f1",
+                  "on-background": "#1a1c1c",
+                  "on-tertiary-container": "#006a70",
+                  "secondary-fixed": "#e5e2e1"
+          },
+          "borderRadius": {
+                  "DEFAULT": "0.125rem",
+                  "lg": "0.25rem",
+                  "xl": "0.5rem",
+                  "full": "0.75rem"
+          },
+          "spacing": {
+                  "stack-sm": "8px",
+                  "stack-lg": "24px",
+                  "columns": "4",
+                  "gutter": "12px",
+                  "unit": "4px",
+                  "margin": "16px",
+                  "stack-md": "16px"
+          },
+          "fontFamily": {
+                  "headline-lg-mobile": ["Roboto"],
+                  "headline-md": ["Roboto"],
+                  "body-md": ["Roboto"],
+                  "label-caps": ["Roboto"],
+                  "headline-lg": ["Roboto"],
+                  "tech-data": ["Noto Sans Mono"],
+                  "body-lg": ["Roboto"]
+          },
+          "fontSize": {
+                  "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "700"}],
+                  "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                  "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                  "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "1px", "fontWeight": "700"}],
+                  "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.5px", "fontWeight": "700"}],
+                  "tech-data": ["13px", {"lineHeight": "18px", "fontWeight": "500"}],
+                  "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+          }
+        },
+      }
+    }
+  </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface antialiased">
+<!-- TopAppBar -->
+<header class="bg-surface text-primary font-headline-md text-headline-md uppercase tracking-tight font-black text-on-surface docked full-width top-0 h-[56px] border-b border-outline-variant flat no shadows hover:bg-surface-container-low transition-colors flex items-center justify-between px-margin w-full z-50 sticky top-0">
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:bg-surface-container-high p-2 rounded-full transition-all">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<span>GALAXY TOOLS</span>
+</div>
+<div class="flex items-center">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="shopping_cart">shopping_cart</span>
+</div>
+</header>
+<main class="px-margin py-stack-md flex flex-col gap-stack-lg max-w-2xl mx-auto pb-[100px]">
+<!-- Stepper -->
+<div class="flex items-center justify-between w-full relative">
+<div class="absolute top-1/2 left-0 w-full h-[2px] bg-outline-variant -z-10 -translate-y-1/2"></div>
+<!-- Step 1 -->
+<div class="flex flex-col items-center bg-surface px-2">
+<div class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-label-caps text-label-caps">
+<span class="material-symbols-outlined text-[16px]" data-icon="check">check</span>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="flex flex-col items-center bg-surface px-2">
+<div class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-label-caps text-label-caps">
+<span class="material-symbols-outlined text-[16px]" data-icon="check">check</span>
+</div>
+</div>
+<!-- Step 3 (Active) -->
+<div class="flex flex-col items-center bg-surface px-2">
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container border-2 border-primary-container flex items-center justify-center font-label-caps text-label-caps shadow-[0_0_0_4px_rgba(255,215,0,0.3)]">
+          3
+        </div>
+</div>
+<!-- Step 4 -->
+<div class="flex flex-col items-center bg-surface px-2">
+<div class="w-8 h-8 rounded-full bg-surface border border-outline-variant text-on-surface-variant flex items-center justify-center font-label-caps text-label-caps">
+          4
+        </div>
+</div>
+</div>
+<div class="text-center font-label-caps text-label-caps text-on-surface-variant uppercase">Payment Evidence</div>
+<!-- Summary Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-margin flex flex-col gap-stack-sm shadow-sm">
+<div class="flex justify-between font-tech-data text-tech-data text-on-surface-variant">
+<span>Subtotal</span>
+<span>₹5,750.00</span>
+</div>
+<div class="flex justify-between font-tech-data text-tech-data text-on-surface-variant">
+<span>CGST (9%)</span>
+<span>₹517.50</span>
+</div>
+<div class="flex justify-between font-tech-data text-tech-data text-on-surface-variant">
+<span>SGST (9%)</span>
+<span>₹517.50</span>
+</div>
+<div class="h-px bg-outline-variant w-full my-1"></div>
+<div class="flex justify-between font-headline-md text-headline-md text-on-surface">
+<span>Total</span>
+<span>₹6,785.00</span>
+</div>
+<div class="bg-[#e8f5e9] text-[#2e7d32] border border-[#c8e6c9] rounded px-3 py-2 font-label-caps text-label-caps flex items-center gap-2 mt-2">
+<span class="material-symbols-outlined text-[16px]" data-icon="local_shipping">local_shipping</span>
+        FREE SHIPPING UNLOCKED
+      </div>
+</div>
+<!-- Direct Transfer Block -->
+<div class="border border-outline-variant rounded-lg overflow-hidden bg-surface-container-lowest">
+<div class="bg-surface-container-low px-margin py-stack-sm border-b border-outline-variant font-label-caps text-label-caps text-on-surface uppercase font-bold flex items-center gap-2">
+<span class="material-symbols-outlined" data-icon="account_balance">account_balance</span>
+        Bank Transfer Details
+      </div>
+<div class="p-margin flex flex-col gap-stack-md">
+<div class="flex justify-between items-center group cursor-pointer hover:bg-surface-container-low p-2 -mx-2 rounded transition-colors">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Beneficiary Name</span>
+<span class="font-tech-data text-tech-data text-on-surface">MECO INSTRUMENTS PRIVATE LIMITED</span>
+</div>
+<span class="material-symbols-outlined text-secondary opacity-50 group-hover:opacity-100" data-icon="content_copy">content_copy</span>
+</div>
+<div class="flex justify-between items-center group cursor-pointer hover:bg-surface-container-low p-2 -mx-2 rounded transition-colors">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Bank &amp; Branch</span>
+<span class="font-tech-data text-tech-data text-on-surface">Canara Bank, Vashi</span>
+</div>
+</div>
+<div class="flex justify-between items-center group cursor-pointer hover:bg-surface-container-low p-2 -mx-2 rounded transition-colors">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Account Number</span>
+<span class="font-tech-data text-tech-data text-on-surface">0110261020612</span>
+</div>
+<span class="material-symbols-outlined text-secondary opacity-50 group-hover:opacity-100" data-icon="content_copy">content_copy</span>
+</div>
+<div class="flex justify-between items-center group cursor-pointer hover:bg-surface-container-low p-2 -mx-2 rounded transition-colors">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface-variant">IFSC Code</span>
+<span class="font-tech-data text-tech-data text-on-surface">CNRB0003302</span>
+</div>
+<span class="material-symbols-outlined text-secondary opacity-50 group-hover:opacity-100" data-icon="content_copy">content_copy</span>
+</div>
+</div>
+</div>
+<!-- UPI Block -->
+<div class="border border-outline-variant rounded-lg overflow-hidden bg-surface-container-lowest">
+<div class="bg-surface-container-low px-margin py-stack-sm border-b border-outline-variant font-label-caps text-label-caps text-on-surface uppercase font-bold flex items-center gap-2">
+<span class="material-symbols-outlined" data-icon="qr_code_scanner">qr_code_scanner</span>
+        UPI Payment
+      </div>
+<div class="p-margin flex flex-col items-center gap-stack-md text-center">
+<div class="w-40 h-40 border-2 border-dashed border-outline-variant rounded flex items-center justify-center bg-surface-container-lowest relative overflow-hidden" data-alt="A clean, minimalist QR code placeholder in a high-tech industrial setting. The QR code area is defined by sharp corners and precise alignment marks, resembling technical schematics. The background is a stark white with very subtle geometric patterns in pale gray. The overall mood is sterile, efficient, and highly functional." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCSm3FjqwMtuHH0SSljjT29XPs62l-s_QT_OS3Q6fZvNGOETWXEcWgfafiSXBjNCM1N-ClgXPWzT3btKyTciQQdls2tcud9Xf9QhU1hM0w-mkfzc1saeC3P_oyham-hKmqKA7zohkIwseb0vd3Ri9P2YgxcDdbfKBg7NhDTWCj8EGiUHh0VMZFi7ha7uhLsF0qQOJH2IgTy3tJQa8Zy_I5Z66QRutzQkAF0_GhkdWftMl7TE7AJaD8P')">
+<span class="material-symbols-outlined text-secondary text-[40px] opacity-20" data-icon="qr_code">qr_code</span>
+</div>
+<span class="font-body-md text-body-md text-on-surface-variant">Scan to pay using GPay, PhonePe, or Paytm</span>
+</div>
+</div>
+<!-- Evidence Form -->
+<div class="flex flex-col gap-stack-md">
+<div class="font-label-caps text-label-caps text-on-surface uppercase">Provide Payment Evidence</div>
+<div class="flex flex-col gap-1">
+<label class="font-label-caps text-label-caps text-on-surface-variant">UTR / Reference Number *</label>
+<input class="w-full border border-outline-variant rounded bg-surface-container-lowest p-3 font-tech-data text-tech-data text-on-surface focus:outline-none focus:border-primary-container focus:border-b-2" placeholder="e.g. 123456789012" type="text"/>
+</div>
+<div class="border-2 border-dashed border-outline-variant rounded-lg bg-surface-container-lowest p-stack-lg flex flex-col items-center justify-center text-center gap-stack-sm cursor-pointer hover:bg-surface-container-low transition-colors relative">
+<span class="material-symbols-outlined text-primary text-[32px]" data-icon="upload_file">upload_file</span>
+<span class="font-body-md text-body-md text-on-surface font-bold">Drag &amp; Drop receipt here</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">JPG, PNG, PDF up to 5MB</span>
+<!-- Upload Progress Overlay -->
+<div class="absolute inset-0 bg-surface-container-lowest bg-opacity-90 flex flex-col items-center justify-center px-margin">
+<span class="font-tech-data text-tech-data text-on-surface mb-2">75% uploading receipt_GT9511_transfer.png...</span>
+<div class="w-full h-1 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-primary-container w-[75%]"></div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Sticky Bottom Bar -->
+<div class="fixed bottom-0 w-full z-50 h-[80px] bg-surface border-t border-outline-variant px-margin flex items-center justify-center pb-safe">
+<button class="w-full max-w-2xl bg-secondary-container text-on-secondary-container font-label-caps text-label-caps py-4 rounded-lg uppercase tracking-wide opacity-50 cursor-not-allowed flex items-center justify-center gap-2" disabled="">
+<span class="material-symbols-outlined text-[18px]" data-icon="lock">lock</span>
+      Submit Payments Details &amp; Place Order
+    </button>
+</div>
+</body></html>

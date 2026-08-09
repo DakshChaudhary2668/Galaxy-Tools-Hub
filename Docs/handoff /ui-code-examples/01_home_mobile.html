@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GALAXY TOOLS - Home</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Mono:wght@500&amp;family=Roboto:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary": "#00696f",
+                        "on-primary-fixed": "#221b00",
+                        "on-primary-container": "#705e00",
+                        "on-secondary-fixed-variant": "#474646",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "on-error-container": "#93000a",
+                        "surface-dim": "#dadada",
+                        "surface-container-low": "#f3f3f3",
+                        "outline-variant": "#d0c6ab",
+                        "on-tertiary-fixed-variant": "#004f54",
+                        "primary-container": "#ffd700",
+                        "tertiary-container": "#00f1ff",
+                        "error": "#ba1a1a",
+                        "tertiary-fixed-dim": "#00dbe8",
+                        "primary-fixed-dim": "#e9c400",
+                        "surface-container": "#eeeeee",
+                        "surface-tint": "#705d00",
+                        "tertiary-fixed": "#79f5ff",
+                        "secondary": "#5f5e5e",
+                        "inverse-surface": "#2f3131",
+                        "secondary-container": "#e5e2e1",
+                        "primary-fixed": "#ffe16d",
+                        "on-tertiary-fixed": "#002022",
+                        "surface-container-highest": "#e2e2e2",
+                        "surface-bright": "#f9f9f9",
+                        "on-secondary-container": "#656464",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "on-tertiary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-surface": "#1a1c1c",
+                        "on-surface-variant": "#4d4732",
+                        "outline": "#7e775f",
+                        "inverse-primary": "#e9c400",
+                        "surface": "#f9f9f9",
+                        "background": "#f9f9f9",
+                        "on-primary-fixed-variant": "#544600",
+                        "surface-variant": "#e2e2e2",
+                        "on-primary": "#ffffff",
+                        "surface-container-high": "#e8e8e8",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "primary": "#705d00",
+                        "inverse-on-surface": "#f1f1f1",
+                        "on-background": "#1a1c1c",
+                        "on-tertiary-container": "#006a70",
+                        "secondary-fixed": "#e5e2e1"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "stack-sm": "8px",
+                        "stack-lg": "24px",
+                        "columns": "4",
+                        "gutter": "12px",
+                        "unit": "4px",
+                        "margin": "16px",
+                        "stack-md": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Roboto"],
+                        "headline-md": ["Roboto"],
+                        "body-md": ["Roboto"],
+                        "label-caps": ["Roboto"],
+                        "headline-lg": ["Roboto"],
+                        "tech-data": ["Noto Sans Mono"],
+                        "body-lg": ["Roboto"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "1px", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.5px", "fontWeight": "700" }],
+                        "tech-data": ["13px", { "lineHeight": "18px", "fontWeight": "500" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-lg pb-[80px]">
+<!-- TopAppBar (Shared Component) -->
+<header class="bg-surface dark:bg-on-surface text-primary dark:text-primary-fixed font-headline-md text-headline-md uppercase tracking-tight docked full-width top-0 h-[56px] border-b border-outline-variant dark:border-secondary flex items-center justify-between px-margin w-full z-50 sticky top-0 flat no shadows">
+<button class="flex items-center justify-center p-2 hover:bg-surface-container-low transition-colors active:opacity-80 active:scale-95 transition-all text-on-surface-variant">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<div class="flex items-center gap-2">
+<!-- Injecting logo as requested by prompt, while keeping JSON text structurally present if needed. Will use image to replace text visually if preferred, but following JSON strictly. -->
+<img alt="Logo" class="h-6 w-auto hidden" data-alt="A high-contrast industrial brand logo featuring sharp geometric sans-serif typography in deep black and vibrant yellow, suitable for a professional testing instruments company." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCYD8G66c4zfLLFs4tlYaqVMtgJJWQj-WVt7LlaKnV9ifU_fg7ovrf3t0dX7lOLDWlG128lkRV4AxNOXoQ0jvCrpqH7wqRzI1VnBrlVxZC1hj3MNPuC0r9Tj6egRvRSWC0eDH7IAS8Fr1GhnRSPzpbSfH0BG0v8m391jP00nh-IdUdQ_JpTSgiXyZ59OqoVwAj_9VzSfOLaXf2C3ztKAMpWPNQWzs85ByuijkeSyOOVUw6HRyhXmO7aTQF5MmxRIqN7ew"/>
+<h1 class="font-headline-md text-headline-md font-black text-on-surface dark:text-surface">GALAXY TOOLS</h1>
+</div>
+<button class="flex items-center justify-center p-2 hover:bg-surface-container-low transition-colors active:opacity-80 active:scale-95 transition-all text-on-surface-variant relative">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span class="absolute top-1 right-1 w-2 h-2 bg-primary-container rounded-full border border-surface"></span>
+</button>
+</header>
+<!-- Main Canvas -->
+<main class="w-full max-w-md mx-auto grid grid-cols-4 gap-gutter px-margin py-stack-md">
+<!-- Search Field -->
+<div class="col-span-4 relative mb-stack-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full pl-10 pr-10 py-3 bg-surface-container-lowest border border-outline-variant rounded-DEFAULT focus:border-primary-container focus:ring-1 focus:ring-primary-container outline-none font-body-md text-body-md transition-colors" placeholder="Search 100+ tools or SKUs..." type="text"/>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant">mic</span>
+</div>
+<!-- Hero Slider (16:9) -->
+<div class="col-span-4 relative w-full aspect-video rounded-DEFAULT overflow-hidden bg-inverse-surface mb-stack-md flex flex-col justify-end p-stack-md" data-alt="A dramatic, high-contrast close-up shot of a professional digital multimeter testing electrical components. The scene is dimly lit with harsh, directional white light highlighting the sharp angles of the tool. The overall mood is precise, industrial, and highly technical." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA40mgIucQ7A9aGhwXvz4WHfWSaxmqseOn3zNpvWp3fBJVxGvKHPDco5xKe_hQg30HyvMWoQIp5VpVOw8l70B7R5e_XOSKWrdLvgvZX5-ep7Gc5-hPQmUXXVZwbLqY4_rap37_fTXMdO2VP0J00ueB3OtR-lQxQwZdqfyF7gQ4D4BcDcU6fkwn3A1-eNYZ3c_GRvR8bkg9Kge6dIjRA_lNEQP2g5Li2O3LaKgHkaIM_Caqqw7AqfMD9'); background-size: cover; background-position: center;">
+<div class="absolute inset-0 bg-black/40"></div>
+<div class="relative z-10 flex flex-col items-start gap-stack-sm">
+<h2 class="font-headline-md text-headline-md text-on-primary font-bold leading-tight">Professional Grade<br/>Testing Instruments</h2>
+<button class="mt-2 bg-primary-container text-on-primary-container font-label-caps text-label-caps px-4 py-2 rounded-DEFAULT uppercase tracking-wider font-bold shadow-md active:scale-95 transition-transform">Shop Now</button>
+</div>
+</div>
+<!-- Trust Symbols (Horizontal Scroll) -->
+<div class="col-span-4 -mx-margin px-margin flex overflow-x-auto gap-stack-md pb-4 hide-scrollbar mb-stack-md">
+<div class="flex flex-col items-center gap-2 min-w-[72px]">
+<div class="w-12 h-12 rounded-full border border-primary-container bg-surface-container-lowest flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">payments</span>
+</div>
+<span class="font-label-caps text-label-caps text-[10px] text-center text-on-surface-variant">Pricing</span>
+</div>
+<div class="flex flex-col items-center gap-2 min-w-[72px]">
+<div class="w-12 h-12 rounded-full border border-primary-container bg-surface-container-lowest flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">handyman</span>
+</div>
+<span class="font-label-caps text-label-caps text-[10px] text-center text-on-surface-variant">Solutions</span>
+</div>
+<div class="flex flex-col items-center gap-2 min-w-[72px]">
+<div class="w-12 h-12 rounded-full border border-primary-container bg-surface-container-lowest flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">local_shipping</span>
+</div>
+<span class="font-label-caps text-label-caps text-[10px] text-center text-on-surface-variant">Delivery</span>
+</div>
+<div class="flex flex-col items-center gap-2 min-w-[72px]">
+<div class="w-12 h-12 rounded-full border border-primary-container bg-surface-container-lowest flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+<span class="font-label-caps text-label-caps text-[10px] text-center text-on-surface-variant">Quality</span>
+</div>
+<div class="flex flex-col items-center gap-2 min-w-[72px]">
+<div class="w-12 h-12 rounded-full border border-primary-container bg-surface-container-lowest flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">support_agent</span>
+</div>
+<span class="font-label-caps text-label-caps text-[10px] text-center text-on-surface-variant">Support</span>
+</div>
+</div>
+<!-- Categories (Accordion) -->
+<div class="col-span-4 mb-stack-lg flex flex-col gap-0 border border-outline-variant rounded-DEFAULT bg-surface-container-lowest overflow-hidden">
+<!-- Soldering -->
+<button class="w-full flex items-center justify-between p-4 border-b border-outline-variant hover:bg-surface-container-low transition-colors">
+<span class="font-body-md text-body-md font-bold uppercase">Soldering</span>
+<span class="material-symbols-outlined text-secondary">expand_more</span>
+</button>
+<!-- Testing & Diagnostic (Expanded) -->
+<div class="w-full flex flex-col border-b border-outline-variant">
+<button class="w-full flex items-center justify-between p-4 bg-surface-container-low">
+<span class="font-body-md text-body-md font-bold uppercase text-primary">Testing &amp; Diagnostic</span>
+<span class="material-symbols-outlined text-primary">expand_less</span>
+</button>
+<div class="flex flex-col pl-6 pr-4 py-2 bg-surface-container-lowest gap-2">
+<a class="font-body-md text-body-md py-2 text-on-surface-variant hover:text-primary transition-colors" href="#">Multimeters</a>
+<a class="font-body-md text-body-md py-2 text-on-surface-variant hover:text-primary transition-colors" href="#">Clamp Meters</a>
+<a class="font-body-md text-body-md py-2 text-on-surface-variant hover:text-primary transition-colors" href="#">Insulation Testers</a>
+<a class="font-body-md text-body-md py-2 text-on-surface-variant hover:text-primary transition-colors" href="#">Earth Testers</a>
+</div>
+</div>
+<!-- Precision Measuring -->
+<button class="w-full flex items-center justify-between p-4 border-b border-outline-variant hover:bg-surface-container-low transition-colors">
+<span class="font-body-md text-body-md font-bold uppercase">Precision Measuring</span>
+<span class="material-symbols-outlined text-secondary">expand_more</span>
+</button>
+<button class="w-full flex items-center justify-between p-4 hover:bg-surface-container-low transition-colors">
+<span class="font-body-md text-body-md font-bold uppercase">Power Tools</span>
+<span class="material-symbols-outlined text-secondary">expand_more</span>
+</button>
+</div>
+<!-- Featured Products -->
+<h3 class="col-span-4 font-headline-md text-headline-md mb-2">Featured Deals</h3>
+<div class="col-span-2 flex flex-col bg-surface-container-lowest border border-outline-variant rounded-DEFAULT p-2 relative">
+<span class="absolute top-2 left-2 bg-primary-container text-on-primary-container font-label-caps text-[10px] px-1.5 py-0.5 rounded-sm z-10">IN STOCK</span>
+<div class="w-full aspect-square bg-surface-container-low mb-2 p-2 flex items-center justify-center rounded-sm">
+<img class="object-contain w-full h-full" data-alt="A highly detailed studio shot of a G-Tech GT91 TRMS Digital Multimeter resting on a minimal light grey surface. The device is black with bright yellow accents, displaying sharp digital numbers. The lighting is crisp and even, reflecting a premium industrial aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuADX2QNT-Sbzl0sQDtIc7tn36kIoJp7i7Ehspdkt4S8ZHhZjh1B5YzCVObkg5BXudkrEOEvTx6GHHMB6M4CVEo31RaT3Jl_9mJmIFJpTaMUdbEaQAUfqEISuCkniadWxbEarflP-x7978Sbo7m12hyC4P_UZAcX7b0pqLf3nMbN40_Qc4ioW9fQlIJvpBuc8kfRjNRUFZmrjMwnFcHyylXRfGuTCuLRssC4KkdQjn_fNTGovCwYjqgy"/>
+</div>
+<div class="flex flex-col flex-grow justify-between">
+<div>
+<h4 class="font-body-md text-body-md font-bold leading-tight line-clamp-2">G-Tech GT91 TRMS Multimeter</h4>
+<p class="font-tech-data text-tech-data text-secondary mt-1">6000 Counts</p>
+</div>
+<div class="flex items-center justify-between mt-2 pt-2 border-t border-outline-variant">
+<span class="font-body-md text-body-md font-bold">₹1,622</span>
+<button class="w-8 h-8 flex items-center justify-center bg-inverse-surface text-on-primary rounded-DEFAULT active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[18px]">add</span>
+</button>
+</div>
+</div>
+</div>
+<div class="col-span-2 flex flex-col bg-surface-container-lowest border border-outline-variant rounded-DEFAULT p-2 relative">
+<div class="w-full aspect-square bg-surface-container-low mb-2 p-2 flex items-center justify-center rounded-sm">
+<img class="object-contain w-full h-full" data-alt="A clean, isolated product photograph of a MECO 108P+ TRMS Pocket Multimeter on a stark white background. The casing is rugged dark grey with vivid yellow structural lines. The display screen is bright and clear. Professional lighting setup." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjCUjDDp6RxcqosGO92DiHIbqpdrGV1wpa5bpMuY5QJmq9eME38GE5EMlNvoTl-_Kvo7TmIjNjm67CW3nfAOwIugHxA5re1OWctZPSyz1L-MWydoe-R9VO_0wtBtcKviVOrR3r90Ol9NEFTzMV2pwEhfmTuXOBgKSaCvdmOP_l-jdOcQ23wavRcfaV5PBRSBiE-ZErMACFWYkKvNCAqVDQ4vZQKgbED15dOWfxI4M63D8w_7EoM2M3"/>
+</div>
+<div class="flex flex-col flex-grow justify-between">
+<div>
+<h4 class="font-body-md text-body-md font-bold leading-tight line-clamp-2">MECO 108P+ TRMS Multimeter</h4>
+<p class="font-tech-data text-tech-data text-secondary mt-1">NCV, Pocket Size</p>
+</div>
+<div class="flex items-center justify-between mt-2 pt-2 border-t border-outline-variant">
+<span class="font-body-md text-body-md font-bold">₹1,890</span>
+<button class="w-8 h-8 flex items-center justify-center bg-inverse-surface text-on-primary rounded-DEFAULT active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[18px]">add</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Shared Component) -->
+<nav class="bg-surface dark:bg-on-surface text-primary dark:text-primary-fixed font-label-caps text-label-caps fixed bottom-0 w-full z-50 h-[64px] border-t border-outline-variant bg-surface dark:bg-on-surface flat no shadows flex justify-around items-center w-full px-2 pb-safe md:hidden">
+<!-- Active: Home -->
+<a class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed font-bold bg-primary-container/20 rounded-xl px-4 py-1 hover:text-primary active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="mt-1">Home</span>
+</a>
+<!-- Inactive: Search -->
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim hover:text-primary active:scale-90 transition-transform px-4 py-1" href="#">
+<span class="material-symbols-outlined">search</span>
+<span class="mt-1">Search</span>
+</a>
+<!-- Inactive: Orders -->
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim hover:text-primary active:scale-90 transition-transform px-4 py-1" href="#">
+<span class="material-symbols-outlined">package_2</span>
+<span class="mt-1">Orders</span>
+</a>
+<!-- Inactive: Profile -->
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim hover:text-primary active:scale-90 transition-transform px-4 py-1" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="mt-1">Profile</span>
+</a>
+</nav>
+</body></html>

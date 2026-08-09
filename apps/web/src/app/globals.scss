@@ -1,67 +1,39 @@
-@use '../../../../packages/ui/src/styles/variables' as *;
-@use '../../../../packages/ui/src/styles/mixins' as *;
-@use '../../../../packages/ui/src/styles/reset' as *;
+// Reset & base — minimal, no framework
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-// Industrial App Styles
-.app-container {
+html {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  background: var(--background);
+  color: var(--on-surface);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
 }
 
-.industrial-nav {
-  background-color: $color-charcoal-dark;
-  color: $color-white;
-  padding: 1rem 2rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 3px solid $color-yellow-industrial;
-
-  .brand {
-    font-family: $font-family-heading;
-    font-size: 1.5rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    color: $color-yellow-industrial;
-  }
-
-  .nav-links {
-    display: flex;
-    gap: 1.5rem;
-    list-style: none;
-
-    a {
-      color: $color-white;
-      text-decoration: none;
-      font-size: 0.9rem;
-      text-transform: uppercase;
-      font-weight: 600;
-
-      &:hover {
-        color: $color-yellow-industrial;
-      }
-    }
-  }
+a {
+  color: inherit;
+  text-decoration: none;
 }
 
-.hero-banner {
-  background-color: $color-charcoal-light;
-  color: $color-white;
-  padding: 4rem 2rem;
-  text-align: center;
+img, video {
+  display: block;
+  max-width: 100%;
+}
 
-  h1 {
-    font-family: $font-family-heading;
-    font-size: 3rem;
-    margin-bottom: 1rem;
-    color: $color-white;
-  }
+button {
+  cursor: pointer;
+  font-family: inherit;
+  border: none;
+  background: none;
+}
 
-  p {
-    font-size: 1.2rem;
-    color: $color-gray-300;
-    max-width: 600px;
-    margin: 0 auto 2rem;
-  }
+ul, ol {
+  list-style: none;
 }

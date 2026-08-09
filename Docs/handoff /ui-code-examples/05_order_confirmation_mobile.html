@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Success Confirmation - Galaxy Tools</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=Noto+Sans+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary": "#00696f",
+                    "on-primary-fixed": "#221b00",
+                    "on-primary-container": "#705e00",
+                    "on-secondary-fixed-variant": "#474646",
+                    "on-secondary-fixed": "#1c1b1b",
+                    "on-error-container": "#93000a",
+                    "surface-dim": "#dadada",
+                    "surface-container-low": "#f3f3f3",
+                    "outline-variant": "#d0c6ab",
+                    "on-tertiary-fixed-variant": "#004f54",
+                    "primary-container": "#ffd700",
+                    "tertiary-container": "#00f1ff",
+                    "error": "#ba1a1a",
+                    "tertiary-fixed-dim": "#00dbe8",
+                    "primary-fixed-dim": "#e9c400",
+                    "surface-container": "#eeeeee",
+                    "surface-tint": "#705d00",
+                    "tertiary-fixed": "#79f5ff",
+                    "secondary": "#5f5e5e",
+                    "inverse-surface": "#2f3131",
+                    "secondary-container": "#e5e2e1",
+                    "primary-fixed": "#ffe16d",
+                    "on-tertiary-fixed": "#002022",
+                    "surface-container-highest": "#e2e2e2",
+                    "surface-bright": "#f9f9f9",
+                    "on-secondary-container": "#656464",
+                    "surface-container-lowest": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "on-tertiary": "#ffffff",
+                    "on-error": "#ffffff",
+                    "on-surface": "#1a1c1c",
+                    "on-surface-variant": "#4d4732",
+                    "outline": "#7e775f",
+                    "inverse-primary": "#e9c400",
+                    "surface": "#f9f9f9",
+                    "background": "#f9f9f9",
+                    "on-primary-fixed-variant": "#544600",
+                    "surface-variant": "#e2e2e2",
+                    "on-primary": "#ffffff",
+                    "surface-container-high": "#e8e8e8",
+                    "secondary-fixed-dim": "#c8c6c5",
+                    "primary": "#705d00",
+                    "inverse-on-surface": "#f1f1f1",
+                    "on-background": "#1a1c1c",
+                    "on-tertiary-container": "#006a70",
+                    "secondary-fixed": "#e5e2e1"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "stack-sm": "8px",
+                    "stack-lg": "24px",
+                    "columns": "4",
+                    "gutter": "12px",
+                    "unit": "4px",
+                    "margin": "16px",
+                    "stack-md": "16px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": [
+                            "Roboto"
+                    ],
+                    "headline-md": [
+                            "Roboto"
+                    ],
+                    "body-md": [
+                            "Roboto"
+                    ],
+                    "label-caps": [
+                            "Roboto"
+                    ],
+                    "headline-lg": [
+                            "Roboto"
+                    ],
+                    "tech-data": [
+                            "Noto Sans Mono"
+                    ],
+                    "body-lg": [
+                            "Roboto"
+                    ]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": [
+                            "28px",
+                            {
+                                    "lineHeight": "36px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "headline-md": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-md": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "label-caps": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "letterSpacing": "1px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "headline-lg": [
+                            "32px",
+                            {
+                                    "lineHeight": "40px",
+                                    "letterSpacing": "-0.5px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "tech-data": [
+                            "13px",
+                            {
+                                    "lineHeight": "18px",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "body-lg": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "400"
+                            }
+                    ]
+            }
+        },
+        },
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen">
+<main class="px-margin py-stack-lg max-w-2xl mx-auto flex flex-col gap-stack-lg pb-[96px]">
+<header class="flex flex-col items-center text-center gap-stack-sm mb-stack-lg">
+<span class="material-symbols-outlined text-[64px] text-primary" style="font-variation-settings: 'FILL' 1;">
+                check_circle
+            </span>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Order Received</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Your order has been logged in our system.</p>
+</header>
+<section class="bg-surface-container-lowest border border-outline-variant rounded p-margin flex flex-col gap-stack-md">
+<div class="flex justify-between items-center border-b border-outline-variant pb-stack-sm">
+<div>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase block">Order ID</span>
+<span class="font-tech-data text-tech-data text-on-surface">#GTH-2026-10492</span>
+</div>
+<div class="text-right">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase block">Date</span>
+<span class="font-tech-data text-tech-data text-on-surface">2026-08-09</span>
+</div>
+</div>
+<div class="flex items-start gap-stack-sm p-stack-sm border border-[#FFD700] bg-[#FFF9E6] rounded">
+<span class="material-symbols-outlined text-[#705e00] mt-1" style="font-variation-settings: 'FILL' 1;">
+                    warning
+                </span>
+<div class="flex flex-col gap-unit">
+<span class="font-label-caps text-label-caps text-[#705e00] font-bold uppercase">Verification Pending</span>
+<p class="font-body-md text-body-md text-[#544600]">
+                        Your manual payment details have been logged. The order will remain as 'Pending Verification' until the finance desk verifies the transaction. We will notify you via email once confirmed.
+                    </p>
+</div>
+</div>
+</section>
+<section class="flex flex-col gap-stack-md">
+<h2 class="font-headline-md text-headline-md text-on-surface uppercase tracking-tight">Shipping Estimate</h2>
+<div class="bg-surface-container-lowest border border-outline-variant rounded p-margin flex items-center gap-margin">
+<div class="w-16 h-16 bg-surface-variant rounded flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-on-surface-variant text-[32px]">
+                        local_shipping
+                    </span>
+</div>
+<div class="flex flex-col gap-unit">
+<span class="font-body-lg text-body-lg font-bold text-on-surface">Immediate Dispatch</span>
+<span class="font-body-md text-body-md text-on-surface-variant">From Delhi Palace Warehouse</span>
+</div>
+</div>
+</section>
+</main>
+<div class="fixed bottom-0 left-0 w-full bg-surface-container-lowest border-t border-outline-variant p-margin flex justify-center z-50">
+<button class="bg-[#111111] text-white font-label-caps text-label-caps uppercase px-stack-lg py-stack-sm rounded hover:opacity-90 transition-opacity w-full max-w-md h-12 flex items-center justify-center gap-2 tracking-[1px]">
+            Return to Home
+            <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</body></html>

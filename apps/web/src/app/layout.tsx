@@ -1,30 +1,39 @@
-import React from 'react';
+import type { Metadata } from 'next';
+import { Roboto, Noto_Sans_Mono } from 'next/font/google';
+import { Providers } from '@/components/providers/Providers';
+import '@/styles/_tokens.scss';
 import './globals.scss';
-import { Metadata } from 'next';
+
+// Prevent static prerendering — Clerk requires a valid key at build time.
+// Remove this when a real NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is configured.
+export const dynamic = 'force-dynamic';
+
+
+const roboto = Roboto({
+  subsets: ['latin'],
+  weight: ['400', '500', '700'],
+  variable: '--font-roboto',
+  display: 'swap',
+});
+
+const notoSansMono = Noto_Sans_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500'],
+  variable: '--font-mono',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
-  title: 'Galaxy Tools Hub | Heavy Duty Industrial Equipment',
-  description: 'Enterprise grade tools, power machinery, safety gear, and industrial equipment.'
+  title: 'Galaxy Tools Hub | Industrial B2B Equipment',
+  description:
+    'Professional-grade testing, measuring, and soldering instruments for industrial procurement.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${roboto.variable} ${notoSansMono.variable}`}>
       <body>
-        <div className="app-container">
-          <header className="industrial-nav">
-            <div className="brand">GALAXY TOOLS HUB</div>
-            <ul className="nav-links">
-              <li><a href="/">Home</a></li>
-              <li><a href="/products">Products</a></li>
-              <li><a href="/categories">Categories</a></li>
-              <li><a href="/brands">Brands</a></li>
-              <li><a href="/cart">Cart</a></li>
-              <li><a href="/admin/dashboard">Admin</a></li>
-            </ul>
-          </header>
-          <main>{children}</main>
-        </div>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
