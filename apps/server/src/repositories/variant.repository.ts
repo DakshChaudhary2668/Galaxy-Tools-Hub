@@ -12,10 +12,13 @@ export class VariantRepository extends BaseRepository<ProductVariantDto> {
       const { data, error } = await supabaseAdmin
         .from(this.tableName)
         .select('*, brand:brands(id, name, slug, logo_url), inventory:inventory(quantity, reserved_quantity, reorder_level)')
-        .eq('product_id', productId);
+        .eq('product_id', productId)
+        .eq('is_active', true)
+        .order('price', { ascending: true })
+        .order('model', { ascending: true });
 
-      if (error) return [];
-      return (data || []) as ProductVariantDto[];
+      if (error || !data) return [];
+      return data as ProductVariantDto[];
     } catch {
       return [];
     }

@@ -54,15 +54,31 @@ export async function getProductBySlug(req: Request, res: Response, next: NextFu
 
     const category = categoryRes.status === 'fulfilled' && 'data' in categoryRes.value ? categoryRes.value.data : null;
     const brand = brandRes.status === 'fulfilled' && 'data' in brandRes.value ? brandRes.value.data : null;
-    const variants = variantsRes.status === 'fulfilled' ? variantsRes.value : [];
-    const images = imagesRes.status === 'fulfilled' && 'data' in imagesRes.value ? (imagesRes.value.data || []) : [];
+    let rawVariants = variantsRes.status === 'fulfilled' ? variantsRes.value : [];
+    let images = imagesRes.status === 'fulfilled' && 'data' in imagesRes.value ? (imagesRes.value.data || []) : [];
+
+    // Filter active variants and sort by price, then model
+    const sortedVariants = (rawVariants || [])
+      .filter((v) => v.is_active !== false)
+      .sort((a, b) => (a.price - b.price) || (a.model || '').localeCompare(b.model || ''));
+
+    // Image fallback: map variant-specific images if available, else fallback to parent product images
+    const parentImages = (images || []).filter((img: { variant_id?: string | null }) => !img.variant_id);
+    const variants = sortedVariants.map((variant) => {
+      const variantSpecificImages = (images || []).filter((img: { variant_id?: string | null }) => img.variant_id === variant.id);
+      return {
+        ...variant,
+        images: variantSpecificImages.length > 0 ? variantSpecificImages : parentImages
+      };
+    });
 
     const productDetail = {
       ...product,
-      category,
-      brand,
+      product,
       variants,
       images,
+      brand,
+      category,
       specifications: product.specifications || {}
     };
 
@@ -102,15 +118,27 @@ export async function deleteProduct(req: Request, res: Response, next: NextFunct
   }
 }
 
-// GET /api/v1/products/:id/images — query DB directly, no in-memory filter
+// GET /api/v1/products/:id/images — includes variant-specific images with parent fallback
 export async function getProductImages(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const { data, error } = await supabaseAdmin
-      .from('product_images')
-      .select('*')
-      .eq('product_id', req.params.id);
+    const productId = req.params.id;
+    const { data: variants } = await supabaseAdmin
+      .from('product_variants')
+      .select('id')
+      .eq('product_id', productId);
+
+    const variantIds = (variants || []).map((v: { id: string }) => v.id);
+
+    let query = supabaseAdmin.from('product_images').select('*');
+    if (variantIds.length > 0) {
+      query = query.or(`product_id.eq.${productId},variant_id.in.(${variantIds.join(',')})`);
+    } else {
+      query = query.eq('product_id', productId);
+    }
+
+    const { data, error } = await query;
     if (error) throw new Error(error.message);
-    sendSuccess(res, { data: data as ProductImageDto[], message: 'Product images retrieved successfully' });
+    sendSuccess(res, { data: (data || []) as ProductImageDto[], message: 'Product images retrieved successfully' });
   } catch (error) {
     next(error);
   }
