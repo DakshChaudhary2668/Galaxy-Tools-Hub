@@ -12,6 +12,12 @@ export const queryKeys = {
     variants: (id: string)                     => ['products', id, 'variants'] as const,
   },
 
+  variants: {
+    byProduct: (productId: string) => ['variants', 'product', productId] as const,
+    detail:    (id: string)        => ['variants', 'detail', id] as const,
+    sku:       (sku: string)       => ['variants', 'sku', sku] as const,
+  },
+
   categories: {
     all:    () => ['categories'] as const,
     detail: (slug: string) => ['categories', slug] as const,

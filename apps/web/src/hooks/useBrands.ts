@@ -1,8 +1,18 @@
-// TODO: implement with TanStack Query
-// import { useQuery } from '@tanstack/react-query';
-// import { queryKeys } from '@/lib/queryKeys';
-// import { getBrands } from '@/services/brand.service';
+import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
+import { getBrands, getBrandBySlug } from '@/services/brand.service';
 
 export function useBrands() {
-  // TODO: return useQuery({ queryKey: queryKeys.brands.all(), queryFn: getBrands });
+  return useQuery({
+    queryKey: queryKeys.brands.all(),
+    queryFn: getBrands
+  });
+}
+
+export function useBrand(slug: string) {
+  return useQuery({
+    queryKey: queryKeys.brands.detail(slug),
+    queryFn: () => getBrandBySlug(slug),
+    enabled: Boolean(slug)
+  });
 }

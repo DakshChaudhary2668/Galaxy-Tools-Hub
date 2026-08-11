@@ -219,8 +219,47 @@ export const ProductCardSchema = ProductSchema.pick({
 });
 export type ProductCardDto = z.infer<typeof ProductCardSchema>;
 
-// Detailed Product DTO (Product Details page)
+// --- 8b. PRODUCT VARIANTS ---
+export const ProductVariantSchema = z.object({
+  id: z.string().uuid(),
+  product_id: z.string().uuid(),
+  brand_id: z.string().uuid().nullable().optional(),
+  model: z.string().min(1),
+  sku: z.string().min(1),
+  price: z.number().min(0),
+  compare_at_price: z.number().min(0).nullable().optional(),
+  hsn_code: z.string().nullable().optional(),
+  tax_rate: z.number().min(0).default(18.00),
+  specifications: z.record(z.unknown()).default({}),
+  is_active: z.boolean().default(true),
+  created_at: z.string().optional(),
+  updated_at: z.string().optional(),
+  brand: BrandSchema.pick({ id: true, name: true, slug: true, logo_url: true }).optional(),
+  inventory: z.object({
+    quantity: z.number().int(),
+    reserved_quantity: z.number().int(),
+    reorder_level: z.number().int().nullable().optional()
+  }).optional()
+});
+export type ProductVariantDto = z.infer<typeof ProductVariantSchema>;
+
+export const CreateProductVariantSchema = ProductVariantSchema.omit({
+  id: true,
+  created_at: true,
+  updated_at: true,
+  brand: true,
+  inventory: true
+});
+export type CreateProductVariantDto = z.infer<typeof CreateProductVariantSchema>;
+
+export const UpdateProductVariantSchema = CreateProductVariantSchema.partial();
+export type UpdateProductVariantDto = z.infer<typeof UpdateProductVariantSchema>;
+
+// Detailed Product DTO (Product Details page - PDP)
 export const ProductDetailSchema = ProductSchema.extend({
+  category: CategorySchema.optional(),
+  brand: BrandSchema.optional(),
+  variants: z.array(ProductVariantSchema).optional(),
   images: z.array(z.unknown()).optional(),
   inventory_quantity: z.number().int().optional()
 });
@@ -357,17 +396,20 @@ export const OrderSchema = z.object({
   order_number: z.string().min(1),
   user_id: z.string().uuid(),
   status: z.enum([
-    OrderStatus.PENDING,
-    OrderStatus.CONFIRMED,
-    OrderStatus.PROCESSING,
+    OrderStatus.DRAFT,
+    OrderStatus.PENDING_PAYMENT,
+    OrderStatus.PAID,
     OrderStatus.PACKED,
     OrderStatus.SHIPPED,
     OrderStatus.DELIVERED,
     OrderStatus.CANCELLED,
+    OrderStatus.REFUNDED,
+    OrderStatus.PENDING,
+    OrderStatus.CONFIRMED,
+    OrderStatus.PROCESSING,
     OrderStatus.RETURN_REQUESTED,
-    OrderStatus.RETURNED,
-    OrderStatus.REFUNDED
-  ]).default(OrderStatus.PENDING),
+    OrderStatus.RETURNED
+  ]).default(OrderStatus.DRAFT),
   payment_status: z.enum([
     PaymentStatus.PENDING,
     PaymentStatus.UNDER_REVIEW,

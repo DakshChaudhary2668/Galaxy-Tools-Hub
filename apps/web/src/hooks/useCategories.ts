@@ -1,8 +1,18 @@
-// TODO: implement with TanStack Query
-// import { useQuery } from '@tanstack/react-query';
-// import { queryKeys } from '@/lib/queryKeys';
-// import { getCategories } from '@/services/category.service';
+import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
+import { getCategories, getCategoryBySlug } from '@/services/category.service';
 
 export function useCategories() {
-  // TODO: return useQuery({ queryKey: queryKeys.categories.all(), queryFn: getCategories });
+  return useQuery({
+    queryKey: queryKeys.categories.all(),
+    queryFn: getCategories
+  });
+}
+
+export function useCategory(slug: string) {
+  return useQuery({
+    queryKey: queryKeys.categories.detail(slug),
+    queryFn: () => getCategoryBySlug(slug),
+    enabled: Boolean(slug)
+  });
 }

@@ -1,11 +1,10 @@
 import { apiClient } from './api';
+import { CategoryDto } from '@galaxy/types';
 
-// TODO: implement — GET /api/v1/categories
 export async function getCategories() {
-  return apiClient.get('/categories');
+  return apiClient.get<CategoryDto[]>('/categories');
 }
 
-// TODO: implement — GET /api/v1/categories/:slug
 export async function getCategoryBySlug(slug: string) {
-  return apiClient.get(`/categories/${slug}`);
+  return apiClient.get<CategoryDto>(`/categories/${slug}`);
 }

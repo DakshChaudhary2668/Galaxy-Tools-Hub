@@ -19,12 +19,19 @@ import {
 } from '@galaxy/types';
 import { Roles } from '@galaxy/constants';
 
+import {
+  getVariantsByProduct,
+  createVariant
+} from '../controllers/variant.controller';
+import { CreateProductVariantSchema } from '@galaxy/types';
+
 export const productRouter: Router = Router();
 
 // Public Catalog routes
 productRouter.get('/', getProducts);
 productRouter.get('/:slug', getProductBySlug);
 productRouter.get('/:id/images', getProductImages);
+productRouter.get('/:id/variants', getVariantsByProduct);
 
 // Admin Product CRUD routes
 productRouter.post(
@@ -48,7 +55,15 @@ productRouter.delete(
   deleteProduct
 );
 
-// Admin Product Image routes
+// Admin Product Image & Variant routes
+productRouter.post(
+  '/admin/:id/variants',
+  adminAuthGuard,
+  rbacGuard([Roles.OWNER, Roles.MANAGER]),
+  validateRequest(CreateProductVariantSchema),
+  createVariant
+);
+
 productRouter.post(
   '/admin/:id/images',
   adminAuthGuard,

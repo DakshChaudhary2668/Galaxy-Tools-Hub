@@ -32,16 +32,20 @@ export const PricingType = {
 export type PricingTypeEnum = (typeof PricingType)[keyof typeof PricingType];
 
 export const OrderStatus = {
+  DRAFT: 'Draft',
+  PENDING_PAYMENT: 'PendingPayment',
+  PAID: 'Paid',
+  PACKED: 'Packed',
+  SHIPPED: 'Shipped',
+  DELIVERED: 'Delivered',
+  CANCELLED: 'Cancelled',
+  REFUNDED: 'Refunded',
+  // Backward compatibility keys
   PENDING: 'PENDING',
   CONFIRMED: 'CONFIRMED',
   PROCESSING: 'PROCESSING',
-  PACKED: 'PACKED',
-  SHIPPED: 'SHIPPED',
-  DELIVERED: 'DELIVERED',
-  CANCELLED: 'CANCELLED',
   RETURN_REQUESTED: 'RETURN_REQUESTED',
-  RETURNED: 'RETURNED',
-  REFUNDED: 'REFUNDED'
+  RETURNED: 'RETURNED'
 } as const;
 export type OrderStatusType = (typeof OrderStatus)[keyof typeof OrderStatus];
 

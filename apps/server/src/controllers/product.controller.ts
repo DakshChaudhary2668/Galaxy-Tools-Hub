@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { ProductRepository } from '../repositories/product.repository';
+import { VariantRepository } from '../repositories/variant.repository';
 import { BaseRepository } from '../repositories/base.repository';
 import { supabaseAdmin } from '../config/supabase';
 import { ProductQueryParams, ProductImageDto } from '@galaxy/types';
@@ -7,6 +8,7 @@ import { sendSuccess } from '../utils/response';
 import { AppError } from '../utils/app-error';
 
 const productRepository = new ProductRepository();
+const variantRepository = new VariantRepository();
 
 // GET /api/v1/products (Search, Filtering, Sorting, Pagination)
 export async function getProducts(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -32,9 +34,39 @@ export async function getProducts(req: Request, res: Response, next: NextFunctio
 // GET /api/v1/products/:slug
 export async function getProductBySlug(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const product = await productRepository.findBySlug(req.params.slug);
+    const slugOrId = req.params.slug;
+    let product = await productRepository.findBySlug(slugOrId);
+    if (!product) {
+      product = await productRepository.findById(slugOrId);
+    }
     if (!product) return next(new AppError('Product not found', 404));
-    sendSuccess(res, { data: product, message: 'Product details retrieved successfully' });
+
+    const [categoryRes, brandRes, variantsRes, imagesRes] = await Promise.allSettled([
+      product.category_id
+        ? supabaseAdmin.from('categories').select('id, name, slug, image_url').eq('id', product.category_id).single()
+        : Promise.resolve({ data: null }),
+      product.brand_id
+        ? supabaseAdmin.from('brands').select('id, name, slug, logo_url').eq('id', product.brand_id).single()
+        : Promise.resolve({ data: null }),
+      variantRepository.findByProductId(product.id),
+      supabaseAdmin.from('product_images').select('*').eq('product_id', product.id)
+    ]);
+
+    const category = categoryRes.status === 'fulfilled' && 'data' in categoryRes.value ? categoryRes.value.data : null;
+    const brand = brandRes.status === 'fulfilled' && 'data' in brandRes.value ? brandRes.value.data : null;
+    const variants = variantsRes.status === 'fulfilled' ? variantsRes.value : [];
+    const images = imagesRes.status === 'fulfilled' && 'data' in imagesRes.value ? (imagesRes.value.data || []) : [];
+
+    const productDetail = {
+      ...product,
+      category,
+      brand,
+      variants,
+      images,
+      specifications: product.specifications || {}
+    };
+
+    sendSuccess(res, { data: productDetail, message: 'Product details retrieved successfully' });
   } catch (error) {
     next(error);
   }
