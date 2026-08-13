@@ -1,0 +1,42 @@
+// Design Tokens & SCSS Variables
+
+// Brand Colors
+$color-yellow: #F5C710;
+$color-yellow-hover: #E5B700;
+$color-yellow-light: #FFF9DB;
+
+$color-black: #111111;
+$color-dark: #1A1A1A;
+$color-dark-hover: #2A2A2A;
+
+$color-white: #FFFFFF;
+$color-bg-light: #F8F9FA;
+$color-bg-card: #F9FAFB;
+
+$color-border: #E0E0E0;
+$color-border-subtle: #EEEEEE;
+$color-border-dark: #333333;
+
+// Typography Colors
+$color-text-main: #111111;
+$color-text-secondary: #555555;
+$color-text-muted: #777777;
+$color-text-white: #FFFFFF;
+
+// Container & Spacing
+$container-max-width: 1400px;
+$container-padding: 24px;
+$container-padding-mobile: 16px;
+
+// Radius
+$radius-xs: 2px;
+$radius-sm: 4px;
+$radius-md: 6px;
+
+// Shadow
+$shadow-card: 0 1px 3px rgba(0, 0, 0, 0.05);
+$shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.08);
+
+// Transition
+$transition-fast: 0.15s ease-in-out;
+$transition-medium: 0.25s ease-in-out;

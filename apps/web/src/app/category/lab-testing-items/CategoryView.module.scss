@@ -1,0 +1,284 @@
+.pageWrapper {
+  background-color: #FFFFFF;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.container {
+  @include container;
+  padding-top: 20px;
+  padding-bottom: 48px;
+}
+
+.breadcrumb {
+  font-size: 12px;
+  color: #777777;
+  margin-bottom: 20px;
+
+  a {
+    color: #555555;
+    &:hover {
+      color: $color-black;
+    }
+  }
+  span {
+    margin: 0 6px;
+  }
+}
+
+.categoryHeader {
+  @include flex-between;
+  margin-bottom: 32px;
+  align-items: flex-start;
+
+  @include mobile {
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+
+.titleGroup {
+  h1 {
+    font-size: 32px;
+    font-weight: 900;
+    color: $color-black;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+
+    @include mobile {
+      font-size: 24px;
+    }
+  }
+
+  p {
+    font-size: 14px;
+    color: #666666;
+  }
+}
+
+.trustedBadge {
+  background-color: #FFFDF0;
+  border: 1px solid #F5C710;
+  border-radius: 4px;
+  padding: 8px 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: $color-black;
+  flex-shrink: 0;
+
+  .badgeIcon {
+    width: 16px;
+    height: 16px;
+    color: #F5C710;
+    fill: #F5C710;
+  }
+}
+
+.contentLayout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 32px;
+
+  @include tablet {
+    grid-template-columns: 1fr;
+  }
+}
+
+// Sidebar
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.sidebarBox {
+  border: 1px solid #EAEAEA;
+  border-radius: 2px;
+  padding: 20px 0;
+  background-color: #FFFFFF;
+}
+
+.sidebarTitle {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: $color-black;
+  text-transform: uppercase;
+  padding: 0 20px 12px 20px;
+  border-bottom: 1px solid #EEEEEE;
+  margin-bottom: 8px;
+}
+
+.sidebarList {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebarItem {
+  @include button-reset;
+  width: 100%;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 500;
+  color: #333333;
+  transition: background-color $transition-fast, color $transition-fast;
+
+  &:hover {
+    background-color: #F9FAFB;
+    color: $color-black;
+  }
+
+  &.active {
+    background-color: #FFF9DB;
+    color: $color-black;
+    font-weight: 800;
+  }
+}
+
+.helpBox {
+  border: 1px solid #EAEAEA;
+  border-radius: 2px;
+  padding: 16px 20px;
+  background-color: #FAFAFA;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.helpIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: $color-yellow;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $color-black;
+  flex-shrink: 0;
+}
+
+.helpText {
+  h4 {
+    font-size: 13px;
+    font-weight: 800;
+    color: $color-black;
+    margin-bottom: 2px;
+  }
+  p {
+    font-size: 11.5px;
+    color: #555555;
+  }
+}
+
+// Main Content
+.mainContent {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.topControlRow {
+  @include flex-between;
+
+  @include mobile {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}
+
+.countText {
+  font-size: 13px;
+  color: #666666;
+}
+
+.sortSelect {
+  padding: 6px 12px;
+  border: 1px solid #D9D9D9;
+  border-radius: 2px;
+  font-size: 12.5px;
+  color: $color-black;
+  background-color: #FFFFFF;
+  cursor: pointer;
+}
+
+.subCatGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+
+  @include laptop {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  @include tablet {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @include mobile {
+    grid-template-columns: 1fr;
+  }
+}
+
+.subCatCard {
+  border: 1px solid #EAEAEA;
+  border-radius: 2px;
+  background-color: #FFFFFF;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: border-color $transition-fast, box-shadow $transition-fast;
+  cursor: pointer;
+
+  &:hover {
+    border-color: #CCCCCC;
+    box-shadow: $shadow-hover;
+  }
+}
+
+.cardImgArea {
+  width: 100%;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  background-color: #FAFAFA;
+  border-radius: 2px;
+  padding: 10px;
+}
+
+.cardImg {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.cardTitle {
+  font-size: 15px;
+  font-weight: 800;
+  color: $color-black;
+  margin-bottom: 4px;
+}
+
+.itemCount {
+  font-size: 12px;
+  color: #777777;
+  margin-bottom: 8px;
+}
+
+.priceRange {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: $color-black;
+}

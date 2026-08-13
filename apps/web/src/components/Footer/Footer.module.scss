@@ -1,0 +1,63 @@
+.footer {
+  background-color: #111111;
+  color: #FFFFFF;
+  padding-top: 36px;
+  padding-bottom: 36px;
+  border-top: 1px solid #222222;
+}
+
+.container {
+  @include container;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+
+  @include tablet {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
+  }
+}
+
+.brandCol {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.brandTitle {
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: #FFFFFF;
+  text-transform: uppercase;
+}
+
+.copyright {
+  font-size: 13px;
+  color: #888888;
+  font-weight: 400;
+}
+
+.linksRow {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  flex-wrap: wrap;
+
+  @include mobile {
+    gap: 16px 20px;
+  }
+}
+
+.link {
+  font-size: 13px;
+  color: #CCCCCC;
+  font-weight: 500;
+  transition: color $transition-fast;
+
+  &:hover {
+    color: $color-yellow;
+  }
+}

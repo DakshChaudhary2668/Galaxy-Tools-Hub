@@ -1,0 +1,62 @@
+.stripSection {
+  width: 100%;
+  padding-top: 16px;
+  padding-bottom: 24px;
+}
+
+.container {
+  @include container;
+}
+
+.trustGrid {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  @include laptop {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  @include tablet {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  @include mobile {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+}
+
+.trustItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.iconSquare {
+  width: 38px;
+  height: 38px;
+  background-color: $color-yellow;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: $color-black;
+
+  .icon {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: #333333;
+  text-transform: uppercase;
+}

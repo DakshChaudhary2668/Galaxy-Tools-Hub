@@ -1,0 +1,201 @@
+.heroSection {
+  padding-top: 24px;
+  padding-bottom: 32px;
+
+  @include mobile {
+    padding-top: 16px;
+    padding-bottom: 24px;
+  }
+}
+
+.container {
+  @include container;
+}
+
+.heroGrid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.9fr 0.9fr;
+  gap: 20px;
+  min-height: 480px;
+
+  @include laptop {
+    grid-template-columns: 1.1fr 1fr 1fr;
+    gap: 16px;
+  }
+
+  @include tablet {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+// Left Content Block
+.leftCard {
+  background-color: #FFFFFF;
+  border: 1px solid #EAEAEA;
+  border-radius: 2px;
+  padding: 40px 36px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+
+  @include mobile {
+    padding: 24px 20px;
+  }
+}
+
+.industrialBadge {
+  background-color: $color-yellow;
+  color: $color-black;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  padding: 5px 10px;
+  text-transform: uppercase;
+  border-radius: 1px;
+  margin-bottom: 24px;
+  display: inline-block;
+
+  @include mobile {
+    margin-bottom: 16px;
+  }
+}
+
+.mainHeading {
+  font-size: clamp(26px, 3vw, 42px);
+  font-weight: 900;
+  line-height: 1.1;
+  color: $color-black;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+
+  @include mobile {
+    margin-bottom: 14px;
+  }
+}
+
+.description {
+  font-size: 14px;
+  line-height: 1.55;
+  color: #555555;
+  margin-bottom: 32px;
+  max-width: 440px;
+
+  @include mobile {
+    font-size: 13px;
+    margin-bottom: 24px;
+  }
+}
+
+.buttonGroup {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+
+  @include mobile {
+    width: 100%;
+    flex-direction: column;
+  }
+}
+
+.btnPrimary {
+  background-color: #1A1A1A;
+  color: #FFFFFF;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 13px 22px;
+  border: 1px solid #1A1A1A;
+  border-radius: 2px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background-color $transition-fast, transform $transition-fast;
+
+  &:hover {
+    background-color: #000000;
+  }
+
+  @include mobile {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+.btnSecondary {
+  background-color: #FFFFFF;
+  color: #1A1A1A;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 13px 22px;
+  border: 1px solid #D9D9D9;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: border-color $transition-fast, background-color $transition-fast;
+
+  &:hover {
+    border-color: #1A1A1A;
+    background-color: #F8F9FA;
+  }
+
+  @include mobile {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+// Media Promo Cards (Center & Right)
+.promoCard {
+  position: relative;
+  overflow: hidden;
+  border-radius: 2px;
+  border: 1px solid #EAEAEA;
+  min-height: 440px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 28px 24px;
+  background-size: cover;
+  background-position: center;
+
+  @include mobile {
+    min-height: 320px;
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,0.75) 100%);
+    pointer-events: none;
+  }
+}
+
+.promoContent {
+  position: relative;
+  z-index: 2;
+  color: #FFFFFF;
+}
+
+.promoTitle {
+  font-size: 22px;
+  font-weight: 800;
+  color: #FFFFFF;
+  margin-bottom: 6px;
+  letter-spacing: -0.01em;
+}
+
+.promoSubtitle {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.85);
+  text-transform: uppercase;
+}

@@ -1,0 +1,31 @@
+// Breakpoint definitions
+
+$bp-mobile-sm: 360px;
+$bp-mobile: 600px;
+$bp-tablet: 900px;
+$bp-laptop: 1200px;
+$bp-desktop: 1440px;
+
+@mixin mobile {
+  @media (max-width: #{$bp-mobile}) {
+    @content;
+  }
+}
+
+@mixin tablet {
+  @media (max-width: #{$bp-tablet}) {
+    @content;
+  }
+}
+
+@mixin laptop {
+  @media (max-width: #{$bp-laptop}) {
+    @content;
+  }
+}
+
+@mixin desktop-only {
+  @media (min-width: #{$bp-laptop + 1px}) {
+    @content;
+  }
+}

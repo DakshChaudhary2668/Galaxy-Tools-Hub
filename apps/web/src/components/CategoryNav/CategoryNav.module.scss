@@ -1,0 +1,57 @@
+.navContainer {
+  width: 100%;
+  background-color: #FFFFFF;
+  border-bottom: 1px solid #EAEAEA;
+}
+
+.inner {
+  @include container;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 36px;
+  height: 44px;
+  overflow-x: auto;
+  white-space: nowrap;
+  @include hide-scrollbar;
+
+  @include mobile {
+    gap: 20px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
+.navigationItem {
+  @include button-reset;
+  position: relative;
+  height: 100%;
+  display: inline-flex;
+  align-items: center;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #333333;
+  text-transform: uppercase;
+  transition: color $transition-fast;
+  padding: 0 4px;
+
+  &:hover {
+    color: $color-black;
+  }
+
+  &.active {
+    color: $color-black;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background-color: $color-yellow;
+      border-radius: 1.5px 1.5px 0 0;
+    }
+  }
+}
