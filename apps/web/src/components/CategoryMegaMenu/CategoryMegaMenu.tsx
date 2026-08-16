@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import {
-  Gauge, Shield, Flame, Thermometer, Zap, Activity, Battery, Scaling,
+  Gauge, Flame, Thermometer, Zap, Activity, Battery, Scaling,
   Volume2, Monitor, Radio, Cpu, Compass, Sun, Droplets, Wind, Eye, ArrowRight
 } from 'lucide-react';
 import styles from './CategoryMegaMenu.module.scss';

@@ -32,9 +32,10 @@
 | `d541b3f` | 2026-08-08 | Daksh Chaudhary | `backend` | **Production Hardening:** Integrated `express-rate-limit`, `/health` healthcheck endpoint, and `X-API-Version` middleware header. |
 | `09e63b7` | 2026-08-10 | Daksh Chaudhary | `web` | **Frontend Architecture Scaffold:** Configured Next.js 14, React Query (`QueryProvider`, hooks), service client layer, and initial UI component primitives. |
 | `71a52b8` | 2026-08-10 | Daksh Chaudhary | `refactor` | **Code Freeze & Utility Cleanup:** Standardized `sendSuccess` helper to options-object signature, consolidated `StorageService`, cleaned up stub routes. |
-| `188cedd` | 2026-08-12 | Daksh Chaudhary | `feature` | **Sprint 1 Variant & Order Lifecycle:** Built multi-variant SKU data model, real-time stock allocation/reservation, and checkout lifecycle handlers. |
 | `e28b93c` | 2026-08-12 | Daksh Chaudhary | `backend` | **PDP Aggregation & Stock Wiring:** Assembled unified PDP backend service combining product specs, variant options, stock counts, and brand metadata. |
 | `3027461` | 2026-08-13 | HarryInData | `web` | **Titan Industrial Design Integration:** Implemented SCSS token design system, responsive Navbar/Footer, Hero banner, Product Grid, and PDP views. |
+| `48e19d0` | 2026-08-16 | HarryInData | `docs` | **Project Change Report Handoff:** Added comprehensive project change report documentation. |
+| `9c82f01` | 2026-08-16 | Daksh Chaudhary | `bugfix/web` | **Clerk Key Validation & Dev Server Stability:** Added robust `isValidClerkPublishableKey` validation to prevent Edge runtime `atob` base64 decoding crashes, updated publishable keys to valid base64 key format, cleaned unused imports, and fixed Webpack chunk cache issues. |
 
 ---
 
