@@ -1,33 +1,66 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { CATEGORIES } from '../../data/products';
-import { CategoryMegaMenu } from '../CategoryMegaMenu/CategoryMegaMenu';
+import { CategoryMegaMenu, CATEGORY_MENUS } from '../CategoryMegaMenu/CategoryMegaMenu';
 import styles from './CategoryNav.module.scss';
 
-export const CategoryNav: React.FC = () => {
-  const [activeCategory, setActiveCategory] = useState('lab');
-  const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
-  const router = useRouter();
+/** IDs that have a mega-menu dropdown */
+const MENU_IDS = new Set(Object.keys(CATEGORY_MENUS));
 
-  const handleCategoryClick = (catId: string) => {
-    setActiveCategory(catId);
-    router.push('/category/lab-testing-items');
-  };
+export const CategoryNav: React.FC = () => {
+  const [openCategory, setOpenCategory] = useState<string | null>(null);
+  const navRef = useRef<HTMLDivElement>(null);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // ── open / close helpers ────────────────────────────────────────────────
+  const open = useCallback((id: string) => {
+    if (closeTimerRef.current) { clearTimeout(closeTimerRef.current); closeTimerRef.current = null; }
+    if (MENU_IDS.has(id)) setOpenCategory(id);
+  }, []);
+
+  const scheduleClose = useCallback(() => {
+    closeTimerRef.current = setTimeout(() => setOpenCategory(null), 120);
+  }, []);
+
+  const close = useCallback(() => setOpenCategory(null), []);
+
+  // ── outside click ───────────────────────────────────────────────────────
+  useEffect(() => {
+    const handler = (e: MouseEvent | TouchEvent) => {
+      if (navRef.current && !navRef.current.contains(e.target as Node)) close();
+    };
+    document.addEventListener('mousedown', handler);
+    document.addEventListener('touchstart', handler);
+    return () => { document.removeEventListener('mousedown', handler); document.removeEventListener('touchstart', handler); };
+  }, [close]);
+
+  // ── escape key ──────────────────────────────────────────────────────────
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') close(); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [close]);
+
+  // ── cleanup timer on unmount ────────────────────────────────────────────
+  useEffect(() => () => { if (closeTimerRef.current) clearTimeout(closeTimerRef.current); }, []);
 
   return (
-    <div style={{ position: 'relative', width: '100%' }}>
+    <div ref={navRef} style={{ position: 'relative', width: '100%' }}>
       <nav className={styles.navContainer} aria-label="Category Navigation">
         <div className={styles.inner}>
           {CATEGORIES.map((cat) => {
-            const isActive = cat.id === activeCategory;
+            const isOpen = cat.id === openCategory;
+            const hasMenu = MENU_IDS.has(cat.id);
             return (
               <button
                 key={cat.id}
-                className={`${styles.navigationItem} ${isActive ? styles.active : ''}`}
-                onClick={() => handleCategoryClick(cat.id)}
-                onMouseEnter={() => setHoveredCategory(cat.id)}
+                className={`${styles.navigationItem} ${isOpen ? styles.active : ''}`}
+                onClick={() => { isOpen ? close() : open(cat.id); }}
+                onMouseEnter={() => open(cat.id)}
+                onMouseLeave={scheduleClose}
+                aria-haspopup={hasMenu ? 'true' : undefined}
+                aria-expanded={hasMenu ? isOpen : undefined}
               >
                 {cat.label}
               </button>
@@ -36,11 +69,13 @@ export const CategoryNav: React.FC = () => {
         </div>
       </nav>
 
-      {hoveredCategory === 'lab' && (
-        <CategoryMegaMenu
-          categorySlug="lab-testing-items"
-          onClose={() => setHoveredCategory(null)}
-        />
+      {openCategory && MENU_IDS.has(openCategory) && (
+        <div
+          onMouseEnter={() => open(openCategory)}
+          onMouseLeave={scheduleClose}
+        >
+          <CategoryMegaMenu categoryId={openCategory} onClose={close} />
+        </div>
       )}
     </div>
   );

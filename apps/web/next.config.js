@@ -2,6 +2,7 @@ const path = require('path');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  outputFileTracingRoot: path.join(__dirname, '../../'),
   reactStrictMode: true,
   transpilePackages: ['@galaxy/ui', '@galaxy/types', '@galaxy/utils', '@galaxy/constants', '@galaxy/config'],
   sassOptions: {

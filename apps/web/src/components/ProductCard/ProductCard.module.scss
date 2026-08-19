@@ -154,3 +154,40 @@
   color: #666666;
   text-transform: uppercase;
 }
+
+.originalPrice {
+  font-size: 14px;
+  font-weight: 500;
+  color: #999999;
+  text-decoration: line-through;
+}
+
+.discountBadge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background-color: #111111;
+  color: #FFFFFF;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 3px 8px;
+  border-radius: 1px;
+  text-transform: uppercase;
+  z-index: 2;
+}
+
+.badge {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  background-color: $color-yellow;
+  color: $color-black;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 3px 8px;
+  border-radius: 1px;
+  text-transform: uppercase;
+  z-index: 2;
+}

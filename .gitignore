@@ -34,3 +34,8 @@ logs/
 
 # Turborepo
 .turbo
+
+# Reference files
+Home Page.html
+Home Page_files/
+*.zip

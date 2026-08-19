@@ -17,6 +17,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const router = useRouter();
 
   const formattedPrice = new Intl.NumberFormat('en-IN').format(product.price);
+  const formattedOriginal = product.originalPrice
+    ? new Intl.NumberFormat('en-IN').format(product.originalPrice)
+    : null;
 
   const handleCardClick = () => {
     router.push(`/product/${product.id}`);
@@ -27,6 +30,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       {/* Image Area */}
       <div className={styles.imageArea} onClick={handleCardClick} style={{ cursor: 'pointer' }}>
         <span className={styles.statusBadge}>{product.statusLabel}</span>
+        {product.badge && <span className={styles.badge}>{product.badge}</span>}
+        {product.discount && product.discount > 0 && (
+          <span className={styles.discountBadge}>{product.discount}% OFF</span>
+        )}
         <Image
           src={product.image}
           alt={product.name}
@@ -48,6 +55,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         </h3>
         <div className={styles.priceRow}>
           <span className={styles.price}>{product.currency}{formattedPrice}</span>
+          {formattedOriginal && (
+            <span className={styles.originalPrice}>{product.currency}{formattedOriginal}</span>
+          )}
           {product.gstIncluded && <span className={styles.gstLabel}>GST Inc.</span>}
         </div>
 

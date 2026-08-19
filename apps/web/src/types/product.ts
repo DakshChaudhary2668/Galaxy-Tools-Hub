@@ -12,6 +12,9 @@ export interface Product {
   image: string;
   secondaryAction?: 'SPECS' | 'QUOTE';
   technicalSpecs: string;
+  originalPrice?: number;
+  discount?: number;
+  badge?: string;
 }
 
 export interface TrustBadgeItem {

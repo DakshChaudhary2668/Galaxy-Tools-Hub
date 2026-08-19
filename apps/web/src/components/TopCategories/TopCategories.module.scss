@@ -1,0 +1,133 @@
+.section {
+  padding-top: 32px;
+  padding-bottom: 48px;
+  background-color: $color-bg-light;
+
+  @include mobile {
+    padding-top: 24px;
+    padding-bottom: 32px;
+  }
+}
+
+.container {
+  @include container;
+}
+
+.headerRow {
+  @include flex-between;
+  margin-bottom: 24px;
+  border-bottom: 2px solid $color-black;
+  padding-bottom: 12px;
+}
+
+.title {
+  font-size: 26px;
+  font-weight: 900;
+  color: $color-black;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+
+  @include mobile {
+    font-size: 20px;
+  }
+}
+
+.viewAllLink {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: $color-black;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: opacity $transition-fast;
+
+  &:hover {
+    opacity: 0.7;
+  }
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 20px;
+
+  @include laptop {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  @include tablet {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  @include mobile {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+}
+
+.card {
+  background-color: #FFFFFF;
+  border: 1px solid #EAEAEA;
+  border-radius: $radius-xs;
+  overflow: hidden;
+  transition: border-color $transition-fast, box-shadow $transition-fast;
+
+  &:hover {
+    border-color: #CCCCCC;
+    box-shadow: $shadow-hover;
+
+    .cardImage {
+      transform: scale(1.04);
+    }
+  }
+}
+
+.imageWrap {
+  width: 100%;
+  height: 140px;
+  overflow: hidden;
+  background-color: $color-bg-light;
+
+  @include mobile {
+    height: 110px;
+  }
+}
+
+.cardImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform $transition-medium;
+}
+
+.cardContent {
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cardName {
+  font-size: 13px;
+  font-weight: 800;
+  color: $color-black;
+  letter-spacing: -0.01em;
+}
+
+.explore {
+  font-size: 11px;
+  font-weight: 700;
+  color: #777777;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: color $transition-fast;
+  flex-shrink: 0;
+
+  .card:hover & {
+    color: $color-black;
+  }
+}

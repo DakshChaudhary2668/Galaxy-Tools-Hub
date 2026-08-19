@@ -1,0 +1,59 @@
+.section {
+  padding-top: 32px;
+  padding-bottom: 48px;
+  background-color: $color-bg-light;
+
+  @include mobile {
+    padding-top: 24px;
+    padding-bottom: 32px;
+  }
+}
+
+.container {
+  @include container;
+  text-align: center;
+}
+
+.title {
+  font-size: 26px;
+  font-weight: 900;
+  color: $color-black;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  margin-bottom: 28px;
+
+  @include mobile {
+    font-size: 20px;
+    margin-bottom: 20px;
+  }
+}
+
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+}
+
+.brandPill {
+  background-color: #FFFFFF;
+  border: 1px solid #E0E0E0;
+  border-radius: $radius-xs;
+  padding: 12px 28px;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: $color-black;
+  text-transform: uppercase;
+  transition: border-color $transition-fast, box-shadow $transition-fast;
+
+  &:hover {
+    border-color: $color-black;
+    box-shadow: $shadow-hover;
+  }
+
+  @include mobile {
+    padding: 10px 20px;
+    font-size: 12px;
+  }
+}

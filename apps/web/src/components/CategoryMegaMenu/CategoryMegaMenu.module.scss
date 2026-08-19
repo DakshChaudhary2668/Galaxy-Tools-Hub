@@ -18,19 +18,14 @@
 
 .megaGrid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
   gap: 20px 24px;
 
-  @include laptop {
-    grid-template-columns: repeat(4, 1fr);
-  }
-
   @include tablet {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, 1fr) !important;
   }
 
   @include mobile {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
   }
 }
 
