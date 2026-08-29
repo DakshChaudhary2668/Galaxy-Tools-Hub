@@ -2,14 +2,24 @@ import { Request, Response, NextFunction } from 'express';
 import { OrderService } from '../services/order.service';
 import { sendSuccess } from '../utils/response';
 import { AppError } from '../utils/app-error';
+import { OrderStatusType } from '@galaxy/constants';
 
 const orderService = new OrderService();
 
 export async function getOrders(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 20;
-    const orders = await orderService.listOrders(limit);
-    sendSuccess(res, { data: orders, message: 'Orders retrieved successfully' });
+    const result = await orderService.listOrdersWithFilters(req.query);
+    sendSuccess(res, {
+      data: result.orders,
+      message: 'Orders retrieved successfully',
+      meta: {
+        page: result.page,
+        limit: result.limit,
+        total: result.total,
+        totalPages: result.totalPages,
+        hasMore: result.page < result.totalPages
+      }
+    });
   } catch (error) {
     next(error);
   }
@@ -17,11 +27,37 @@ export async function getOrders(req: Request, res: Response, next: NextFunction)
 
 export async function getOrderById(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const order = await orderService.getOrderById(req.params.id);
-    if (!order) {
+    const details = await orderService.getOrderDetailsFull(req.params.id);
+    if (!details) {
       return next(new AppError('Order not found', 404));
     }
-    sendSuccess(res, { data: order, message: 'Order details retrieved successfully' });
+    sendSuccess(res, { data: details, message: 'Order details retrieved successfully' });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function updateOrderStatusAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { status } = req.body;
+    if (!status) {
+      return next(new AppError('Target status is required', 400));
+    }
+
+    const orderId = req.params.id;
+    let updated;
+
+    if (status === 'Cancelled') {
+      updated = await orderService.cancelOrder(orderId);
+    } else if (status === 'Refunded') {
+      updated = await orderService.refundOrder(orderId);
+    } else if (status === 'Paid') {
+      updated = await orderService.markPaid(orderId);
+    } else {
+      updated = await orderService.transitionStatus(orderId, status as OrderStatusType);
+    }
+
+    sendSuccess(res, { data: updated, message: `Order status updated to ${status}` });
   } catch (error) {
     next(error);
   }

@@ -15,6 +15,7 @@ export interface Product {
   originalPrice?: number;
   discount?: number;
   badge?: string;
+  sku?: string;
 }
 
 export interface TrustBadgeItem {

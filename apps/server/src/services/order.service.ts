@@ -183,6 +183,115 @@ export class OrderService {
     return this.orderRepository.findById(id);
   }
 
+  async getOrderDetailsFull(id: string) {
+    const order = await this.orderRepository.findById(id);
+    if (!order) return null;
+
+    const [itemsRes, addressRes, paymentRes] = await Promise.allSettled([
+      supabaseAdmin.from('order_items').select('*').eq('order_id', id),
+      supabaseAdmin.from('order_addresses').select('*').eq('order_id', id).limit(1),
+      supabaseAdmin.from('payments').select('*').eq('order_id', id).order('created_at', { ascending: false }).limit(1)
+    ]);
+
+    const items = itemsRes.status === 'fulfilled' && itemsRes.value.data ? itemsRes.value.data : [];
+    const address = addressRes.status === 'fulfilled' && addressRes.value.data ? addressRes.value.data[0] || null : null;
+    const payment = paymentRes.status === 'fulfilled' && paymentRes.value.data ? paymentRes.value.data[0] || null : null;
+
+    return {
+      order,
+      items,
+      address,
+      payment
+    };
+  }
+
+  async listOrdersWithFilters(params: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    status?: string;
+    paymentStatus?: string;
+    dateRange?: string;
+  }) {
+    const page = Math.max(Number(params.page) || 1, 1);
+    const limit = Math.min(Math.max(Number(params.limit) || 20, 1), 100);
+    const offset = (page - 1) * limit;
+
+    let query = supabaseAdmin
+      .from('orders')
+      .select('*, order_addresses(full_name, phone, city, state), order_items(id, product_name, quantity, unit_price)', { count: 'exact' });
+
+    // Status filter
+    if (params.status && params.status !== 'ALL') {
+      query = query.eq('status', params.status);
+    }
+
+    // Payment Status filter
+    if (params.paymentStatus && params.paymentStatus !== 'ALL') {
+      query = query.eq('payment_status', params.paymentStatus);
+    }
+
+    // Date Range filter
+    if (params.dateRange && params.dateRange !== 'all') {
+      const now = new Date();
+      if (params.dateRange === 'today') {
+        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+        query = query.gte('created_at', todayStart);
+      } else if (params.dateRange === '7d') {
+        const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+        query = query.gte('created_at', sevenDaysAgo);
+      } else if (params.dateRange === '30d') {
+        const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
+        query = query.gte('created_at', thirtyDaysAgo);
+      }
+    }
+
+    // Search filter
+    if (params.search && params.search.trim()) {
+      const s = params.search.trim();
+      query = query.or(`order_number.ilike.%${s}%,customer_notes.ilike.%${s}%`);
+    }
+
+    query = query.order('created_at', { ascending: false }).range(offset, offset + limit - 1);
+
+    const { data, count, error } = await query;
+    if (error) throw new Error(error.message);
+
+    const orders = (data || []).map((ord: any) => {
+      let customerName = 'Guest Customer';
+      let customerPhone = '';
+      if (Array.isArray(ord.order_addresses) && ord.order_addresses[0]) {
+        customerName = ord.order_addresses[0].full_name || customerName;
+        customerPhone = ord.order_addresses[0].phone || '';
+      } else if (ord.customer_notes && ord.customer_notes.includes('Contact:')) {
+        const match = ord.customer_notes.match(/Contact:\s*([^|]+)/);
+        if (match && match[1]) customerName = match[1].trim();
+      }
+
+      const itemCount = Array.isArray(ord.order_items)
+        ? ord.order_items.reduce((sum: number, item: any) => sum + (item.quantity || 1), 0)
+        : 0;
+
+      return {
+        ...ord,
+        customerName,
+        customerPhone,
+        itemCount
+      };
+    });
+
+    const total = count || orders.length;
+    const totalPages = Math.ceil(total / limit) || 1;
+
+    return {
+      orders,
+      total,
+      page,
+      limit,
+      totalPages
+    };
+  }
+
   async listOrders(limit = 20): Promise<OrderDto[]> {
     return this.orderRepository.list(limit);
   }

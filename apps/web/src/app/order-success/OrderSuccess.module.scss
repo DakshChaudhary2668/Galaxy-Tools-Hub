@@ -1,0 +1,339 @@
+.pageWrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #F8F9FA;
+}
+
+.container {
+  @include container;
+  max-width: 900px;
+  padding-top: 40px;
+  padding-bottom: 80px;
+  flex: 1;
+}
+
+.successCard {
+  background-color: #FFFFFF;
+  border: 1px solid #E0E0E0;
+  border-radius: 6px;
+  box-shadow: $shadow-card;
+  overflow: hidden;
+}
+
+/* Header Banner */
+.headerBanner {
+  background: linear-gradient(135deg, #111111 0%, #1F2937 100%);
+  color: #FFFFFF;
+  padding: 40px 32px;
+  text-align: center;
+  position: relative;
+
+  .iconCircle {
+    width: 64px;
+    height: 64px;
+    background-color: #10B981;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+  }
+
+  h1 {
+    font-size: 26px;
+    font-weight: 900;
+    letter-spacing: 0.02em;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+
+  p {
+    font-size: 14px;
+    color: #D1D5DB;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+}
+
+/* Status Quick Bar */
+.statusQuickBar {
+  background-color: #F9FAFB;
+  border-bottom: 1px solid #EEEEEE;
+  padding: 16px 32px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .statItem {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    .statLabel {
+      font-size: 11px;
+      font-weight: 700;
+      color: #6B7280;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .statValue {
+      font-size: 14px;
+      font-weight: 800;
+      color: $color-black;
+
+      &.paidTag {
+        color: #059669;
+      }
+    }
+  }
+}
+
+/* Card Body */
+.cardBody {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+
+  @media (max-width: 640px) {
+    padding: 20px;
+  }
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  h3 {
+    font-size: 15px;
+    font-weight: 800;
+    color: $color-black;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #EEEEEE;
+  }
+}
+
+/* Delivery Details Box */
+.infoBox {
+  background-color: #F8F9FA;
+  border: 1px solid #E5E7EB;
+  border-radius: 4px;
+  padding: 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  font-size: 13px;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+
+  .infoGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    span.infoTitle {
+      font-weight: 700;
+      color: #374151;
+    }
+
+    span.infoContent {
+      color: #4B5563;
+      line-height: 1.5;
+    }
+  }
+}
+
+/* Order Items Table */
+.itemsTable {
+  border: 1px solid #E5E7EB;
+  border-radius: 4px;
+  overflow: hidden;
+
+  .itemRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid #F3F4F6;
+    font-size: 13px;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .itemMain {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+
+      .itemName {
+        font-weight: 700;
+        color: $color-black;
+      }
+
+      .itemSku {
+        font-size: 11px;
+        color: #6B7280;
+        font-family: monospace;
+      }
+    }
+
+    .itemRight {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+
+      .itemQty {
+        color: #4B5563;
+        font-weight: 600;
+      }
+
+      .itemPrice {
+        font-weight: 800;
+        color: $color-black;
+        min-width: 80px;
+        text-align: right;
+      }
+    }
+  }
+}
+
+/* Pricing Breakdown */
+.totalsBox {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background-color: #F9FAFB;
+  border: 1px solid #E5E7EB;
+  border-radius: 4px;
+  padding: 16px;
+  max-width: 360px;
+  margin-left: auto;
+  width: 100%;
+
+  .totalLine {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #4B5563;
+
+    &.grandTotal {
+      font-size: 16px;
+      font-weight: 900;
+      color: $color-black;
+      padding-top: 8px;
+      margin-top: 4px;
+      border-top: 1px solid #E5E7EB;
+    }
+  }
+}
+
+/* Dispatch Guarantee */
+.dispatchNotice {
+  background-color: #EFF6FF;
+  border: 1px solid #BFDBFE;
+  border-radius: 4px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: #1E40AF;
+  font-weight: 600;
+}
+
+/* Action Buttons */
+.actionRow {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+  }
+}
+
+.primaryBtn {
+  @include button-reset;
+  @include flex-center;
+  flex: 1;
+  height: 48px;
+  background-color: $color-yellow;
+  color: $color-black;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 4px;
+  text-decoration: none;
+  gap: 8px;
+  transition: background-color $transition-fast;
+
+  &:hover {
+    background-color: $color-yellow-hover;
+  }
+}
+
+.secondaryBtn {
+  @include button-reset;
+  @include flex-center;
+  flex: 1;
+  height: 48px;
+  background-color: #FFFFFF;
+  color: $color-black;
+  border: 1px solid #D1D5DB;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 4px;
+  text-decoration: none;
+  gap: 8px;
+  transition: background-color $transition-fast, border-color $transition-fast;
+
+  &:hover {
+    background-color: #F3F4F6;
+    border-color: #111111;
+  }
+}
+
+/* Loading & Error States */
+.stateCard {
+  background-color: #FFFFFF;
+  border: 1px solid #E0E0E0;
+  border-radius: 6px;
+  padding: 64px 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  box-shadow: $shadow-card;
+
+  h2 {
+    font-size: 22px;
+    font-weight: 800;
+    color: $color-black;
+  }
+
+  p {
+    font-size: 14px;
+    color: #666666;
+    max-width: 440px;
+  }
+}

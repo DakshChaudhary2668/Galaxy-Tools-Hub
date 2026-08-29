@@ -148,7 +148,10 @@ export const CategorySchema = z.object({
 export type CategoryDto = z.infer<typeof CategorySchema>;
 
 export const CreateCategorySchema = CategorySchema.omit({ id: true, created_at: true, updated_at: true });
+export type CreateCategoryDto = z.infer<typeof CreateCategorySchema>;
+
 export const UpdateCategorySchema = CreateCategorySchema.partial();
+export type UpdateCategoryDto = z.infer<typeof UpdateCategorySchema>;
 
 // --- 7. TAX RATES ---
 export const TaxRateSchema = z.object({
@@ -198,7 +201,10 @@ export const ProductSchema = z.object({
 export type ProductDto = z.infer<typeof ProductSchema>;
 
 export const CreateProductSchema = ProductSchema.omit({ id: true, created_at: true, updated_at: true });
+export type CreateProductDto = z.infer<typeof CreateProductSchema>;
+
 export const UpdateProductSchema = CreateProductSchema.partial();
+export type UpdateProductDto = z.infer<typeof UpdateProductSchema>;
 
 // Optimized Product Card DTO (Listings, Search, Catalog grids)
 export const ProductCardSchema = ProductSchema.pick({
@@ -432,6 +438,42 @@ export const OrderSchema = z.object({
   updated_at: z.string().optional()
 });
 export type OrderDto = z.infer<typeof OrderSchema>;
+
+// --- 16b. COUPONS & DISCOUNTS ---
+export const DiscountType = {
+  PERCENTAGE: 'PERCENTAGE',
+  FIXED: 'FIXED'
+} as const;
+export type DiscountType = (typeof DiscountType)[keyof typeof DiscountType];
+
+export const CouponSchema = z.object({
+  id: z.string().uuid(),
+  code: z.string().min(1),
+  discount_type: z.enum([DiscountType.PERCENTAGE, DiscountType.FIXED]).default(DiscountType.PERCENTAGE),
+  discount_value: z.number().positive(),
+  min_order_value: z.number().min(0).default(0),
+  max_discount_amount: z.number().min(0).nullable().optional(),
+  usage_limit: z.number().int().positive().nullable().optional(),
+  usage_count: z.number().int().min(0).default(0),
+  per_customer_limit: z.number().int().positive().default(1),
+  start_date: z.string().nullable().optional(),
+  end_date: z.string().nullable().optional(),
+  is_active: z.boolean().default(true),
+  created_at: z.string().optional(),
+  updated_at: z.string().optional()
+});
+export type CouponDto = z.infer<typeof CouponSchema>;
+
+export const CreateCouponSchema = CouponSchema.omit({
+  id: true,
+  usage_count: true,
+  created_at: true,
+  updated_at: true
+});
+export type CreateCouponDto = z.infer<typeof CreateCouponSchema>;
+
+export const UpdateCouponSchema = CreateCouponSchema.partial();
+export type UpdateCouponDto = z.infer<typeof UpdateCouponSchema>;
 
 export const OrderItemSchema = z.object({
   id: z.string().uuid(),

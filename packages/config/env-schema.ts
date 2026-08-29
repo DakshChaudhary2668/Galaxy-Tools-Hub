@@ -7,7 +7,9 @@ export const ServerEnvSchema = z.object({
   SUPABASE_ANON_KEY: z.string().min(1),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
   CLERK_SECRET_KEY: z.string().min(1),
-  CORS_ORIGIN: z.string().default('http://localhost:3000')
+  CORS_ORIGIN: z.string().default('http://localhost:3000'),
+  RAZORPAY_KEY_ID: z.string().optional(),
+  RAZORPAY_KEY_SECRET: z.string().optional()
 });
 
 export const WebEnvSchema = z.object({

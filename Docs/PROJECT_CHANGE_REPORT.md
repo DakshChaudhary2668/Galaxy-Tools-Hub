@@ -1,69 +1,123 @@
-# Galaxy Tools Hub — Comprehensive Project Change Report
+# Galaxy Tools Hub — Comprehensive Project Change & Architecture Report
 
-> **Generated:** 2026-08-14  
+> **Last Updated:** 2026-08-29  
 > **Repository:** [Galaxy-Tools-Hub](https://github.com/DakshChaudhary2668/Galaxy-Tools-Hub.git)  
-> **Scope:** Full Codebase Evolution & Architecture Transition (Initial Commit → Sprint 1 Release)
+> **Scope:** Full Codebase Evolution & Architecture Transition (Initial Scaffold → Core E-Commerce Checkout → Enterprise Admin Panel Suite Release)
 
 ---
 
-## Executive Summary
+## 1. Executive Summary
 
-**Galaxy Tools Hub** has evolved from an initial enterprise monorepo scaffold into a fully production-ready e-commerce platform specifically architected for industrial tools, equipment, and dealer/reseller workflows.
+**Galaxy Tools Hub** has evolved from an initial monorepo scaffold into a complete, enterprise-grade e-commerce application and operational management platform specifically tailored for B2B/B2C industrial tools, testing equipment, and dealer supply chains.
 
-### Key Milestones Achieved
-1. **Monorepo & Build System:** Enterprise TurboRepo + PNPM workspace establishing clean package boundaries (`apps/web`, `apps/server`, `packages/types`, `packages/constants`, `packages/config`, `packages/utils`).
-2. **Database v2.0 Overhaul:** Transitioned from a 15-table admin prototype to a 28-table production PostgreSQL schema with Row Level Security (RLS), multi-variant tracking, and complete financial audit trails.
-3. **Backend Core & Production Hardening:** Express.js application featuring repository pattern, controller layer, rate limiting, health monitoring, API version headers, and transactional order/inventory lifecycle handlers.
-4. **Sprint 1 Variant & Inventory Architecture:** Full implementation of SKU multi-variants, real-time inventory level tracking, stock reservation during checkout, and aggregated PDP (Product Detail Page) API endpoints.
-5. **Modern Web Frontend:** Next.js 14 App Router client powered by TanStack React Query, custom service hooks, modular UI library, and the **Titan Industrial Design System** implemented via Vanilla SCSS tokens.
-
----
-
-## Detailed Chronological Commit Log & Impact Analysis
-
-| Commit | Date | Author | Category | Description & Key Impact |
-|:---|:---|:---|:---|:---|
-| `07a86cc` | 2026-08-08 | Daksh Chaudhary | `scaffold` | **Monorepo Architecture Bootstrap:** Initialized PNPM workspace with TurboRepo pipeline managing `apps/web` and `apps/server`. |
-| `7f27ec7` | 2026-08-08 | HarryInData | `docs/db` | **Database Schema v2.0 Overhaul:** Standardized 28-table PostgreSQL schema in `Docs/schema.sql` and `Docs/DatabaseGuide.md`. |
-| `50824d7` | 2026-08-08 | Daksh Chaudhary | `backend` | **Backend Foundation & Catalog Module:** Established Express server layout with Repository Pattern (`base.repository.ts`, `product.repository.ts`), controllers, and auth middleware. |
-| `3693f43` | 2026-08-08 | Daksh Chaudhary | `infra/db` | **Supabase Integration & Skill Set:** Configured Supabase Auth client, Postgres best-practice guides, and environment validation schemas. |
-| `7d22bdb` | 2026-08-08 | Daksh Chaudhary | `backend` | **Seed Data & API Test Collections:** Created comprehensive SQL seed data (`Docs/seed.sql`), Postman (`GalaxyToolsHub.postman_collection.json`), and Bruno collections. |
-| `feab3f9` | 2026-08-08 | Daksh Chaudhary | `config` | **Backend Port Standardization:** Updated Express server port from `5000` to `8000` across environment files and docs to prevent local conflicts. |
-| `d541b3f` | 2026-08-08 | Daksh Chaudhary | `backend` | **Production Hardening:** Integrated `express-rate-limit`, `/health` healthcheck endpoint, and `X-API-Version` middleware header. |
-| `09e63b7` | 2026-08-10 | Daksh Chaudhary | `web` | **Frontend Architecture Scaffold:** Configured Next.js 14, React Query (`QueryProvider`, hooks), service client layer, and initial UI component primitives. |
-| `71a52b8` | 2026-08-10 | Daksh Chaudhary | `refactor` | **Code Freeze & Utility Cleanup:** Standardized `sendSuccess` helper to options-object signature, consolidated `StorageService`, cleaned up stub routes. |
-| `e28b93c` | 2026-08-12 | Daksh Chaudhary | `backend` | **PDP Aggregation & Stock Wiring:** Assembled unified PDP backend service combining product specs, variant options, stock counts, and brand metadata. |
-| `3027461` | 2026-08-13 | HarryInData | `web` | **Titan Industrial Design Integration:** Implemented SCSS token design system, responsive Navbar/Footer, Hero banner, Product Grid, and PDP views. |
-| `48e19d0` | 2026-08-16 | HarryInData | `docs` | **Project Change Report Handoff:** Added comprehensive project change report documentation. |
-| `9c82f01` | 2026-08-16 | Daksh Chaudhary | `bugfix/web` | **Clerk Key Validation & Dev Server Stability:** Added robust `isValidClerkPublishableKey` validation to prevent Edge runtime `atob` base64 decoding crashes, updated publishable keys to valid base64 key format, cleaned unused imports, and fixed Webpack chunk cache issues. |
+### Core Milestones Achieved
+1. **Monorepo & Build System:** PNPM workspaces + TurboRepo pipeline managing `apps/web` (Next.js 15 App Router), `apps/server` (Express.js TypeScript), `packages/types`, `packages/constants`, `packages/config`, and `packages/utils`.
+2. **Customer E-Commerce Engine:** Complete cart management, dynamic tax/shipping calculation, Razorpay Standard Checkout SDK integration with HMAC SHA-256 server-side signature verification, and visual order receipt pages.
+3. **Enterprise Admin Panel (`/admin`):** 12 comprehensive administrative sub-modules including Dashboard, Orders, Products, Categories, Inventory Control, Customer Management, Promotions/Coupons, Analytics, and Store Settings.
+4. **Database & RBAC Security:** Dual-layer authentication (Clerk for internal staff + Supabase Auth for customer accounts), zero-trust credential isolation, and atomic inventory reservation lifecycles.
+5. **Verified Production Builds:** Zero TypeScript errors, zero ESLint blocking issues, and clean Next.js 15 production compilation (`apps/web`) alongside TypeScript server bundle generation (`apps/server`).
 
 ---
 
-## Architectural Breakdown by Domain
+## 2. Chronological Commit & Major Implementation Log
 
-### 1. Database & Data Layer (`Docs/schema.sql`, `packages/types`)
-- **Tables (28):** `admin_users`, `profiles`, `categories`, `brands`, `vendors`, `products`, `product_variants`, `inventory_levels`, `orders`, `order_items`, `payment_verifications`, `carts`, `cart_items`, `wishlists`, `reviews`, etc.
-- **Data Integrity:** Strict foreign key constraints (`ON DELETE RESTRICT` on catalog items), explicit `CHECK` constraints on status fields, and index coverage across foreign keys and search paths.
-- **Multi-Variant Support:** Products map to distinct SKU variants (`product_variants`) with individual pricing, specifications, and stock allocations (`inventory_levels`).
-
-### 2. Backend Services (`apps/server`)
-- **Architecture:** Express.js using a Repository Pattern isolating DB operations from Controllers.
-- **API Response Ergonomics:** `sendSuccess` helper enforcing uniform JSON responses (`{ success: true, message, data, meta }`).
-- **Security & Reliability:**
-  - Rate limiting via `express-rate-limit`.
-  - Service monitoring via `/health` endpoint returning system uptime and memory metrics.
-  - Header inspection via `X-API-Version` middleware.
-
-### 3. Frontend Web Application (`apps/web`)
-- **Framework:** Next.js 14 App Router.
-- **State & Data Fetching:** TanStack React Query with centralized query key factory (`queryKeys.ts`) and modular hooks (`useProducts`, `useProduct`, `useOrders`, `useBrands`, `useCategories`).
-- **Design System:** **Titan Industrial Design System** built with Vanilla SCSS (`_tokens.scss`, `_variables.scss`, `_mixins.scss`, `_grid.scss`, `animations.scss`), delivering dark-mode glassmorphism, micro-animations, and high visual appeal without external UI framework overhead.
-- **UI Components:** Modular component library (`Button`, `Badge`, `Card`, `Modal`, `Input`, `Pagination`, `Skeleton`, `Spinner`).
+| Phase / Release | Category | Description & Impact | Key Files Created / Modified |
+| :--- | :--- | :--- | :--- |
+| **Monorepo Bootstrap** | `scaffold` | Initialized PNPM workspace with TurboRepo pipeline managing `apps/web` and `apps/server`. | `pnpm-workspace.yaml`, `package.json`, `turbo.json` |
+| **Database v2.0 Overhaul** | `database` | Designed 28-table schema with RLS, variant tracking, audit trails, and foreign key safety. | `Docs/schema.sql`, `Docs/DatabaseGuide.md` |
+| **Backend Core Architecture** | `backend` | Repository pattern (`base.repository.ts`), rate limiting, `/health` monitoring, and response standardizer. | `apps/server/src/controllers/`, `apps/server/src/repositories/` |
+| **Customer Cart Page** | `web/cart` | Responsive cart view (`/cart`) with quantity modifiers, 18% inclusive GST calculations, and ₹50,000 free shipping rule (₹500 flat fee). | `apps/web/src/app/cart/page.tsx`, `Cart.module.scss` |
+| **Razorpay Checkout Engine** | `checkout/payment` | Multi-step checkout (`/checkout`), Razorpay Node.js SDK config, order creation (`POST /api/v1/payments/create-order`), and HMAC verification (`POST /api/v1/payments/verify`). | `apps/server/src/controllers/payment.controller.ts`, `apps/web/src/app/checkout/` |
+| **Order Confirmation UX** | `web/orders` | Visual tracking receipt (`/order-success`), transaction status badge, payment mode, and order reference summary. | `apps/web/src/app/order-success/page.tsx`, `OrderSuccess.module.scss` |
+| **Admin Panel Layout Shell** | `admin/shell` | Dark industrial sidebar (`#0F172A`), active indicators, mobile drawer collapse, notification top bar, and role badges. | `apps/web/src/app/admin/layout.tsx`, `AdminLayout.module.scss` |
+| **Admin Operational Dashboard** | `admin/dashboard` | 6 KPI cards, revenue & order timeline charts (`7d`, `30d`, `3m`, `1y`), recent orders feed, and low-stock alerts. | `apps/web/src/app/admin/dashboard/page.tsx`, `apps/server/src/controllers/analytics.controller.ts` |
+| **Admin Order Management** | `admin/orders` | Server-side paginated orders table with search, fulfillment/payment filters, order detail inspector (`/admin/orders/[id]`), state machine transitions, and inventory auto-release hooks. | `apps/web/src/app/admin/orders/`, `apps/server/src/controllers/order.controller.ts` |
+| **Admin Product Management** | `admin/products` | Catalog table, product creator (`/new`), product editor (`/[id]/edit`), SKU uniqueness validation, dynamic technical specifications builder, and safe delete protection. | `apps/web/src/app/admin/products/`, `apps/server/src/controllers/product.controller.ts` |
+| **Admin Category Management** | `admin/categories` | Dynamic category manager with live product count badges, unique slug generation, circular parentage prevention (`parent_id !== id`), and safe delete checks. | `apps/web/src/app/admin/categories/page.tsx`, `apps/server/src/controllers/category.controller.ts` |
+| **Admin Customer Intelligence** | `admin/customers` | Customer directory (`/admin/customers`), profile inspection (`/admin/customers/[id]`), lifetime spend and order metrics, address book, zero credential exposure. | `apps/web/src/app/admin/customers/`, `apps/server/src/controllers/customer.controller.ts` |
+| **Admin Coupon & Discount Suite** | `admin/coupons` | Promotions manager with live status engine (`ACTIVE`, `SCHEDULED`, `EXPIRED`, `DISABLED`), create/edit modal, and server-side discount validator (`POST /api/v1/coupons/validate`). | `apps/web/src/app/admin/coupons/`, `apps/server/src/controllers/coupon.controller.ts` |
+| **Admin Business Analytics** | `admin/analytics` | Dedicated business analytics dashboard with date presets & custom range pickers, net revenue calculations (excluding failed/cancelled orders), AOV equation, visual timelines, and category breakdowns. | `apps/web/src/app/admin/analytics/`, `apps/server/src/controllers/analytics.controller.ts` |
+| **Admin Settings & Governance** | `admin/settings` | Multi-tab settings panel (Store Profile, Commerce & 18% GST, Masked Razorpay Gateway Status, Notification Policies, Admin Team RBAC, and System Architecture). | `apps/web/src/app/admin/settings/`, `apps/server/src/controllers/settings.controller.ts` |
+| **Admin Inventory Control** | `admin/inventory` | Real-time warehouse inventory table, reserved order allocations, sellable stock counts, inline quick stock adjustment, and low-stock filters. | `apps/web/src/app/admin/inventory/`, `apps/server/src/controllers/inventory.controller.ts` |
+| **Production QA & Security Audit** | `qa/build` | Comprehensive end-to-end audit, type check (`tsc --noEmit`), Next.js 15 production compilation, and secret isolation verification. | Full monorepo audit suite |
 
 ---
 
-## Summary of Verification & Status
+## 3. Detailed Architecture Breakdown
 
-- **Working Tree:** Clean (`git status` verified).
-- **Branch:** `main` (up to date with `origin/main`).
-- **Build & Architecture:** Production-ready and stabilized.
+### 3.1. Frontend Web Architecture (`apps/web`)
+- **Framework:** Next.js 15 App Router with TypeScript.
+- **Styling Architecture:** Titan Industrial SCSS Token System (`_variables.scss`, `_mixins.scss`, `_breakpoints.scss`, `globals.scss`) providing B2B dark slate styling (`#0F172A`), high-contrast warning accents (`#F5C710`), dense operational data tables, and glassmorphic card overlays.
+- **Client Services Layer:**
+  - `product.service.ts`: Products catalog & CRUD operations.
+  - `category.service.ts`: Categories listing & management.
+  - `order.service.ts`: Order lifecycle, pagination, and transitions.
+  - `payment.service.ts`: Razorpay integration & verification.
+  - `analytics.service.ts`: Dashboard summaries & deep analytics.
+  - `customer.service.ts`: Customer profile intelligence.
+  - `coupon.service.ts`: Promotional vouchers & checkout validator.
+  - `inventory.service.ts`: Warehouse stock adjustments.
+  - `settings.service.ts`: Store parameters & RBAC team.
+
+### 3.2. Backend REST Architecture (`apps/server`)
+- **Runtime:** Express.js + TypeScript running on Port 8000.
+- **Database Client:** Supabase PostgreSQL with `supabaseAdmin` service client.
+- **Security & RBAC Middleware:**
+  - `adminAuthGuard`: Authenticates Clerk JWT tokens for admin endpoints.
+  - `rbacGuard`: Enforces fine-grained role permissions (`OWNER`, `MANAGER`, `STAFF`).
+  - `express-rate-limit`: Protects against brute-force attacks on public endpoints.
+- **Mounted API Endpoints:**
+  - `/api/v1/auth`: Authentication and admin user session handlers.
+  - `/api/v1/categories`: Category taxonomy and product associations.
+  - `/api/v1/products`: Product catalog, SKU lookups, and inventory sync.
+  - `/api/v1/orders`: Order creation, timeline management, and status transitions.
+  - `/api/v1/payments`: Razorpay order creation and HMAC SHA-256 verification.
+  - `/api/v1/analytics`: Dashboard operational summaries and detailed analytics.
+  - `/api/v1/customers`: Customer intelligence and lifetime metrics.
+  - `/api/v1/coupons`: Voucher creation, status engine, and checkout validation.
+  - `/api/v1/settings`: Store configuration and admin team management.
+  - `/api/v1/inventory`: Warehouse stock tracking and quick adjustments.
+
+### 3.3. Shared Types & Constants (`packages/types`, `packages/constants`)
+- **Types:** Fully typed DTOs and Zod validation schemas for `ProductSchema`, `OrderSchema`, `CategorySchema`, `AdminUserSchema`, `CouponSchema`, `InventorySchema`, and `PaymentVerificationSchema`.
+- **Constants:** Centralized enums for `OrderStatus`, `PaymentStatus`, `Roles`, `DiscountType`, and `StockStatus`.
+
+---
+
+## 4. Key Security & Operational Guarantees
+
+1. **Zero Frontend Secret Exposure:**
+   - `RAZORPAY_KEY_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`, `CLERK_SECRET_KEY`, and database credentials reside strictly on the server in `.env`.
+   - The settings panel exposes only masked public identifiers (e.g. `rzp_test_5••••••••••••`).
+2. **Server-Side Financial & Discount Authority:**
+   - Order payment verification is impossible without valid HMAC SHA-256 signatures from Razorpay.
+   - Discount calculations are strictly evaluated and recalculated server-side; client subtotal tamperings are rejected.
+3. **Data Protection & Foreign Key Safety:**
+   - Active products referenced by historical orders cannot be destructively hard-deleted.
+   - Categories containing assigned products cannot be deleted without reassigning inventory.
+   - Circular category hierarchy (`parent_id === id`) is blocked.
+   - Coupons used in previous orders are deactivated/archived rather than cascade deleted.
+4. **Customer Data Privacy:**
+   - Passwords, cryptographic hashes, session tokens, and secrets are never selected or exposed in customer profile APIs.
+
+---
+
+## 5. Verification & Build Results
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ Monorepo Verification & Production Build Suite              │
+├──────────────────────────────┬──────────────────────────────┤
+│ apps/web Type Check (TSC)    │ PASS (0 errors, 0 warnings)  │
+│ apps/server Type Check (TSC) │ PASS (0 errors, 0 warnings)  │
+│ apps/server Build (TSC)      │ PASS (Compiled to dist/)     │
+│ apps/web Production Build    │ PASS (Next.js 15.5.23)       │
+│ Active Development Servers   │ RUNNING (Port 3000 & 8000)   │
+└──────────────────────────────┴──────────────────────────────┘
+```
+
+---
+
+## 6. Repository Status
+- **Main Branch:** Up-to-date and stabilized.
+- **Production Status:** Fully functional and ready for deployment.

@@ -2,11 +2,14 @@
 
 import React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { X, Trash2, ShoppingBag, ArrowRight } from 'lucide-react';
 import { useCartStore } from '../../store/useCartStore';
 import styles from './CartDrawer.module.scss';
 
 export const CartDrawer: React.FC = () => {
+  const router = useRouter();
   const { items, isOpen, toggleDrawer, updateQuantity, removeFromCart } = useCartStore();
 
   if (!isOpen) return null;
@@ -87,10 +90,25 @@ export const CartDrawer: React.FC = () => {
               <span>Est. Total (GST Inc.):</span>
               <span>₹{formattedTotal}</span>
             </div>
-            <button className={styles.checkoutBtn}>
-              <span>SUBMIT QUOTE REQUEST</span>
-              <ArrowRight size={16} />
-            </button>
+            <div className={styles.actionButtons}>
+              <Link
+                href="/cart"
+                className={styles.viewCartBtn}
+                onClick={() => toggleDrawer(false)}
+              >
+                VIEW CART
+              </Link>
+              <button
+                className={styles.checkoutBtn}
+                onClick={() => {
+                  toggleDrawer(false);
+                  router.push('/checkout');
+                }}
+              >
+                <span>CHECKOUT</span>
+                <ArrowRight size={16} />
+              </button>
+            </div>
           </div>
         )}
       </div>

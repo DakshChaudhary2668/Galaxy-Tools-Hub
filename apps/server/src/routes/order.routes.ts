@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
   getOrders,
   getOrderById,
+  updateOrderStatusAdmin,
   createDraftOrder,
   markPendingPayment,
   markPaid,
@@ -21,6 +22,7 @@ orderRouter.post('/draft', createDraftOrder);
 // Admin / protected order management routes
 orderRouter.get('/', adminAuthGuard, rbacGuard([Roles.OWNER, Roles.MANAGER, Roles.STAFF]), getOrders);
 orderRouter.get('/:id', adminAuthGuard, rbacGuard([Roles.OWNER, Roles.MANAGER, Roles.STAFF]), getOrderById);
+orderRouter.patch('/:id/status', adminAuthGuard, rbacGuard([Roles.OWNER, Roles.MANAGER]), updateOrderStatusAdmin);
 orderRouter.post('/:id/pending-payment', adminAuthGuard, rbacGuard([Roles.OWNER, Roles.MANAGER]), markPendingPayment);
 orderRouter.post('/:id/paid', adminAuthGuard, rbacGuard([Roles.OWNER, Roles.MANAGER]), markPaid);
 orderRouter.post('/:id/cancel', adminAuthGuard, rbacGuard([Roles.OWNER, Roles.MANAGER]), cancelOrder);

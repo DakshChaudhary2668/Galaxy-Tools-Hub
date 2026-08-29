@@ -1,0 +1,478 @@
+.dashboardContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Header & Controls */
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .titleBlock {
+    h1 {
+      font-size: 24px;
+      font-weight: 900;
+      color: #0F172A;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+
+    p {
+      font-size: 13px;
+      color: #64748B;
+    }
+  }
+
+  .refreshBtn {
+    @include button-reset;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 38px;
+    padding: 0 14px;
+    background-color: #FFFFFF;
+    border: 1px solid #CBD5E1;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #0F172A;
+    transition: all $transition-fast;
+
+    &:hover {
+      background-color: #F8FAFC;
+      border-color: #0F172A;
+    }
+  }
+}
+
+/* KPI Grid */
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 16px;
+
+  @media (max-width: 1400px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.kpiCard {
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 18px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+
+  .cardTop {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 800;
+    color: #64748B;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+
+    .iconWrap {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background-color: #F1F5F9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #0F172A;
+    }
+  }
+
+  .value {
+    font-size: 24px;
+    font-weight: 900;
+    color: #0F172A;
+    line-height: 1.1;
+  }
+
+  .meta {
+    font-size: 11px;
+    color: #64748B;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    &.positive {
+      color: #16A34A;
+    }
+
+    &.warning {
+      color: #D97706;
+    }
+
+    &.danger {
+      color: #DC2626;
+    }
+  }
+}
+
+/* Revenue Chart Card */
+.chartCard {
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.chartHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .chartTitle {
+    h2 {
+      font-size: 16px;
+      font-weight: 800;
+      color: #0F172A;
+      margin-bottom: 2px;
+    }
+
+    p {
+      font-size: 12px;
+      color: #64748B;
+    }
+  }
+
+  .rangeFilter {
+    display: flex;
+    background-color: #F1F5F9;
+    padding: 3px;
+    border-radius: 6px;
+    border: 1px solid #E2E8F0;
+
+    button {
+      @include button-reset;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #64748B;
+      border-radius: 4px;
+      transition: all $transition-fast;
+
+      &:hover {
+        color: #0F172A;
+      }
+
+      &.activeRange {
+        background-color: #FFFFFF;
+        color: #0F172A;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      }
+    }
+  }
+}
+
+/* SVG / CSS Bar Chart Container */
+.chartVisual {
+  height: 220px;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding-top: 20px;
+  border-bottom: 1px solid #E2E8F0;
+  position: relative;
+}
+
+.barCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+  gap: 6px;
+  position: relative;
+  group: hover;
+
+  .barFill {
+    width: 100%;
+    max-width: 32px;
+    background: linear-gradient(180deg, #F5C710 0%, #E5B700 100%);
+    border-radius: 4px 4px 0 0;
+    transition: height 0.3s ease, background 0.2s ease;
+    cursor: pointer;
+    min-height: 4px;
+
+    &:hover {
+      background: #0F172A;
+    }
+  }
+
+  .tooltip {
+    position: absolute;
+    bottom: calc(100% + 4px);
+    background-color: #0F172A;
+    color: #FFFFFF;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+    z-index: 10;
+  }
+
+  &:hover .tooltip {
+    opacity: 1;
+  }
+
+  .xLabel {
+    font-size: 10px;
+    font-weight: 700;
+    color: #94A3B8;
+    white-space: nowrap;
+  }
+}
+
+/* Section Grid (Recent Orders & Low Stock) */
+.sectionGrid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 24px;
+
+  @media (max-width: 1100px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Data Table Card */
+.tableCard {
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  .cardHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    h3 {
+      font-size: 15px;
+      font-weight: 800;
+      color: #0F172A;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    .viewAllLink {
+      font-size: 12px;
+      font-weight: 700;
+      color: #0F172A;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.dataTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+
+  th {
+    background-color: #F8FAFC;
+    text-align: left;
+    padding: 10px 12px;
+    font-size: 11px;
+    font-weight: 800;
+    color: #64748B;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid #E2E8F0;
+  }
+
+  td {
+    padding: 12px;
+    border-bottom: 1px solid #F1F5F9;
+    color: #1E293B;
+
+    &.amountCell {
+      font-weight: 800;
+      color: #0F172A;
+    }
+  }
+
+  tbody tr {
+    cursor: pointer;
+    transition: background-color $transition-fast;
+
+    &:hover {
+      background-color: #F8FAFC;
+    }
+  }
+}
+
+/* Badges */
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+
+  &.paid {
+    background-color: #DCFCE7;
+    color: #16A34A;
+  }
+
+  &.pending {
+    background-color: #FEF3C7;
+    color: #D97706;
+  }
+
+  &.shipped {
+    background-color: #DBEAFE;
+    color: #2563EB;
+  }
+
+  &.cancelled {
+    background-color: #FEE2E2;
+    color: #DC2626;
+  }
+
+  &.outOfStock {
+    background-color: #FEE2E2;
+    color: #DC2626;
+  }
+
+  &.lowStock {
+    background-color: #FEF3C7;
+    color: #D97706;
+  }
+}
+
+/* Low Stock Item Row */
+.stockList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.stockItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background-color: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+  gap: 12px;
+
+  .itemInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+
+    .name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #0F172A;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sku {
+      font-size: 11px;
+      color: #64748B;
+      font-family: monospace;
+    }
+  }
+
+  .stockNumbers {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+
+    .count {
+      font-size: 14px;
+      font-weight: 900;
+      color: #DC2626;
+    }
+  }
+}
+
+/* Empty & Error States */
+.stateCard {
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 48px 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+
+  h3 {
+    font-size: 16px;
+    font-weight: 800;
+    color: #0F172A;
+  }
+
+  p {
+    font-size: 13px;
+    color: #64748B;
+    max-width: 400px;
+  }
+}

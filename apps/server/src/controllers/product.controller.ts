@@ -91,7 +91,53 @@ export async function getProductBySlug(req: Request, res: Response, next: NextFu
 // POST /api/v1/products/admin
 export async function createProduct(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const newProduct = await productRepository.create(req.body);
+    const payload = req.body;
+    if (!payload.name) return next(new AppError('Product name is required', 400));
+    if (!payload.sku) return next(new AppError('Product SKU is required', 400));
+
+    // Check SKU uniqueness
+    const existingSku = await productRepository.findOneByField('sku', payload.sku);
+    if (existingSku) {
+      return next(new AppError(`A product with SKU "${payload.sku}" already exists.`, 400));
+    }
+
+    // Auto-generate slug if missing
+    if (!payload.slug) {
+      payload.slug = payload.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
+    }
+
+    if (!payload.source_model_no) payload.source_model_no = payload.sku;
+    if (!payload.hsn_code) payload.hsn_code = '9030';
+    if (!payload.source_vendor_id) {
+      const { data: v } = await supabaseAdmin.from('vendors').select('id').limit(1).single();
+      if (v) payload.source_vendor_id = v.id;
+    }
+
+    const newProduct = await productRepository.create(payload);
+
+    // Initial stock
+    if (payload.stock !== undefined) {
+      await supabaseAdmin.from('inventory').insert({
+        product_id: newProduct.id,
+        quantity: Number(payload.stock) || 0,
+        reserved_quantity: 0,
+        reorder_level: Number(payload.lowStockThreshold) || 5
+      });
+    }
+
+    // Initial primary image
+    if (payload.image_url) {
+      await supabaseAdmin.from('product_images').insert({
+        product_id: newProduct.id,
+        image_url: payload.image_url,
+        is_primary: true,
+        sort_order: 0
+      });
+    }
+
     sendSuccess(res, { data: newProduct, message: 'Product created successfully', statusCode: 201 });
   } catch (error) {
     next(error);
@@ -101,7 +147,69 @@ export async function createProduct(req: Request, res: Response, next: NextFunct
 // PUT /api/v1/products/admin/:id
 export async function updateProduct(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const updatedProduct = await productRepository.update(req.params.id, req.body);
+    const payload = req.body;
+    const productId = req.params.id;
+
+    // Check SKU uniqueness if changed
+    if (payload.sku) {
+      const existingSku = await productRepository.findOneByField('sku', payload.sku);
+      if (existingSku && existingSku.id !== productId) {
+        return next(new AppError(`Another product already uses SKU "${payload.sku}".`, 400));
+      }
+    }
+
+    const updatedProduct = await productRepository.update(productId, payload);
+
+    // Update stock if provided
+    if (payload.stock !== undefined) {
+      const { data: inv } = await supabaseAdmin
+        .from('inventory')
+        .select('id')
+        .or(`product_id.eq.${productId},variant_id.eq.${productId}`)
+        .limit(1);
+
+      if (inv && inv[0]) {
+        await supabaseAdmin
+          .from('inventory')
+          .update({
+            quantity: Number(payload.stock),
+            reorder_level: payload.lowStockThreshold !== undefined ? Number(payload.lowStockThreshold) : 5,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', inv[0].id);
+      } else {
+        await supabaseAdmin.from('inventory').insert({
+          product_id: productId,
+          quantity: Number(payload.stock) || 0,
+          reserved_quantity: 0,
+          reorder_level: Number(payload.lowStockThreshold) || 5
+        });
+      }
+    }
+
+    // Update primary image if provided
+    if (payload.image_url) {
+      const { data: existingImg } = await supabaseAdmin
+        .from('product_images')
+        .select('id')
+        .eq('product_id', productId)
+        .limit(1);
+
+      if (existingImg && existingImg[0]) {
+        await supabaseAdmin
+          .from('product_images')
+          .update({ image_url: payload.image_url })
+          .eq('id', existingImg[0].id);
+      } else {
+        await supabaseAdmin.from('product_images').insert({
+          product_id: productId,
+          image_url: payload.image_url,
+          is_primary: true,
+          sort_order: 0
+        });
+      }
+    }
+
     sendSuccess(res, { data: updatedProduct, message: 'Product updated successfully' });
   } catch (error) {
     next(error);
@@ -111,12 +219,32 @@ export async function updateProduct(req: Request, res: Response, next: NextFunct
 // DELETE /api/v1/products/admin/:id
 export async function deleteProduct(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    await productRepository.delete(req.params.id);
-    sendSuccess(res, { data: { id: req.params.id }, message: 'Product deleted successfully' });
+    const productId = req.params.id;
+
+    // Check whether product is referenced by historical orders
+    const { data: referencedOrders } = await supabaseAdmin
+      .from('order_items')
+      .select('id')
+      .eq('product_id', productId)
+      .limit(1);
+
+    if (referencedOrders && referencedOrders.length > 0) {
+      // Soft-delete / deactivate product to preserve order integrity
+      await productRepository.update(productId, { is_active: false });
+      sendSuccess(res, {
+        data: { id: productId, action: 'archived' },
+        message: 'Product is linked to customer orders. It has been deactivated/archived safely.'
+      });
+      return;
+    }
+
+    await productRepository.delete(productId);
+    sendSuccess(res, { data: { id: productId, action: 'deleted' }, message: 'Product deleted successfully' });
   } catch (error) {
     next(error);
   }
 }
+
 
 // GET /api/v1/products/:id/images — includes variant-specific images with parent fallback
 export async function getProductImages(req: Request, res: Response, next: NextFunction): Promise<void> {

@@ -166,13 +166,40 @@
   margin-bottom: 16px;
 }
 
+.actionButtons {
+  display: flex;
+  gap: 10px;
+}
+
+.viewCartBtn {
+  @include button-reset;
+  @include flex-center;
+  flex: 1;
+  height: 46px;
+  background-color: #FFFFFF;
+  color: $color-black;
+  border: 1px solid $color-black;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-radius: 2px;
+  text-decoration: none;
+  transition: background-color $transition-fast, color $transition-fast;
+
+  &:hover {
+    background-color: $color-black;
+    color: #FFFFFF;
+  }
+}
+
 .checkoutBtn {
   @include button-reset;
-  width: 100%;
+  flex: 1.2;
   height: 46px;
   background-color: $color-yellow;
   color: $color-black;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.05em;
   text-transform: uppercase;
