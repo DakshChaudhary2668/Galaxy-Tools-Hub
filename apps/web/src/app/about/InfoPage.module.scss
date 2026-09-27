@@ -1,0 +1,115 @@
+@use "@/styles/_shared.scss" as *;
+
+
+.pageWrapper {
+  background-color: #FFFFFF;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.container {
+  @include container;
+  padding-top: 24px;
+  padding-bottom: 80px;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #6B7280;
+  margin-bottom: 24px;
+
+  a {
+    color: #4B5563;
+    transition: color 0.15s ease;
+    &:hover { color: #000000; }
+  }
+
+  span {
+    color: #111827;
+    font-weight: 700;
+  }
+}
+
+.pageHeader {
+  background-color: #111827;
+  color: #FFFFFF;
+  border-radius: 2px;
+  padding: 36px 40px;
+  margin-bottom: 40px;
+
+  h1 {
+    font-size: clamp(22px, 3vw, 30px);
+    font-weight: 900;
+    margin-bottom: 6px;
+    letter-spacing: -0.01em;
+  }
+
+  p {
+    font-size: 14px;
+    color: #9CA3AF;
+  }
+}
+
+.contentSection {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.prose {
+  max-width: 800px;
+
+  h2 {
+    font-size: 20px;
+    font-weight: 800;
+    color: #111827;
+    margin-bottom: 12px;
+  }
+
+  p {
+    font-size: 14.5px;
+    color: #4B5563;
+    line-height: 1.6;
+    margin-bottom: 16px;
+
+    strong {
+      color: #111827;
+    }
+  }
+}
+
+.valuesGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+
+  @include tablet {
+    grid-template-columns: 1fr;
+  }
+}
+
+.valueCard {
+  background-color: #F9FAFB;
+  border: 1px solid #E5E7EB;
+  border-radius: 2px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  h3 {
+    font-size: 15px;
+    font-weight: 800;
+    color: #111827;
+  }
+
+  p {
+    font-size: 13px;
+    color: #6B7280;
+    line-height: 1.45;
+  }
+}

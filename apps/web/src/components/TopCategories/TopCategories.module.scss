@@ -1,3 +1,5 @@
+@use "@/styles/_shared.scss" as *;
+
 .section {
   padding-top: 32px;
   padding-bottom: 48px;
@@ -94,6 +96,15 @@
   @include mobile {
     height: 110px;
   }
+}
+
+.iconPlaceholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #bbb;
 }
 
 .cardImage {

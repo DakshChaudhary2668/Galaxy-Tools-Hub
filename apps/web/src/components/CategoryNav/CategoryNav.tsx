@@ -1,7 +1,14 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { CATEGORIES } from '../../data/products';
+const CATEGORIES = [
+  { id: 'testing', label: 'TESTING & MEASUREMENT' },
+  { id: 'environmental', label: 'ENVIRONMENT' },
+  { id: 'lab', label: 'LABORATORY / LAB TESTING' },
+  { id: 'accessories', label: 'ACCESSORIES' },
+  { id: 'safety', label: 'SAFETY' },
+  { id: 'machinery', label: 'MACHINERY' },
+];
 import { CategoryMegaMenu, CATEGORY_MENUS } from '../CategoryMegaMenu/CategoryMegaMenu';
 import styles from './CategoryNav.module.scss';
 

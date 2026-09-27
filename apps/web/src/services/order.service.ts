@@ -1,5 +1,6 @@
 import { apiClient } from './api';
 import { OrderDto, OrderItemDto, OrderAddressDto, PaymentDto } from '@galaxy/types';
+import { OrderStatusType } from '@galaxy/constants';
 
 export interface AdminOrderListItem extends OrderDto {
   customerName: string;
@@ -25,7 +26,7 @@ export interface AdminOrderDetailFull {
   payment: PaymentDto | null;
 }
 
-export async function getAdminOrders(params?: Record<string, unknown>, token?: string) {
+export async function getAdminOrders(params?: Record<string, unknown>, token?: string): Promise<AdminOrdersResponse> {
   const queryObj: Record<string, string> = {};
   if (params) {
     Object.entries(params).forEach(([key, val]) => {
@@ -35,30 +36,37 @@ export async function getAdminOrders(params?: Record<string, unknown>, token?: s
     });
   }
   const qs = Object.keys(queryObj).length > 0 ? '?' + new URLSearchParams(queryObj).toString() : '';
-  return apiClient.get<AdminOrdersResponse>(`/orders${qs}`, { token });
+  const res = await apiClient.get<AdminOrdersResponse>(`/orders${qs}`, { token });
+  return { data: res.data || [], meta: res.meta };
 }
 
-export async function getAdminOrderById(id: string, token?: string) {
-  return apiClient.get<{ data: AdminOrderDetailFull }>(`/orders/${id}`, { token });
+export async function getAdminOrderById(id: string, token?: string): Promise<AdminOrderDetailFull | null> {
+  const res = await apiClient.get<{ data: AdminOrderDetailFull }>(`/orders/${id}`, { token });
+  return res?.data || null;
 }
 
-export async function updateAdminOrderStatus(orderId: string, status: string, token?: string) {
-  return apiClient.patch<{ data: OrderDto }>(`/orders/${orderId}/status`, { status }, { token });
+export async function updateAdminOrderStatus(orderId: string, status: OrderStatusType, token?: string): Promise<OrderDto> {
+  const res = await apiClient.patch<{ data: OrderDto }>(`/orders/${orderId}/status`, { status }, { token });
+  return res.data;
 }
 
-export async function getOrders(params?: Record<string, unknown>, token?: string) {
+export async function getOrders(params?: Record<string, unknown>, token?: string): Promise<OrderDto[]> {
   const qs = params ? '?' + new URLSearchParams(params as Record<string, string>).toString() : '';
-  return apiClient.get<OrderDto[]>(`/orders${qs}`, { token });
+  const res = await apiClient.get<{ data: OrderDto[] }>(`/orders${qs}`, { token });
+  return res?.data || [];
 }
 
-export async function getOrderById(id: string, token?: string) {
-  return apiClient.get<OrderDto>(`/orders/${id}`, { token });
+export async function getOrderById(id: string, token?: string): Promise<OrderDto | null> {
+  const res = await apiClient.get<{ data: OrderDto }>(`/orders/${id}`, { token });
+  return res?.data || null;
 }
 
-export async function createDraftOrder(payload: Partial<OrderDto>, token?: string) {
-  return apiClient.post<OrderDto>('/orders/draft', payload, { token });
+export async function createDraftOrder(payload: Partial<OrderDto>, token?: string): Promise<OrderDto> {
+  const res = await apiClient.post<{ data: OrderDto }>('/orders/draft', payload, { token });
+  return res.data;
 }
 
-export async function updateOrderStatus(orderId: string, status: string, token?: string) {
-  return apiClient.patch<OrderDto>(`/orders/${orderId}/status`, { status }, { token });
+export async function updateOrderStatus(orderId: string, status: OrderStatusType, token?: string): Promise<OrderDto> {
+  const res = await apiClient.patch<{ data: OrderDto }>(`/orders/${orderId}/status`, { status }, { token });
+  return res.data;
 }

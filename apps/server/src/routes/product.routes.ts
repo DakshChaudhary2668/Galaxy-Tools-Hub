@@ -7,7 +7,9 @@ import {
   deleteProduct,
   getProductImages,
   addProductImage,
-  deleteProductImage
+  deleteProductImage,
+  completeProductImage,
+  removeProductPrimaryImage
 } from '../controllers/product.controller';
 import { adminAuthGuard } from '../middlewares/auth.middleware';
 import { rbacGuard } from '../middlewares/rbac.middleware';
@@ -15,15 +17,11 @@ import { validateRequest } from '../middlewares/validate.middleware';
 import {
   CreateProductSchema,
   UpdateProductSchema,
-  CreateProductImageSchema
+  CreateProductImageSchema,
+  ProductImageCompleteRequestSchema
 } from '@galaxy/types';
 import { Roles } from '@galaxy/constants';
 
-import {
-  getVariantsByProduct,
-  createVariant
-} from '../controllers/variant.controller';
-import { CreateProductVariantSchema } from '@galaxy/types';
 
 export const productRouter: Router = Router();
 
@@ -31,7 +29,6 @@ export const productRouter: Router = Router();
 productRouter.get('/', getProducts);
 productRouter.get('/:slug', getProductBySlug);
 productRouter.get('/:id/images', getProductImages);
-productRouter.get('/:id/variants', getVariantsByProduct);
 
 // Admin Product CRUD routes
 productRouter.post(
@@ -55,13 +52,28 @@ productRouter.delete(
   deleteProduct
 );
 
-// Admin Product Image & Variant routes
+// Sprint 3: Complete upload of a managed product image
 productRouter.post(
-  '/admin/:id/variants',
+  '/admin/:id/images/complete',
   adminAuthGuard,
   rbacGuard([Roles.OWNER, Roles.MANAGER]),
-  validateRequest(CreateProductVariantSchema),
-  createVariant
+  validateRequest(ProductImageCompleteRequestSchema),
+  completeProductImage
+);
+
+// Sprint 3: Remove primary product image (cleans up managed storage object if applicable)
+productRouter.delete(
+  '/admin/:id/images/primary',
+  adminAuthGuard,
+  rbacGuard([Roles.OWNER, Roles.MANAGER]),
+  removeProductPrimaryImage
+);
+
+productRouter.delete(
+  '/admin/:id/image',
+  adminAuthGuard,
+  rbacGuard([Roles.OWNER, Roles.MANAGER]),
+  removeProductPrimaryImage
 );
 
 productRouter.post(

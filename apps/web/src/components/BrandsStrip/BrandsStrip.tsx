@@ -1,19 +1,26 @@
 'use client';
 
 import React from 'react';
-import { BRAND_LIST } from '../../data/homepageSeed';
+import Link from 'next/link';
+import { useBrands } from '@/hooks/useBrands';
 import styles from './BrandsStrip.module.scss';
 
 export const BrandsStrip: React.FC = () => {
+  const { data: brands = [] } = useBrands();
+
   return (
     <section className={styles.section}>
       <div className={styles.container}>
         <h2 className={styles.title}>OUR BRANDS</h2>
         <div className={styles.grid}>
-          {BRAND_LIST.map((brand) => (
-            <div key={brand.id} className={styles.brandPill}>
+          {brands.map((brand) => (
+            <Link
+              key={brand.id}
+              href={`/products?brand=${brand.id}`}
+              className={styles.brandPill}
+            >
               {brand.name}
-            </div>
+            </Link>
           ))}
         </div>
       </div>

@@ -5,7 +5,7 @@ GalaxyToolsHub/
 ├── apps/
 │   ├── server/                 # Express Node.js TypeScript API Backend
 │   │   ├── src/
-│   │   │   ├── config/         # Supabase, Clerk, Env configuration
+│   │   │   ├── config/         # Supabase, Database, Env configuration
 │   │   │   ├── controllers/    # Express route HTTP controllers
 │   │   │   ├── middlewares/    # RequestID, AuthGuard, RBAC, ErrorHandler, Zod Validate
 │   │   │   ├── repositories/   # BaseRepository & Supabase database queries
@@ -18,7 +18,7 @@ GalaxyToolsHub/
 │   │
 │   └── web/                    # Next.js 15 App Router Frontend
 │       ├── src/
-│       │   ├── app/            # App Router (Public routes & /admin protected sub-tree)
+│       │   ├── app/            # App Router (Public routes, (auth), admin/(auth), admin/(dashboard))
 │       │   └── styles/         # Global SCSS & theme overrides
 │       └── package.json
 │

@@ -1,3 +1,5 @@
+@use "@/styles/_shared.scss" as *;
+
 .searchWrapper {
   position: relative;
   width: 100%;
@@ -31,12 +33,25 @@
 }
 
 .searchIcon {
-  position: absolute;
-  left: 14px;
-  top: 50%;
-  transform: translateY(-50%);
   width: 18px;
   height: 18px;
   color: #555555;
-  pointer-events: none;
+}
+
+.submitButton {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+
+  &:active {
+    transform: scale(0.96);
+  }
 }

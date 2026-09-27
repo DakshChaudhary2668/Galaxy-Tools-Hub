@@ -38,7 +38,7 @@ export interface AdminCustomerDetail {
   addresses: UserAddressDto[];
 }
 
-export async function getAdminCustomers(params?: Record<string, unknown>, token?: string) {
+export async function getAdminCustomers(params?: Record<string, unknown>, token?: string): Promise<AdminCustomersResponse> {
   const queryObj: Record<string, string> = {};
   if (params) {
     Object.entries(params).forEach(([key, val]) => {
@@ -48,13 +48,16 @@ export async function getAdminCustomers(params?: Record<string, unknown>, token?
     });
   }
   const qs = Object.keys(queryObj).length > 0 ? '?' + new URLSearchParams(queryObj).toString() : '';
-  return apiClient.get<AdminCustomersResponse>(`/customers${qs}`, { token });
+  const res = await apiClient.get<AdminCustomersResponse>(`/customers${qs}`, { token });
+  return { data: res.data || [], meta: res.meta };
 }
 
-export async function getAdminCustomerById(id: string, token?: string) {
-  return apiClient.get<{ data: AdminCustomerDetail }>(`/customers/${id}`, { token });
+export async function getAdminCustomerById(id: string, token?: string): Promise<AdminCustomerDetail | null> {
+  const res = await apiClient.get<{ data: AdminCustomerDetail }>(`/customers/${id}`, { token });
+  return res?.data || null;
 }
 
-export async function toggleCustomerStatus(id: string, is_active: boolean, token?: string) {
-  return apiClient.patch<{ data: ProfileDto }>(`/customers/${id}/status`, { is_active }, { token });
+export async function toggleCustomerStatus(id: string, is_active: boolean, token?: string): Promise<ProfileDto> {
+  const res = await apiClient.patch<{ data: ProfileDto }>(`/customers/${id}/status`, { is_active }, { token });
+  return res.data;
 }

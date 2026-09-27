@@ -1,4 +1,6 @@
+@use "variables" as *;
 // Global helper utilities
+
 
 :root {
   --color-yellow: #{$color-yellow};

@@ -154,4 +154,13 @@ INSERT INTO inventory (id, product_id, quantity, reserved_quantity, reorder_leve
   ('77777777-7777-4777-a777-777777777774', '55555555-5555-4555-a555-555555555554', 100, 5, 15)
 ON CONFLICT (product_id) DO UPDATE SET quantity = EXCLUDED.quantity;
 
+-- ---------------------------------------------------------------------------
+-- 8. ADMIN USERS (Supabase Auth Linking Template)
+--    To provision an administrator, first register the user via Supabase Auth
+--    (via dashboard or auth signup API), then insert their auth.users.id UUID here:
+-- ---------------------------------------------------------------------------
+-- INSERT INTO admin_users (id, user_id, name, email, role, status) VALUES
+--   ('88888888-8888-4888-a888-888888888881', 'REPLACE_WITH_SUPABASE_AUTH_USER_ID', 'Master Administrator', 'admin@galaxytools.com', 'OWNER', 'ACTIVE')
+-- ON CONFLICT (user_id) DO NOTHING;
+
 COMMIT;

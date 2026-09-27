@@ -9,13 +9,6 @@ export const queryKeys = {
     all:    (params?: Record<string, unknown>) => ['products', params] as const,
     detail: (slug: string)                     => ['products', slug] as const,
     images: (id: string)                       => ['products', id, 'images'] as const,
-    variants: (id: string)                     => ['products', id, 'variants'] as const,
-  },
-
-  variants: {
-    byProduct: (productId: string) => ['variants', 'product', productId] as const,
-    detail:    (id: string)        => ['variants', 'detail', id] as const,
-    sku:       (sku: string)       => ['variants', 'sku', sku] as const,
   },
 
   categories: {

@@ -3,13 +3,13 @@
 import React from 'react';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import { Product } from '../../types/product';
+import { ProductView } from '@galaxy/types';
 import { ProductCard } from '../ProductCard/ProductCard';
 import styles from './ProductSection.module.scss';
 
 interface ProductSectionProps {
   title: string;
-  products: Product[];
+  products: ProductView[];
   viewAllHref?: string;
 }
 

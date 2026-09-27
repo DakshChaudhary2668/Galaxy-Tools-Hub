@@ -14,7 +14,7 @@ export interface AdminInventoryItem {
   updatedAt: string;
 }
 
-export async function getAdminInventory(params?: { search?: string; filter?: string }, token?: string) {
+export async function getAdminInventory(params?: { search?: string; filter?: string }, token?: string): Promise<AdminInventoryItem[]> {
   const queryObj: Record<string, string> = {};
   if (params) {
     Object.entries(params).forEach(([k, v]) => {
@@ -22,13 +22,15 @@ export async function getAdminInventory(params?: { search?: string; filter?: str
     });
   }
   const qs = Object.keys(queryObj).length > 0 ? '?' + new URLSearchParams(queryObj).toString() : '';
-  return apiClient.get<{ data: AdminInventoryItem[] }>(`/inventory${qs}`, { token });
+  const res = await apiClient.get<{ data: AdminInventoryItem[] }>(`/inventory${qs}`, { token });
+  return res?.data || [];
 }
 
 export async function adjustAdminInventory(
   id: string,
   payload: { quantity?: number; reorderLevel?: number },
   token?: string
-) {
-  return apiClient.put<{ data: any }>(`/inventory/${id}/adjust`, payload, { token });
+): Promise<AdminInventoryItem> {
+  const res = await apiClient.put<{ data: AdminInventoryItem }>(`/inventory/${id}/adjust`, payload, { token });
+  return res.data;
 }

@@ -14,7 +14,7 @@
 | **CORS Policy** | Restricted to `env.CORS_ORIGIN` (`http://localhost:3000` default) | ✅ SECURE |
 | **Rate Limiting** | `express-rate-limit` (200 requests / 15 mins per IP) | ✅ SECURE |
 | **Request Payload Limits** | `express.json({ limit: '10mb' })` prevents DoS buffer overflow | ✅ SECURE |
-| **Secret Protection** | `SUPABASE_SERVICE_ROLE_KEY` & `CLERK_SECRET_KEY` strictly backend-only | ✅ SECURE |
+| **Secret Protection** | `SUPABASE_SERVICE_ROLE_KEY` & `RAZORPAY_KEY_SECRET` strictly backend-only | ✅ SECURE |
 | **Log Hygiene** | Custom Morgan logger excludes `Authorization` headers & JWT tokens | ✅ SECURE |
 | **Input Validation** | 100% request params, query strings, and bodies validated by Zod | ✅ SECURE |
 

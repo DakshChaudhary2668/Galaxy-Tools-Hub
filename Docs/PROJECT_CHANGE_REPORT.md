@@ -14,7 +14,7 @@
 1. **Monorepo & Build System:** PNPM workspaces + TurboRepo pipeline managing `apps/web` (Next.js 15 App Router), `apps/server` (Express.js TypeScript), `packages/types`, `packages/constants`, `packages/config`, and `packages/utils`.
 2. **Customer E-Commerce Engine:** Complete cart management, dynamic tax/shipping calculation, Razorpay Standard Checkout SDK integration with HMAC SHA-256 server-side signature verification, and visual order receipt pages.
 3. **Enterprise Admin Panel (`/admin`):** 12 comprehensive administrative sub-modules including Dashboard, Orders, Products, Categories, Inventory Control, Customer Management, Promotions/Coupons, Analytics, and Store Settings.
-4. **Database & RBAC Security:** Dual-layer authentication (Clerk for internal staff + Supabase Auth for customer accounts), zero-trust credential isolation, and atomic inventory reservation lifecycles.
+4. **Database & RBAC Security:** Unified authentication (Supabase Auth for both internal staff and customer accounts), zero-trust credential isolation, and atomic inventory reservation lifecycles.
 5. **Verified Production Builds:** Zero TypeScript errors, zero ESLint blocking issues, and clean Next.js 15 production compilation (`apps/web`) alongside TypeScript server bundle generation (`apps/server`).
 
 ---
@@ -63,7 +63,7 @@
 - **Runtime:** Express.js + TypeScript running on Port 8000.
 - **Database Client:** Supabase PostgreSQL with `supabaseAdmin` service client.
 - **Security & RBAC Middleware:**
-  - `adminAuthGuard`: Authenticates Clerk JWT tokens for admin endpoints.
+  - `adminAuthGuard`: Authenticates Supabase JWT tokens and verifies admin role for protected endpoints.
   - `rbacGuard`: Enforces fine-grained role permissions (`OWNER`, `MANAGER`, `STAFF`).
   - `express-rate-limit`: Protects against brute-force attacks on public endpoints.
 - **Mounted API Endpoints:**
@@ -87,7 +87,7 @@
 ## 4. Key Security & Operational Guarantees
 
 1. **Zero Frontend Secret Exposure:**
-   - `RAZORPAY_KEY_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`, `CLERK_SECRET_KEY`, and database credentials reside strictly on the server in `.env`.
+   - `RAZORPAY_KEY_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`, and database credentials reside strictly on the server in `.env`.
    - The settings panel exposes only masked public identifiers (e.g. `rzp_test_5••••••••••••`).
 2. **Server-Side Financial & Discount Authority:**
    - Order payment verification is impossible without valid HMAC SHA-256 signatures from Razorpay.

@@ -1,14 +1,14 @@
 export const Roles = {
-  OWNER: 'Owner',
-  MANAGER: 'Manager',
-  STAFF: 'Staff'
+  OWNER: 'OWNER',
+  MANAGER: 'MANAGER',
+  STAFF: 'STAFF'
 } as const;
 export type Role = (typeof Roles)[keyof typeof Roles];
 
 export const AdminStatus = {
-  ACTIVE: 'Active',
-  INACTIVE: 'Inactive',
-  SUSPENDED: 'Suspended'
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+  SUSPENDED: 'SUSPENDED'
 } as const;
 export type AdminStatusType = (typeof AdminStatus)[keyof typeof AdminStatus];
 
@@ -32,22 +32,48 @@ export const PricingType = {
 export type PricingTypeEnum = (typeof PricingType)[keyof typeof PricingType];
 
 export const OrderStatus = {
-  DRAFT: 'Draft',
-  PENDING_PAYMENT: 'PendingPayment',
-  PAID: 'Paid',
-  PACKED: 'Packed',
-  SHIPPED: 'Shipped',
-  DELIVERED: 'Delivered',
-  CANCELLED: 'Cancelled',
-  REFUNDED: 'Refunded',
-  // Backward compatibility keys
   PENDING: 'PENDING',
   CONFIRMED: 'CONFIRMED',
   PROCESSING: 'PROCESSING',
+  PACKED: 'PACKED',
+  SHIPPED: 'SHIPPED',
+  DELIVERED: 'DELIVERED',
+  CANCELLED: 'CANCELLED',
   RETURN_REQUESTED: 'RETURN_REQUESTED',
-  RETURNED: 'RETURNED'
+  RETURNED: 'RETURNED',
+  REFUNDED: 'REFUNDED'
 } as const;
 export type OrderStatusType = (typeof OrderStatus)[keyof typeof OrderStatus];
+
+export const OrderStatusTransitions: Record<OrderStatusType, readonly OrderStatusType[]> = {
+  [OrderStatus.PENDING]: [OrderStatus.CONFIRMED, OrderStatus.CANCELLED],
+  [OrderStatus.CONFIRMED]: [OrderStatus.PROCESSING, OrderStatus.PACKED, OrderStatus.CANCELLED],
+  [OrderStatus.PROCESSING]: [OrderStatus.PACKED, OrderStatus.CANCELLED],
+  [OrderStatus.PACKED]: [OrderStatus.SHIPPED, OrderStatus.CANCELLED],
+  [OrderStatus.SHIPPED]: [OrderStatus.DELIVERED, OrderStatus.CANCELLED],
+  [OrderStatus.DELIVERED]: [OrderStatus.RETURN_REQUESTED, OrderStatus.REFUNDED],
+  [OrderStatus.RETURN_REQUESTED]: [OrderStatus.RETURNED, OrderStatus.REFUNDED],
+  [OrderStatus.RETURNED]: [OrderStatus.REFUNDED],
+  [OrderStatus.CANCELLED]: [],
+  [OrderStatus.REFUNDED]: []
+};
+
+export const OrderStatusLabels: Record<OrderStatusType, string> = {
+  [OrderStatus.PENDING]: 'Pending',
+  [OrderStatus.CONFIRMED]: 'Confirmed',
+  [OrderStatus.PROCESSING]: 'Processing',
+  [OrderStatus.PACKED]: 'Packed',
+  [OrderStatus.SHIPPED]: 'Shipped',
+  [OrderStatus.DELIVERED]: 'Delivered',
+  [OrderStatus.CANCELLED]: 'Cancelled',
+  [OrderStatus.RETURN_REQUESTED]: 'Return Requested',
+  [OrderStatus.RETURNED]: 'Returned',
+  [OrderStatus.REFUNDED]: 'Refunded'
+};
+
+export function isOrderStatus(value: unknown): value is OrderStatusType {
+  return typeof value === 'string' && Object.values(OrderStatus).includes(value as OrderStatusType);
+}
 
 export const PaymentStatus = {
   PENDING: 'PENDING',

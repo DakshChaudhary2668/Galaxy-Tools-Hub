@@ -3,10 +3,12 @@ import {
   ProductDto,
   ProductDetailDto,
   ProductImageDto,
-  ProductVariantDto,
   CreateProductDto,
-  UpdateProductDto
+  UpdateProductDto,
+  ProductImageSignedUploadRequestDto,
+  ProductImageCompleteRequestDto
 } from '@galaxy/types';
+
 
 export interface AdminProductsResponse {
   data: ProductDto[];
@@ -19,7 +21,7 @@ export interface AdminProductsResponse {
   };
 }
 
-export async function getProducts(params?: Record<string, unknown>, token?: string) {
+export async function getProducts(params?: Record<string, unknown>, token?: string): Promise<AdminProductsResponse> {
   const queryObj: Record<string, string> = {};
   if (params) {
     Object.entries(params).forEach(([key, val]) => {
@@ -32,30 +34,83 @@ export async function getProducts(params?: Record<string, unknown>, token?: stri
   return apiClient.get<AdminProductsResponse>(`/products${qs}`, { token });
 }
 
-export async function getProductBySlug(slug: string) {
-  return apiClient.get<{ data: ProductDetailDto }>(`/products/${slug}`);
+export async function getProductBySlug(slug: string): Promise<ProductDetailDto | null> {
+  try {
+    const res = await apiClient.get<{ data: ProductDetailDto }>(`/products/${slug}`);
+    return res?.data || null;
+  } catch (error) {
+    console.error(`[getProductBySlug] Error fetching product ${slug}:`, error);
+    return null;
+  }
 }
 
-export async function getProductById(id: string) {
-  return apiClient.get<{ data: ProductDetailDto }>(`/products/${id}`);
+export async function getProductById(id: string): Promise<ProductDetailDto | null> {
+  try {
+    const res = await apiClient.get<{ data: ProductDetailDto }>(`/products/${id}`);
+    return res?.data || null;
+  } catch (error) {
+    console.error(`[getProductById] Error fetching product ${id}:`, error);
+    return null;
+  }
 }
 
-export async function createProduct(payload: Partial<CreateProductDto> & { stock?: number; lowStockThreshold?: number; image_url?: string }, token?: string) {
-  return apiClient.post<{ data: ProductDto }>('/products/admin', payload, { token });
+export async function createProduct(payload: Partial<CreateProductDto> & { stock?: number; lowStockThreshold?: number; image_url?: string }, token?: string): Promise<ProductDto> {
+  const res = await apiClient.post<{ data: ProductDto }>('/products/admin', payload, { token });
+  return res.data;
 }
 
-export async function updateProduct(id: string, payload: Partial<UpdateProductDto> & { stock?: number; lowStockThreshold?: number; image_url?: string }, token?: string) {
-  return apiClient.put<{ data: ProductDto }>(`/products/admin/${id}`, payload, { token });
+export async function updateProduct(id: string, payload: Partial<UpdateProductDto> & { stock?: number; lowStockThreshold?: number; image_url?: string }, token?: string): Promise<ProductDto> {
+  const res = await apiClient.put<{ data: ProductDto }>(`/products/admin/${id}`, payload, { token });
+  return res.data;
 }
 
-export async function deleteProduct(id: string, token?: string) {
+export async function deleteProduct(id: string, token?: string): Promise<{ data: { id: string; action: string }; message: string }> {
   return apiClient.delete<{ data: { id: string; action: string }; message: string }>(`/products/admin/${id}`, { token });
 }
 
-export async function getProductImages(id: string) {
-  return apiClient.get<ProductImageDto[]>(`/products/${id}/images`);
+export async function getProductImages(id: string): Promise<ProductImageDto[]> {
+  const res = await apiClient.get<{ data: ProductImageDto[] }>(`/products/${id}/images`);
+  return res?.data || [];
 }
 
-export async function getProductVariants(id: string) {
-  return apiClient.get<ProductVariantDto[]>(`/products/${id}/variants`);
+export interface ProductImageUploadUrlResponse {
+  signedUrl: string;
+  path: string;
+  token: string;
+  publicUrl: string;
+}
+
+export async function getProductImageUploadUrl(
+  payload: ProductImageSignedUploadRequestDto,
+  token?: string
+): Promise<ProductImageUploadUrlResponse> {
+  const res = await apiClient.post<{ data: ProductImageUploadUrlResponse }>(
+    '/storage/product-image-upload-url',
+    payload,
+    { token }
+  );
+  return res.data;
+}
+
+export async function completeProductImage(
+  productId: string,
+  payload: ProductImageCompleteRequestDto,
+  token?: string
+): Promise<ProductImageDto> {
+  const res = await apiClient.post<{ data: ProductImageDto }>(
+    `/products/admin/${productId}/images/complete`,
+    payload,
+    { token }
+  );
+  return res.data;
+}
+
+export async function deleteProductPrimaryImage(
+  productId: string,
+  token?: string
+): Promise<{ data: { productId: string }; message: string }> {
+  return apiClient.delete<{ data: { productId: string }; message: string }>(
+    `/products/admin/${productId}/images/primary`,
+    { token }
+  );
 }

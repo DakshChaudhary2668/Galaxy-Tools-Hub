@@ -1,9 +1,10 @@
 import { BaseRepository } from '../repositories/base.repository';
 import { OrderDto, OrderItemDto } from '@galaxy/types';
-import { OrderStatus, OrderStatusType, PaymentStatus } from '@galaxy/constants';
+import { OrderStatus, OrderStatusTransitions, OrderStatusType, PaymentStatus } from '@galaxy/constants';
 import { AppError } from '../utils/app-error';
 import { InventoryService } from './inventory.service';
 import { supabaseAdmin } from '../config/supabase';
+import { releaseOrderInventory, reserveOrderInventory } from './payment-finalization.service';
 
 export class OrderService {
   private orderRepository: BaseRepository<OrderDto>;
@@ -14,26 +15,8 @@ export class OrderService {
     this.inventoryService = new InventoryService();
   }
 
-  // State Transition Matrix
-  private allowedTransitions: Record<string, string[]> = {
-    [OrderStatus.DRAFT]: [OrderStatus.PENDING_PAYMENT, OrderStatus.CANCELLED, OrderStatus.PENDING],
-    [OrderStatus.PENDING_PAYMENT]: [OrderStatus.PAID, OrderStatus.CANCELLED],
-    [OrderStatus.PENDING]: [OrderStatus.PENDING_PAYMENT, OrderStatus.PAID, OrderStatus.CONFIRMED, OrderStatus.CANCELLED],
-    [OrderStatus.CONFIRMED]: [OrderStatus.PROCESSING, OrderStatus.PACKED, OrderStatus.CANCELLED],
-    [OrderStatus.PROCESSING]: [OrderStatus.PACKED, OrderStatus.CANCELLED],
-    [OrderStatus.PAID]: [OrderStatus.PACKED, OrderStatus.DELIVERED, OrderStatus.CANCELLED, OrderStatus.REFUNDED],
-    [OrderStatus.PACKED]: [OrderStatus.SHIPPED, OrderStatus.CANCELLED],
-    [OrderStatus.SHIPPED]: [OrderStatus.DELIVERED, OrderStatus.CANCELLED],
-    [OrderStatus.DELIVERED]: [OrderStatus.REFUNDED, OrderStatus.RETURN_REQUESTED],
-    [OrderStatus.RETURN_REQUESTED]: [OrderStatus.RETURNED, OrderStatus.REFUNDED],
-    [OrderStatus.RETURNED]: [OrderStatus.REFUNDED],
-    [OrderStatus.CANCELLED]: [],
-    [OrderStatus.REFUNDED]: []
-  };
-
   validateTransition(currentStatus: OrderStatusType, targetStatus: OrderStatusType): boolean {
-    if (currentStatus === targetStatus) return true;
-    const allowed = this.allowedTransitions[currentStatus] || [];
+    const allowed = OrderStatusTransitions[currentStatus] || [];
     return allowed.includes(targetStatus);
   }
 
@@ -42,39 +25,25 @@ export class OrderService {
     const draftPayload: Partial<OrderDto> = {
       ...payload,
       order_number: orderNumber,
-      status: OrderStatus.DRAFT,
+      status: OrderStatus.PENDING,
       payment_status: PaymentStatus.PENDING
     };
     return this.orderRepository.create(draftPayload);
   }
 
   private async getOrderItems(orderId: string): Promise<OrderItemDto[]> {
-    try {
-      const { data, error } = await supabaseAdmin
-        .from('order_items')
-        .select('*')
-        .eq('order_id', orderId);
-      if (error || !data) return [];
-      return data as OrderItemDto[];
-    } catch {
-      return [];
-    }
+    const { data, error } = await supabaseAdmin
+      .from('order_items')
+      .select('*')
+      .eq('order_id', orderId);
+    if (error) throw new AppError('Failed to retrieve order items for inventory update', 500);
+    return (data || []) as OrderItemDto[];
   }
 
   async reserveInventory(orderId: string): Promise<OrderDto> {
     const order = await this.orderRepository.findById(orderId);
     if (!order) throw new AppError('Order not found', 404);
-
-    const items = await this.getOrderItems(orderId);
-    for (const item of items) {
-      const targetId = item.product_id;
-      if (targetId) {
-        const res = await this.inventoryService.reserveStock(targetId, item.quantity, orderId);
-        if (!res.success) {
-          throw new AppError(`Insufficient stock for item: ${item.product_name}`, 400);
-        }
-      }
-    }
+    await reserveOrderInventory(orderId);
     return order;
   }
 
@@ -82,56 +51,43 @@ export class OrderService {
     const order = await this.orderRepository.findById(orderId);
     if (!order) throw new AppError('Order not found', 404);
 
-    if (order.status === OrderStatus.DRAFT) {
+    if (order.status === OrderStatus.PENDING) {
       await this.reserveInventory(orderId);
     }
 
-    return this.transitionStatus(orderId, OrderStatus.PENDING_PAYMENT as OrderStatusType);
+    return order;
   }
 
   async markPaid(orderId: string): Promise<OrderDto> {
     const order = await this.orderRepository.findById(orderId);
     if (!order) throw new AppError('Order not found', 404);
-
-    const items = await this.getOrderItems(orderId);
-    for (const item of items) {
-      if (item.product_id) {
-        await this.inventoryService.decrementStock(item.product_id, item.quantity);
-      }
-    }
-
-    const { error } = await supabaseAdmin
-      .from('orders')
-      .update({
-        status: OrderStatus.PAID,
-        payment_status: PaymentStatus.PAID,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', orderId);
-
-    if (error) throw new AppError('Failed to mark order as paid', 500);
-
-    const updated = await this.orderRepository.findById(orderId);
-    return updated || order;
+    if (order.payment_status === PaymentStatus.PAID) return order;
+    throw new AppError('Direct paid transitions are disabled; use a verified payment finalizer', 409);
   }
 
   async cancelOrder(orderId: string): Promise<OrderDto> {
     const order = await this.orderRepository.findById(orderId);
     if (!order) throw new AppError('Order not found', 404);
 
-    const items = await this.getOrderItems(orderId);
-    for (const item of items) {
-      if (item.product_id) {
-        await this.inventoryService.releaseStock(item.product_id, item.quantity, orderId);
-      }
+    if (!this.validateTransition(order.status, OrderStatus.CANCELLED)) {
+      throw new AppError(`Invalid status transition from ${order.status} to ${OrderStatus.CANCELLED}`, 400);
     }
 
-    return this.transitionStatus(orderId, OrderStatus.CANCELLED as OrderStatusType);
+    await releaseOrderInventory(orderId);
+
+    return this.orderRepository.update(orderId, {
+      status: OrderStatus.CANCELLED,
+      updated_at: new Date().toISOString()
+    });
   }
 
   async refundOrder(orderId: string): Promise<OrderDto> {
     const order = await this.orderRepository.findById(orderId);
     if (!order) throw new AppError('Order not found', 404);
+
+    if (!this.validateTransition(order.status, OrderStatus.REFUNDED)) {
+      throw new AppError(`Invalid status transition from ${order.status} to ${OrderStatus.REFUNDED}`, 400);
+    }
 
     const items = await this.getOrderItems(orderId);
     for (const item of items) {

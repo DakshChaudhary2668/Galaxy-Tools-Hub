@@ -15,7 +15,7 @@
     },
     {
       "key": "adminToken",
-      "value": "YOUR_CLERK_ADMIN_JWT",
+      "value": "YOUR_SUPABASE_ADMIN_JWT",
       "type": "string"
     },
     {

@@ -39,3 +39,12 @@ logs/
 Home Page.html
 Home Page_files/
 *.zip
+
+# Agents
+.agents
+
+# Local one-off administration helpers and Supabase CLI state
+apps/server/create_admin.js
+apps/server/create_product.js
+apps/server/get_profile.js
+supabase/.temp/

@@ -13,7 +13,7 @@
 
 2. Setup Environment Variables:
    - Copy `.env.example` to `apps/web/.env` and `apps/server/.env`.
-   - Provide Supabase & Clerk secret keys.
+   - Provide Supabase URL, Anon Key, and Service Role Key.
 
 3. Launch Monorepo in Local Development Mode:
    ```bash

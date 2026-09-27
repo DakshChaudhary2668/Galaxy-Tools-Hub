@@ -1,6 +1,6 @@
 # Galaxy Tools Hub — Industrial E-Commerce Platform
 
-Enterprise-level monorepo architecture for **Galaxy Tools Hub**, an industrial tools and equipment e-commerce platform built with Next.js 15, Express.js, TypeScript, Supabase PostgreSQL, Clerk Authentication, and SCSS Modules.
+Enterprise-level monorepo architecture for **Galaxy Tools Hub**, an industrial tools and equipment e-commerce platform built with Next.js 15, Express.js, TypeScript, Supabase PostgreSQL, Supabase Auth, and SCSS Modules.
 
 ---
 
@@ -35,7 +35,7 @@ Strict 4-layer request flow following Clean Architecture & YAGNI principles:
 ```
 GalaxyToolsHub/
 ├── apps/
-│   ├── server/           # Express.js REST API Server (TS, Supabase, Clerk, Zod)
+│   ├── server/           # Express.js REST API Server (TS, Supabase, Zod)
 │   └── web/              # Next.js 15 App Router Frontend (SCSS Modules, Framer Motion)
 ├── packages/
 │   ├── config/           # Shared ESLint, TypeScript, and Prettier configurations
@@ -51,9 +51,9 @@ GalaxyToolsHub/
 ## 🛠 Tech Stack
 
 - **Frontend**: Next.js 15 (App Router), TypeScript, SCSS Modules, Framer Motion, Lucide Icons, TanStack Query, React Hook Form
-- **Backend**: Node.js, Express.js, TypeScript, Zod, Clerk SDK, Supabase JS SDK
-- **Database & Storage**: Supabase PostgreSQL (28 Production Tables), Supabase Storage
-- **Authentication**: Dual Auth (Clerk Auth for Admin Staff, Supabase Auth for B2B Customers)
+- **Backend**: Node.js, Express.js, TypeScript, Zod, Supabase JS SDK
+- **Database**: Supabase PostgreSQL (Row Level Security, Foreign Key Cascades)
+- **Authentication**: Unified Supabase Auth (RBAC for Admins & B2B Customer Profiles)
 - **Monorepo & Build**: Turborepo, pnpm workspace
 
 ---
@@ -72,7 +72,7 @@ cp apps/server/.env.example apps/server/.env
 cp apps/web/.env.example apps/web/.env
 ```
 
-Populate `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY`.
+Populate `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`. The optional live-test harness also needs `SUPABASE_ANON_KEY`; the production server does not.
 
 ### 3. Installation & Database Seeding
 ```bash

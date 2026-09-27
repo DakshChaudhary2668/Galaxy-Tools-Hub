@@ -1,0 +1,171 @@
+@use "@/styles/_shared.scss" as *;
+
+
+.pageWrapper {
+  background-color: #FFFFFF;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.container {
+  @include container;
+  padding-top: 24px;
+  padding-bottom: 80px;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #6B7280;
+  margin-bottom: 24px;
+
+  a {
+    color: #4B5563;
+    transition: color 0.15s ease;
+    &:hover { color: #000000; }
+  }
+
+  span {
+    color: #111827;
+    font-weight: 700;
+  }
+}
+
+.pageHeader {
+  background-color: #111827;
+  color: #FFFFFF;
+  border-radius: 2px;
+  padding: 36px 40px;
+  margin-bottom: 40px;
+
+  h1 {
+    font-size: clamp(22px, 3vw, 28px);
+    font-weight: 900;
+    margin-bottom: 6px;
+  }
+
+  p {
+    font-size: 13.5px;
+    color: #9CA3AF;
+  }
+}
+
+.contentGrid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 40px;
+
+  @include tablet {
+    grid-template-columns: 1fr;
+  }
+}
+
+.benefitCol {
+  h2 {
+    font-size: 18px;
+    font-weight: 900;
+    color: #111827;
+    margin-bottom: 24px;
+  }
+}
+
+.benefitList {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.benefitItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  background-color: #F9FAFB;
+  border: 1px solid #E5E7EB;
+  border-radius: 2px;
+  padding: 20px;
+
+  strong {
+    font-size: 14px;
+    font-weight: 800;
+    color: #111827;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  p {
+    font-size: 13px;
+    color: #4B5563;
+    line-height: 1.4;
+  }
+}
+
+.formCard {
+  background-color: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 2px;
+  padding: 32px;
+
+  h3 {
+    font-size: 16px;
+    font-weight: 800;
+    color: #111827;
+    margin-bottom: 20px;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #374151;
+  }
+
+  input {
+    padding: 10px 12px;
+    border: 1px solid #D1D5DB;
+    border-radius: 2px;
+    font-size: 13px;
+    outline: none;
+
+    &:focus {
+      border-color: #111111;
+    }
+  }
+}
+
+.applyBtn {
+  @include button-reset;
+  margin-top: 6px;
+  height: 46px;
+  background-color: #FCD400;
+  color: #000000;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: #E6C200;
+  }
+}

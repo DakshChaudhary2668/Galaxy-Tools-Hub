@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { OrderService } from '../services/order.service';
 import { sendSuccess } from '../utils/response';
 import { AppError } from '../utils/app-error';
-import { OrderStatusType } from '@galaxy/constants';
+import { isOrderStatus, OrderStatus, OrderStatusType } from '@galaxy/constants';
 
 const orderService = new OrderService();
 
@@ -40,19 +40,17 @@ export async function getOrderById(req: Request, res: Response, next: NextFuncti
 export async function updateOrderStatusAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const { status } = req.body;
-    if (!status) {
-      return next(new AppError('Target status is required', 400));
+    if (!isOrderStatus(status)) {
+      return next(new AppError('A valid target order status is required', 400));
     }
 
     const orderId = req.params.id;
     let updated;
 
-    if (status === 'Cancelled') {
+    if (status === OrderStatus.CANCELLED) {
       updated = await orderService.cancelOrder(orderId);
-    } else if (status === 'Refunded') {
+    } else if (status === OrderStatus.REFUNDED) {
       updated = await orderService.refundOrder(orderId);
-    } else if (status === 'Paid') {
-      updated = await orderService.markPaid(orderId);
     } else {
       updated = await orderService.transitionStatus(orderId, status as OrderStatusType);
     }

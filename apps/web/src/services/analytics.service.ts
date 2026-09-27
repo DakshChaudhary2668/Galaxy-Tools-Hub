@@ -84,15 +84,16 @@ export interface DashboardSummaryData {
   topProducts: TopProduct[];
 }
 
-export async function getDashboardSummary(range = '30d') {
-  return apiClient.get<{ data: DashboardSummaryData }>(`/analytics/dashboard-summary?range=${range}`);
+export async function getDashboardSummary(range = '30d'): Promise<DashboardSummaryData | null> {
+  const res = await apiClient.get<{ data: DashboardSummaryData }>(`/analytics/dashboard-summary?range=${range}`);
+  return res?.data || null;
 }
 
 export async function getDetailedAnalytics(params?: {
   range?: string;
   startDate?: string;
   endDate?: string;
-}) {
+}): Promise<DetailedAnalyticsData | null> {
   const queryObj: Record<string, string> = {};
   if (params) {
     Object.entries(params).forEach(([key, val]) => {
@@ -100,5 +101,6 @@ export async function getDetailedAnalytics(params?: {
     });
   }
   const qs = Object.keys(queryObj).length > 0 ? '?' + new URLSearchParams(queryObj).toString() : '';
-  return apiClient.get<{ data: DetailedAnalyticsData }>(`/analytics/detailed${qs}`);
+  const res = await apiClient.get<{ data: DetailedAnalyticsData }>(`/analytics/detailed${qs}`);
+  return res?.data || null;
 }

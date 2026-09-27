@@ -1,4 +1,7 @@
+@use "variables" as *;
+@use "breakpoints" as *;
 // Mixins for UI elements and layouts
+
 
 @mixin flex-center {
   display: flex;

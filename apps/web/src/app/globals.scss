@@ -1,7 +1,8 @@
-@import "../styles/variables";
-@import "../styles/mixins";
-@import "../styles/breakpoints";
-@import "../styles/utilities";
+@use "@/styles/_shared.scss" as *;
+
+
+@use "../styles/utilities";
+
 
 *, *::before, *::after {
   box-sizing: border-box;

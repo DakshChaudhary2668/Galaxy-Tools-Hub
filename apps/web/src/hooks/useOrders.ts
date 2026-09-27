@@ -7,6 +7,7 @@ import {
   updateOrderStatus
 } from '@/services/order.service';
 import { OrderDto } from '@galaxy/types';
+import { OrderStatusType } from '@galaxy/constants';
 
 export function useOrders(params?: Record<string, unknown>, token?: string) {
   return useQuery({
@@ -37,7 +38,7 @@ export function useCreateDraftOrder() {
 export function useUpdateOrderStatus() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, status, token }: { id: string; status: string; token?: string }) =>
+    mutationFn: ({ id, status, token }: { id: string; status: OrderStatusType; token?: string }) =>
       updateOrderStatus(id, status, token),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(variables.id) });

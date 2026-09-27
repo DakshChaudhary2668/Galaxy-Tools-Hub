@@ -1,14 +1,17 @@
 import { BaseRepository } from './base.repository';
-import { ProductDto, ProductQueryParams } from '@galaxy/types';
+import { ProductDto, ProductQueryParams, ProductView } from '@galaxy/types';
 import { supabaseAdmin } from '../config/supabase';
+import { z } from 'zod';
 
 export interface PaginatedProductsResult {
-  products: ProductDto[];
+  products: ProductView[];
   total: number;
   page: number;
   limit: number;
   totalPages: number;
 }
+
+const UuidSchema = z.string().uuid();
 
 export class ProductRepository extends BaseRepository<ProductDto> {
   constructor() {
@@ -21,7 +24,9 @@ export class ProductRepository extends BaseRepository<ProductDto> {
     const limit = params.limit || 12;
     const offset = (page - 1) * limit;
 
-    let query = supabaseAdmin.from(this.tableName).select('*', { count: 'exact' });
+    let query = supabaseAdmin
+      .from(this.tableName)
+      .select('*, category:categories!products_category_id_fkey(id, name, slug), brand:brands!products_brand_id_fkey(id, name, slug), images:product_images!product_images_product_id_fkey(id, storage_path, public_url, is_primary, sort_order)', { count: 'exact' });
 
     // Active filter
     if (params.active !== undefined) {
@@ -33,42 +38,36 @@ export class ProductRepository extends BaseRepository<ProductDto> {
       query = query.eq('is_featured', true);
     }
 
+    // Discounted filter
+    if (params.discounted) {
+      query = query.not('compare_at_price', 'is', null).gt('compare_at_price', 0);
+    }
+
     // Category filter (UUID or slug)
     if (params.category) {
-      if (params.category.includes('-')) {
-        // Fetch category ID by slug
-        const { data: cat } = await supabaseAdmin.from('categories').select('id').eq('slug', params.category).single();
-        if (cat) {
-          query = query.eq('category_id', cat.id);
-        }
-      } else {
-        query = query.eq('category_id', params.category);
+      const categoryId = await this.resolveFilterId('categories', 'slug', params.category);
+      if (!categoryId) {
+        return this.emptyResult(page, limit);
       }
+      query = query.eq('category_id', categoryId);
     }
 
     // Brand filter (UUID or slug)
     if (params.brand) {
-      if (params.brand.includes('-')) {
-        const { data: b } = await supabaseAdmin.from('brands').select('id').eq('slug', params.brand).single();
-        if (b) {
-          query = query.eq('brand_id', b.id);
-        }
-      } else {
-        query = query.eq('brand_id', params.brand);
+      const brandId = await this.resolveFilterId('brands', 'slug', params.brand);
+      if (!brandId) {
+        return this.emptyResult(page, limit);
       }
+      query = query.eq('brand_id', brandId);
     }
 
     // Vendor filter (UUID or code)
     if (params.vendor) {
-      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(params.vendor);
-      if (!isUuid) {
-        const { data: v } = await supabaseAdmin.from('vendors').select('id').eq('code', params.vendor.toUpperCase()).single();
-        if (v) {
-          query = query.eq('source_vendor_id', v.id);
-        }
-      } else {
-        query = query.eq('source_vendor_id', params.vendor);
+      const vendorId = await this.resolveFilterId('vendors', 'code', params.vendor, true);
+      if (!vendorId) {
+        return this.emptyResult(page, limit);
       }
+      query = query.eq('source_vendor_id', vendorId);
     }
 
     // Price range filters
@@ -81,7 +80,11 @@ export class ProductRepository extends BaseRepository<ProductDto> {
 
     // Search query (PostgreSQL FTS / ILIKE across fields)
     if (params.search) {
-      const searchTerm = `%${params.search}%`;
+      const escaped = params.search
+        .replace(/\\/g, '\\\\')
+        .replace(/[%_]/g, '\\$&')
+        .replace(/"/g, '\\"');
+      const searchTerm = `"%${escaped}%"`;
       query = query.or(
         `name.ilike.${searchTerm},description.ilike.${searchTerm},seo_title.ilike.${searchTerm},meta_keywords.ilike.${searchTerm},source_model_no.ilike.${searchTerm},sku.ilike.${searchTerm}`
       );
@@ -123,11 +126,36 @@ export class ProductRepository extends BaseRepository<ProductDto> {
     const totalPages = Math.ceil(total / limit);
 
     return {
-      products: (data as ProductDto[]) || [],
+      products: (data as ProductView[]) || [],
       total,
       page,
       limit,
       totalPages
     };
+  }
+
+  private emptyResult(page: number, limit: number): PaginatedProductsResult {
+    return { products: [], total: 0, page, limit, totalPages: 0 };
+  }
+
+  private async resolveFilterId(
+    table: 'categories' | 'brands' | 'vendors',
+    lookupColumn: 'slug' | 'code',
+    value: string,
+    uppercaseLookup = false
+  ): Promise<string | null> {
+    if (UuidSchema.safeParse(value).success) {
+      return value;
+    }
+
+    const lookupValue = uppercaseLookup ? value.toUpperCase() : value;
+    const { data, error } = await supabaseAdmin
+      .from(table)
+      .select('id')
+      .eq(lookupColumn, lookupValue)
+      .maybeSingle();
+
+    if (error) throw new Error(error.message);
+    return data?.id || null;
   }
 }

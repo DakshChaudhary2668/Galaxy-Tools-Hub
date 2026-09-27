@@ -91,7 +91,7 @@ Source Model No:         GT91 TRMS
 |---|---|
 | **Database** | Supabase PostgreSQL 15+ |
 | **Authentication (Customers)** | Supabase Auth (`auth.users`) |
-| **Authentication (Admin)** | Clerk (existing implementation) |
+| **Authentication (Admin)** | Supabase Auth (`auth.users` + `admin_users` table) |
 | **Storage** | Supabase Storage |
 | **Backend** | Express.js (apps/server) — Clean Architecture |
 | **Frontend** | Next.js 15 App Router (apps/web) |
@@ -122,16 +122,14 @@ CREATE EXTENSION IF NOT EXISTS "pg_trgm";     -- Trigram matching for full-text 
 
 ## 4. User & Authentication Model
 
-### Dual Authentication Architecture
+### Unified Supabase Authentication Architecture
 
-The project uses a **split authentication model**:
+The project uses **Supabase Auth** as the single unified identity provider:
 
 | User Type | Auth Provider | Reason |
 |---|---|---|
-| **Customers** | Supabase Auth (`auth.users`) | Self-service registration, customer-facing flows |
-| **Admin/Internal** | Clerk | Already implemented; admin dashboard auth via `@clerk/express` |
-
-> **Existing Code Conflict:** The current codebase (`schema.sql`, `constants/index.ts`, `rbac.middleware.ts`) uses Clerk with `Owner`, `Manager`, `Staff` roles for admin users. The specification calls for a simplified `CUSTOMER | ADMIN` model. This guide defines the **target architecture** below while documenting the existing state.
+| **Customers** | Supabase Auth (`auth.users`) | Self-service registration, customer profile in `profiles` |
+| **Admin/Internal** | Supabase Auth (`auth.users`) | Admin authorization via `admin_users` table and RBAC middleware |
 
 ### `profiles` — Customer Profiles (MVP)
 
@@ -159,25 +157,24 @@ Links to `auth.users` for customer accounts authenticated via Supabase Auth.
 
 ### `admin_users` — Internal Admin Users (MVP)
 
-Preserves the existing Clerk-based admin authentication. This table corresponds to the existing `users` table in `schema.sql`.
+Internal store administrators and operators authenticated via Supabase Auth. Linked directly to `auth.users(id)`.
 
 | Column | Type | Nullable | Default | Constraints |
 |---|---|---|---|---|
 | `id` | UUID | NO | `uuid_generate_v4()` | PK |
-| `clerk_user_id` | VARCHAR(255) | NO | — | UNIQUE |
+| `user_id` | UUID | NO | — | FK → `auth.users(id)` ON DELETE CASCADE, UNIQUE |
 | `name` | VARCHAR(255) | NO | — | |
 | `email` | VARCHAR(255) | NO | — | UNIQUE |
-| `role` | VARCHAR(50) | NO | — | CHECK: `Owner`, `Manager`, `Staff` |
-| `status` | VARCHAR(50) | NO | `'Active'` | CHECK: `Active`, `Inactive`, `Suspended` |
+| `role` | VARCHAR(50) | NO | — | CHECK: `OWNER`, `MANAGER`, `STAFF` |
+| `status` | VARCHAR(50) | NO | `'ACTIVE'` | CHECK: `ACTIVE`, `INACTIVE`, `SUSPENDED` |
 | `created_at` | TIMESTAMPTZ | NO | `NOW()` | |
+| `updated_at` | TIMESTAMPTZ | NO | `NOW()` | |
 
 **Notes:**
-- Renamed from `users` to `admin_users` for clarity, avoiding collision with customer `profiles`.
-- The existing role system (`Owner`, `Manager`, `Staff`) is preserved because the `rbac.middleware.ts` and `@galaxy/constants` package already implement it.
-- For MVP, all roles effectively have the same dashboard access. The role field exists for future differentiation if needed.
+- `admin_users` links directly to `auth.users` via `user_id`.
+- The role system (`OWNER`, `MANAGER`, `STAFF`) is enforced via `rbac.middleware.ts` and `@galaxy/constants`.
+- For MVP, all roles have dashboard access with granular permissions checked by backend RBAC guards.
 - Do NOT create separate `roles`, `permissions`, `role_permissions`, `user_roles` tables.
-
-> **Conflict Resolution:** The existing code has `users` with Clerk auth + roles. The specification wants `profiles` with Supabase Auth + `CUSTOMER | ADMIN`. Both are preserved: `admin_users` for Clerk-authenticated admins, `profiles` for Supabase Auth customer accounts. Documented under [Open Business Decisions](#34-open-business-decisions).
 
 ---
 
@@ -956,7 +953,7 @@ All admin users have **full dashboard access**. There is no complex role hierarc
 - `role_permissions` table
 - `user_roles` table
 
-The existing `admin_users.role` field (`Owner`, `Manager`, `Staff`) from the Clerk-based auth is sufficient for any future differentiation.
+The existing `admin_users.role` field (`OWNER`, `MANAGER`, `STAFF`) linked to Supabase Auth is sufficient for RBAC differentiation.
 
 ### `invoices` — Existing Table (PRESERVED)
 
@@ -1101,9 +1098,9 @@ SQL views or materialized views should be created **only if** query performance 
 
 ### Admin RLS Policies
 
-Admin users (authenticated via Clerk on the Express backend) bypass Supabase RLS through the **service role key** (`SUPABASE_SERVICE_ROLE_KEY`). All admin data access is through the backend API, which enforces authorization at the middleware level.
+Admin users (authenticated via Supabase Auth on the Express backend) bypass Supabase RLS through the **service role key** (`SUPABASE_SERVICE_ROLE_KEY`). All admin data access is through the backend API, which enforces authorization via `adminAuthGuard` and `rbacGuard` middleware.
 
-For MVP, all admin users (`Owner`, `Manager`, `Staff`) receive identical operational access.
+For MVP, all admin users (`OWNER`, `MANAGER`, `STAFF`) receive operational access governed by backend RBAC guards.
 
 ---
 
@@ -1333,7 +1330,7 @@ erDiagram
 
     ADMIN_USERS {
         uuid id PK
-        varchar clerk_user_id UK
+        uuid user_id FK, UK
         varchar name
         varchar email UK
         varchar role
@@ -1457,7 +1454,7 @@ erDiagram
 | # | Table | Purpose | Phase |
 |---|---|---|---|
 | 1 | `profiles` | Customer profiles linked to Supabase Auth | MVP |
-| 2 | `admin_users` | Internal admin users (Clerk auth) | MVP |
+| 2 | `admin_users` | Internal admin users (Supabase Auth) | MVP |
 | 3 | `user_addresses` | Customer shipping/billing addresses | MVP |
 | 4 | `vendors` | Supplier/vendor sources | MVP |
 | 5 | `brands` | Product brands/manufacturers | MVP |
@@ -1509,9 +1506,9 @@ All enum/check-controlled values in one place. Avoid duplicate or contradictory 
 
 | Value | Description |
 |---|---|
-| `Owner` | Primary admin |
-| `Manager` | Partner/manager |
-| `Staff` | Staff member |
+| `OWNER` | Primary admin |
+| `MANAGER` | Partner/manager |
+| `STAFF` | Staff member |
 
 ### `product_type` (products)
 
@@ -1772,16 +1769,16 @@ The PDFs establish vendor-level certifications but do NOT confirm that every ind
 
 ### ⚠️ EXISTING CODE CONFLICTS
 
-#### 8. Authentication Provider Split
+#### 8. Authentication Provider Architecture
 
-| Aspect | Existing Code | This Specification |
+| Aspect | Backend Code | Database Architecture |
 |---|---|---|
-| Admin auth | Clerk | Clerk (preserved) |
-| Customer auth | `customers` table with direct fields | Supabase Auth → `profiles` |
-| Admin user table | `users` | `admin_users` (renamed) |
-| Customer table | `customers` (direct credentials) | `profiles` (linked to `auth.users`) |
+| Admin auth | Supabase Auth (`auth.users`) | `admin_users` table (RBAC via `user_id`) |
+| Customer auth | Supabase Auth (`auth.users`) | `profiles` table (linked to `auth.users`) |
+| Admin user table | `admin_users` | `admin_users` (linked to `auth.users`) |
+| Customer table | `profiles` | `profiles` (linked to `auth.users`) |
 
-- **Resolution:** Both systems coexist. The existing `customers` table is replaced by `profiles` linked to Supabase Auth. The existing `users` table is renamed to `admin_users`.
+- **Resolution:** Unified Supabase Auth handles both Customer and Admin identities. Admins are authorized by their existence in `admin_users` and evaluated by RBAC middleware.
 
 #### 9. Order/Payment Status Values
 

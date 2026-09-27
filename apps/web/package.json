@@ -6,11 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint src",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@clerk/nextjs": "^5.7.1",
     "@galaxy/config": "workspace:*",
     "@galaxy/constants": "workspace:*",
     "@galaxy/types": "workspace:*",

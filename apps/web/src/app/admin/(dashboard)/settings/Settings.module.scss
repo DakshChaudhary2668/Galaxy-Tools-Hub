@@ -1,0 +1,389 @@
+@use "@/styles/_shared.scss" as *;
+
+.settingsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Header */
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .titleBlock {
+    h1 {
+      font-size: 24px;
+      font-weight: 900;
+      color: #0F172A;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+
+    p {
+      font-size: 13px;
+      color: #64748B;
+    }
+  }
+
+  .primaryBtn {
+    @include button-reset;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 40px;
+    padding: 0 18px;
+    background-color: #0F172A;
+    color: #FFFFFF;
+    font-size: 13px;
+    font-weight: 800;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color $transition-fast;
+
+    &:hover:not(:disabled) {
+      background-color: #1E293B;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+/* 2-Column Settings Layout */
+.layoutGrid {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 24px;
+  align-items: flex-start;
+
+  @media (max-width: 860px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Left Sidebar Tabs */
+.navCard {
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  .navTab {
+    @include button-reset;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #64748B;
+    text-align: left;
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover {
+      background-color: #F8FAFC;
+      color: #0F172A;
+    }
+
+    &.active {
+      background-color: #0F172A;
+      color: #FFFFFF;
+    }
+  }
+}
+
+/* Right Content Panel */
+.contentCard {
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 28px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.sectionHeader {
+  padding-bottom: 14px;
+  border-bottom: 1px solid #F1F5F9;
+
+  h2 {
+    font-size: 16px;
+    font-weight: 900;
+    color: #0F172A;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  p {
+    font-size: 13px;
+    color: #64748B;
+    margin: 0;
+  }
+}
+
+/* Forms */
+.formSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #0F172A;
+  }
+
+  input, select, textarea {
+    padding: 9px 12px;
+    font-size: 13px;
+    background-color: #FFFFFF;
+    border: 1px solid #CBD5E1;
+    border-radius: 6px;
+    outline: none;
+    color: #0F172A;
+
+    &:focus {
+      border-color: #0F172A;
+      box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.08);
+    }
+  }
+
+  textarea {
+    min-height: 70px;
+    resize: vertical;
+  }
+
+  .hint {
+    font-size: 11px;
+    color: #64748B;
+  }
+}
+
+/* Toggle Switch Row */
+.toggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background-color: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+
+  .toggleLabel {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    strong {
+      font-size: 13px;
+      color: #0F172A;
+    }
+
+    span {
+      font-size: 11px;
+      color: #64748B;
+    }
+  }
+
+  input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+  }
+}
+
+/* Gateway Status Box */
+.gatewayCard {
+  background-color: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  .gwHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .gwTitle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 15px;
+      font-weight: 800;
+      color: #0F172A;
+    }
+  }
+
+  .infoRow {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #475569;
+
+    code {
+      font-family: monospace;
+      background-color: #E2E8F0;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #0F172A;
+    }
+  }
+}
+
+/* Security Notice */
+.securityBanner {
+  background-color: #EFF6FF;
+  border: 1px solid #BFDBFE;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+
+  .bannerText {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    strong {
+      font-size: 13px;
+      color: #1E40AF;
+    }
+
+    p {
+      font-size: 12px;
+      color: #3B82F6;
+      margin: 0;
+      line-height: 1.5;
+    }
+  }
+}
+
+/* Team Table */
+.teamTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+
+  th {
+    background-color: #F8FAFC;
+    text-align: left;
+    padding: 10px 14px;
+    font-size: 11px;
+    font-weight: 800;
+    color: #64748B;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid #E2E8F0;
+  }
+
+  td {
+    padding: 12px 14px;
+    border-bottom: 1px solid #F1F5F9;
+    color: #1E293B;
+  }
+}
+
+/* Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+
+  &.owner {
+    background-color: #FEF3C7;
+    color: #D97706;
+    border: 1px solid #FDE68A;
+  }
+
+  &.manager {
+    background-color: #DBEAFE;
+    color: #2563EB;
+    border: 1px solid #BFDBFE;
+  }
+
+  &.active {
+    background-color: #DCFCE7;
+    color: #16A34A;
+    border: 1px solid #BBF7D0;
+  }
+
+  &.test {
+    background-color: #FEF3C7;
+    color: #D97706;
+    border: 1px solid #FDE68A;
+  }
+
+  &.live {
+    background-color: #DCFCE7;
+    color: #16A34A;
+    border: 1px solid #BBF7D0;
+  }
+}
+
+/* State Box */
+.stateBox {
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 64px 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+
+  h3 {
+    font-size: 18px;
+    font-weight: 800;
+    color: #0F172A;
+  }
+
+  p {
+    font-size: 13px;
+    color: #64748B;
+  }
+}

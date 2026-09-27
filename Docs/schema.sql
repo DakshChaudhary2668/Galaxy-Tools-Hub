@@ -19,19 +19,20 @@ CREATE EXTENSION IF NOT EXISTS "pg_trgm";     -- Trigram matching for full-text 
 -- ============================================================================
 
 -- ---------------------------------------------------------------------------
--- 1. ADMIN USERS (Internal staff authenticated via Clerk)
+-- 1. ADMIN USERS (Internal staff authenticated via Supabase Auth)
 --    Renamed from 'users' to avoid collision with customer 'profiles'.
---    For MVP, all roles (Owner/Manager/Staff) have identical dashboard access.
+--    Links directly to auth.users(id) via user_id with RBAC role authorization.
 -- ---------------------------------------------------------------------------
 CREATE TABLE admin_users (
   id             UUID         PRIMARY KEY DEFAULT uuid_generate_v4(),
-  clerk_user_id  VARCHAR(255) UNIQUE NOT NULL,
+  user_id        UUID         UNIQUE NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   name           VARCHAR(255) NOT NULL,
   email          VARCHAR(255) UNIQUE NOT NULL,
-  role           VARCHAR(50)  NOT NULL CHECK (role IN ('Owner', 'Manager', 'Staff')),
-  status         VARCHAR(50)  NOT NULL DEFAULT 'Active'
-                              CHECK (status IN ('Active', 'Inactive', 'Suspended')),
-  created_at     TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+  role           VARCHAR(50)  NOT NULL CHECK (role IN ('OWNER', 'MANAGER', 'STAFF')),
+  status         VARCHAR(50)  NOT NULL DEFAULT 'ACTIVE'
+                              CHECK (status IN ('ACTIVE', 'INACTIVE', 'SUSPENDED')),
+  created_at     TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+  updated_at     TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 );
 
 -- ---------------------------------------------------------------------------
@@ -243,7 +244,7 @@ CREATE TABLE inventory_transactions (
 -- ---------------------------------------------------------------------------
 CREATE TABLE profiles (
   id             UUID        PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id        UUID        UNIQUE NOT NULL,  -- FK → auth.users.id (managed by trigger)
+  user_id        UUID        UNIQUE NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   full_name      TEXT        NOT NULL,
   email          TEXT        NOT NULL,
   phone          TEXT,
@@ -431,6 +432,23 @@ CREATE TABLE order_items (
   created_at         TIMESTAMPTZ   NOT NULL DEFAULT NOW()
 );
 
+-- Durable checkout holds. All state changes are made through the restricted
+-- reservation/finalization RPCs in the Sprint 4B migration.
+CREATE TABLE inventory_reservations (
+  id           UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_id     UUID        NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  product_id   UUID        NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
+  quantity     INTEGER     NOT NULL CHECK (quantity > 0),
+  status       TEXT        NOT NULL DEFAULT 'ACTIVE'
+                           CHECK (status IN ('ACTIVE', 'CONSUMED', 'RELEASED', 'EXPIRED')),
+  expires_at   TIMESTAMPTZ NOT NULL,
+  consumed_at  TIMESTAMPTZ,
+  released_at  TIMESTAMPTZ,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CONSTRAINT uq_inventory_reservations_order_product UNIQUE (order_id, product_id)
+);
+
 -- ---------------------------------------------------------------------------
 -- 19. ORDER ADDRESSES (Historical snapshots — not a reference to current address)
 -- ---------------------------------------------------------------------------
@@ -603,6 +621,10 @@ CREATE TABLE quote_request_items (
 -- PHASE 7: INDEXES
 -- ============================================================================
 
+-- Admin Users
+CREATE INDEX idx_admin_users_user_id       ON admin_users(user_id);
+CREATE INDEX idx_admin_users_email         ON admin_users(email);
+
 -- Products
 CREATE INDEX idx_products_sku              ON products(sku);
 CREATE INDEX idx_products_slug             ON products(slug);
@@ -628,6 +650,10 @@ CREATE INDEX idx_order_items_product_id    ON order_items(product_id);
 -- Payments
 CREATE INDEX idx_payments_order_id         ON payments(order_id);
 CREATE INDEX idx_payments_status           ON payments(status);
+CREATE UNIQUE INDEX uq_payments_gateway_reference
+  ON payments(gateway_reference) WHERE gateway_reference IS NOT NULL;
+CREATE UNIQUE INDEX uq_payments_transaction_id
+  ON payments(transaction_id) WHERE transaction_id IS NOT NULL;
 
 -- Payment Verifications
 CREATE INDEX idx_pv_utr_number             ON payment_verifications(utr_number);

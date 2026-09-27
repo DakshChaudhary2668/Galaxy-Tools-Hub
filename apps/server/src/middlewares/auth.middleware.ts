@@ -7,8 +7,11 @@ declare global {
     interface Request {
       user?: {
         id: string;
-        clerkId: string;
+        userId?: string;
+        email?: string;
+        name?: string;
         role: string;
+        status?: string;
       };
       customer?: {
         id: string;
@@ -20,35 +23,45 @@ declare global {
   }
 }
 
-// --- Admin Auth Guard (Clerk JWT verification / Dev fallback) ---
 export async function adminAuthGuard(req: Request, _res: Response, next: NextFunction): Promise<void> {
   try {
-    const authHeader = req.headers.authorization;
-    const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
-
-    // Development / Local environment bypass when Clerk is unconfigured
-    if (process.env.NODE_ENV === 'development' || !process.env.CLERK_SECRET_KEY || process.env.CLERK_SECRET_KEY.includes('your_clerk_secret_key')) {
-      req.user = {
-        id: 'admin-owner-id',
-        clerkId: 'clerk_owner_dev',
-        role: 'OWNER'
-      };
-      return next();
+    const match = req.headers.authorization?.trim().match(/^Bearer\s+(\S+)$/i);
+    if (!match) {
+      return next(new AppError('Unauthorized: Missing or invalid admin authentication token', 401));
     }
 
-    if (!token) {
-      return next(new AppError('Unauthorized: Missing admin authorization token', 401));
+    const { data: authData, error: authError } = await supabaseAdmin.auth.getUser(match[1]);
+    if (authError || !authData.user) {
+      return next(new AppError('Unauthorized: Invalid or expired admin session token', 401));
     }
 
-    // In production with real Clerk credentials, verify token
+    const { data: adminUser, error: adminError } = await supabaseAdmin
+      .from('admin_users')
+      .select('id, user_id, name, email, role, status')
+      .eq('user_id', authData.user.id)
+      .maybeSingle();
+
+    if (adminError) {
+      return next(new AppError('Unable to verify admin permissions', 500));
+    }
+    if (!adminUser) {
+      return next(new AppError('Forbidden: Admin permission required', 403));
+    }
+    if (adminUser.status !== 'ACTIVE') {
+      return next(new AppError('Forbidden: Admin account is not active', 403));
+    }
+
     req.user = {
-      id: 'admin-verified-id',
-      clerkId: 'clerk_verified_user',
-      role: 'OWNER'
+      id: adminUser.id,
+      userId: adminUser.user_id,
+      email: adminUser.email || authData.user.email,
+      name: adminUser.name,
+      role: adminUser.role,
+      status: adminUser.status
     };
-    next();
-  } catch {
-    next(new AppError('Unauthorized: Admin token verification failed', 401));
+    return next();
+  } catch (error) {
+    next(error instanceof AppError ? error : new AppError('Unable to verify admin authentication', 500));
   }
 }
 

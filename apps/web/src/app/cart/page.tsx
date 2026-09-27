@@ -24,8 +24,8 @@ export default function CartPage() {
   );
 
   const discount = items.reduce((sum, item) => {
-    if (item.product.originalPrice && item.product.originalPrice > item.product.price) {
-      return sum + (item.product.originalPrice - item.product.price) * item.quantity;
+    if (item.product.compare_at_price && item.product.price && item.product.compare_at_price > item.product.price) {
+      return sum + (item.product.compare_at_price - item.product.price) * item.quantity;
     }
     return sum;
   }, 0);
@@ -102,22 +102,22 @@ export default function CartPage() {
               </div>
 
               {items.map(({ product, quantity }) => {
-                const itemSubtotal = product.price * quantity;
-                const skuDisplay = product.sku || `SKU: ${product.id.toUpperCase()}`;
+                const itemSubtotal = (product.price || 0) * quantity;
+                const skuDisplay = product.sku || `SKU: ${product.id!.toUpperCase()}`;
 
                 return (
                   <div key={product.id} className={styles.itemRow}>
                     {/* Product Cell */}
                     <div className={styles.productCell}>
                       <Image
-                        src={product.image}
-                        alt={product.name}
+                        src={product.image || '/images/placeholder.jpg'}
+                        alt={product.name || 'Product'}
                         width={72}
                         height={72}
                         className={styles.productImg}
                       />
                       <div className={styles.productInfo}>
-                        <span className={styles.productCategory}>{product.category}</span>
+                        <span className={styles.productCategory}>{product.category?.name || 'Uncategorized'}</span>
                         <Link href={`/product/${product.id}`} className={styles.productName}>
                           {product.name}
                         </Link>
@@ -127,7 +127,7 @@ export default function CartPage() {
 
                     {/* Unit Price */}
                     <div className={styles.priceCell}>
-                      {product.currency}{formatPrice(product.price)}
+                      {product.currency || '₹'}{formatPrice(product.price || 0)}
                     </div>
 
                     {/* Quantity Controls */}
@@ -135,7 +135,7 @@ export default function CartPage() {
                       <div className={styles.qtyControls}>
                         <button
                           className={styles.qtyBtn}
-                          onClick={() => updateQuantity(product.id, quantity - 1)}
+                          onClick={() => updateQuantity(product.id!, quantity - 1)}
                           aria-label={`Decrease quantity of ${product.name}`}
                         >
                           -
@@ -143,7 +143,7 @@ export default function CartPage() {
                         <span className={styles.qtyVal}>{quantity}</span>
                         <button
                           className={styles.qtyBtn}
-                          onClick={() => updateQuantity(product.id, quantity + 1)}
+                          onClick={() => updateQuantity(product.id!, quantity + 1)}
                           aria-label={`Increase quantity of ${product.name}`}
                         >
                           +
@@ -159,7 +159,7 @@ export default function CartPage() {
                     {/* Remove Action */}
                     <button
                       className={styles.removeBtn}
-                      onClick={() => removeFromCart(product.id)}
+                      onClick={() => removeFromCart(product.id!)}
                       aria-label={`Remove ${product.name} from cart`}
                       title="Remove item"
                     >

@@ -1,18 +1,32 @@
 // Galaxy Tools Hub API — base fetch client
-// Attach Clerk JWT token to every request.
+// Attach the Supabase access token to authenticated requests.
 // Usage: import { apiClient } from '@/services/api';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api/v1';
+import { supabase } from '@/lib/supabase';
+
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+if (!BASE_URL) throw new Error('NEXT_PUBLIC_API_URL is required');
 
 type RequestOptions = RequestInit & { token?: string };
 
+async function getAuthToken(): Promise<string | null> {
+  if (typeof window === 'undefined') return null;
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.access_token || null;
+  } catch {
+    return null;
+  }
+}
+
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { token, ...init } = options;
+  const authToken = token || (await getAuthToken());
   const headers = new Headers(init.headers);
   headers.set('Content-Type', 'application/json');
-  if (token) headers.set('Authorization', `Bearer ${token}`);
+  if (authToken) headers.set('Authorization', `Bearer ${authToken}`);
 
-  const res = await fetch(`${BASE_URL}${path}`, { ...init, headers });
+  const res = await fetch(`${BASE_URL}${path}`, { cache: 'no-store', ...init, headers });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     throw Object.assign(new Error(body?.message ?? res.statusText), { status: res.status, body });

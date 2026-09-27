@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { supabaseAdmin } from '../config/supabase';
 import { sendSuccess } from '../utils/response';
 import { PaymentStatus, OrderStatus } from '@galaxy/constants';
+import { AppError } from '../utils/app-error';
 
 interface RevenuePoint {
   date: string;
@@ -50,7 +51,7 @@ export async function getDashboardSummary(req: Request, res: Response, next: Nex
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
 
-    let startDate = new Date();
+    const startDate = new Date();
     if (range === '7d') {
       startDate.setDate(now.getDate() - 7);
     } else if (range === '3m') {
@@ -94,7 +95,14 @@ export async function getDashboardSummary(req: Request, res: Response, next: Nex
       // Inventory list
       supabaseAdmin
         .from('inventory')
-        .select('id, variant_id, product_id, quantity, reserved_quantity, reorder_level'),
+        .select(`
+          id,
+          product_id,
+          quantity,
+          reserved_quantity,
+          reorder_level,
+          product:products!inventory_product_id_fkey(id, name, sku)
+        `),
       // Recent 8 orders with addresses
       supabaseAdmin
         .from('orders')
@@ -118,6 +126,22 @@ export async function getDashboardSummary(req: Request, res: Response, next: Nex
         .limit(100)
     ]);
 
+    const dashboardQueries: Array<[string, PromiseSettledResult<any>]> = [
+      ['orders', allOrdersRes],
+      ['order timeline', rangeOrdersRes],
+      ['today orders', todayOrdersRes],
+      ['product count', productsCountRes],
+      ['customer count', customersCountRes],
+      ['inventory', inventoryRes],
+      ['recent orders', recentOrdersRes],
+      ['order items', orderItemsRes]
+    ];
+    for (const [label, result] of dashboardQueries) {
+      if (result.status === 'rejected' || result.value.error) {
+        throw new AppError(`Failed to retrieve dashboard ${label}`, 500);
+      }
+    }
+
     // Extract Data
     const allOrders = allOrdersRes.status === 'fulfilled' ? allOrdersRes.value.data || [] : [];
     const totalOrdersCount = allOrdersRes.status === 'fulfilled' ? allOrdersRes.value.count || allOrders.length : 0;
@@ -129,9 +153,7 @@ export async function getDashboardSummary(req: Request, res: Response, next: Nex
 
     const pendingOrdersCount = allOrders.filter(
       (o) =>
-        o.status === OrderStatus.PENDING_PAYMENT ||
         o.status === OrderStatus.PENDING ||
-        o.status === 'Draft' ||
         o.payment_status === PaymentStatus.PENDING ||
         o.payment_status === 'PENDING'
     ).length;
@@ -145,16 +167,19 @@ export async function getDashboardSummary(req: Request, res: Response, next: Nex
     const lowStockItems: LowStockItem[] = [];
 
     for (const inv of inventoryList) {
-      const stock = (inv.quantity || 0) - (inv.reserved_quantity || 0);
-      const threshold = inv.reorder_level || 5;
+      const product = Array.isArray(inv.product) ? inv.product[0] : inv.product;
+      if (!product) throw new AppError(`Product details missing for inventory record ${inv.id}`, 500);
+
+      const stock = (inv.quantity ?? 0) - (inv.reserved_quantity ?? 0);
+      const threshold = inv.reorder_level ?? 5;
 
       if (stock <= threshold) {
         lowStockCount++;
         if (lowStockItems.length < 6) {
           lowStockItems.push({
             id: inv.id,
-            productName: `SKU Item ${inv.variant_id || inv.product_id || inv.id}`.slice(0, 30),
-            sku: inv.variant_id || inv.product_id || 'GENERIC-SKU',
+            productName: product.name,
+            sku: product.sku,
             stock,
             threshold,
             status: stock <= 0 ? 'OUT_OF_STOCK' : 'LOW_STOCK'
@@ -216,7 +241,7 @@ export async function getDashboardSummary(req: Request, res: Response, next: Nex
         customerName,
         totalAmount: ord.total_amount || 0,
         paymentStatus: ord.payment_status || 'PENDING',
-        orderStatus: ord.status || 'Draft',
+        orderStatus: ord.status || OrderStatus.PENDING,
         createdAt: ord.created_at || ord.placed_at || new Date().toISOString()
       };
     });
@@ -349,7 +374,7 @@ export async function getDetailedAnalytics(req: Request, res: Response, next: Ne
 
     for (const ord of orders) {
       const pStatus = (ord.payment_status || 'PENDING').toUpperCase();
-      const oStatus = ord.status || 'Draft';
+      const oStatus = ord.status || OrderStatus.PENDING;
 
       orderStatusDist[oStatus] = (orderStatusDist[oStatus] || 0) + 1;
       paymentStatusDist[pStatus] = (paymentStatusDist[pStatus] || 0) + 1;

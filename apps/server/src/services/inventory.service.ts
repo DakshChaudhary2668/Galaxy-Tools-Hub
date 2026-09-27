@@ -1,185 +1,150 @@
 import { supabaseAdmin } from '../config/supabase';
+import { AppError } from '../utils/app-error';
 
 export interface InventoryItem {
   id: string;
-  variant_id: string;
+  product_id: string;
   quantity: number;
   reserved_quantity: number;
   reorder_level?: number | null;
   updated_at?: string;
 }
 
-export interface InventoryReservation {
-  id: string;
-  variant_id: string;
-  order_id?: string | null;
-  reservation_key?: string | null;
-  quantity: number;
-  status: 'ACTIVE' | 'RELEASED' | 'FULFILLED';
-  created_at?: string;
-  expires_at?: string | null;
-}
-
 export class InventoryService {
-  private tableName = 'inventory';
-  private reservationTable = 'inventory_reservations';
+  private readonly tableName = 'inventory';
 
-  async checkAvailability(variantId: string, requestedQuantity: number): Promise<boolean> {
-    try {
-      const { data } = await supabaseAdmin
-        .from(this.tableName)
-        .select('quantity, reserved_quantity')
-        .or(`variant_id.eq.${variantId},product_id.eq.${variantId},id.eq.${variantId}`)
-        .single();
-
-      if (!data) return false;
-      const available = data.quantity - data.reserved_quantity;
-      return available >= requestedQuantity;
-    } catch {
-      return false;
+  private requirePositiveInteger(quantity: number, operation: string): void {
+    if (!Number.isInteger(quantity) || quantity <= 0) {
+      throw new AppError(`${operation} quantity must be a positive integer`, 400);
     }
+  }
+
+  async getInventory(productId: string): Promise<InventoryItem | null> {
+    const { data, error } = await supabaseAdmin
+      .from(this.tableName)
+      .select('id, product_id, quantity, reserved_quantity, reorder_level, updated_at')
+      .eq('product_id', productId)
+      .maybeSingle();
+
+    if (error) throw new AppError('Failed to retrieve inventory', 500);
+    return data as InventoryItem | null;
+  }
+
+  async checkAvailability(productId: string, requestedQuantity: number): Promise<boolean> {
+    this.requirePositiveInteger(requestedQuantity, 'Requested');
+    const inventory = await this.getInventory(productId);
+    if (!inventory) return false;
+    return inventory.quantity - inventory.reserved_quantity >= requestedQuantity;
   }
 
   async reserveStock(
-    variantId: string,
+    productId: string,
     quantityToReserve: number,
     reservationKey?: string
   ): Promise<{ success: boolean; available: number }> {
-    try {
-      const { data } = await supabaseAdmin
-        .from(this.tableName)
-        .select('id, quantity, reserved_quantity')
-        .or(`variant_id.eq.${variantId},product_id.eq.${variantId},id.eq.${variantId}`)
-        .single();
+    this.requirePositiveInteger(quantityToReserve, 'Reservation');
+    void reservationKey;
 
-      if (!data) return { success: false, available: 0 };
-      const available = data.quantity - data.reserved_quantity;
-      if (available < quantityToReserve) {
-        return { success: false, available };
-      }
+    const inventory = await this.getInventory(productId);
+    if (!inventory) return { success: false, available: 0 };
 
-      const newReserved = data.reserved_quantity + quantityToReserve;
-      const { error } = await supabaseAdmin
-        .from(this.tableName)
-        .update({
-          reserved_quantity: newReserved,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', data.id);
+    const available = inventory.quantity - inventory.reserved_quantity;
+    if (available < quantityToReserve) return { success: false, available };
 
-      if (error) return { success: false, available };
+    const { data, error } = await supabaseAdmin
+      .from(this.tableName)
+      .update({
+        reserved_quantity: inventory.reserved_quantity + quantityToReserve,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', inventory.id)
+      .eq('quantity', inventory.quantity)
+      .eq('reserved_quantity', inventory.reserved_quantity)
+      .select('id')
+      .maybeSingle();
 
-      // Optional audit in inventory_reservations table
-      if (reservationKey) {
-        try {
-          await supabaseAdmin.from(this.reservationTable).insert({
-            variant_id: variantId,
-            order_id: reservationKey,
-            reservation_key: reservationKey,
-            quantity: quantityToReserve,
-            status: 'ACTIVE',
-            created_at: new Date().toISOString()
-          });
-        } catch {
-          // Table missing or optional constraint fallback
-        }
-      }
-
-      return { success: true, available: available - quantityToReserve };
-    } catch {
-      return { success: false, available: 0 };
-    }
+    if (error) throw new AppError('Failed to reserve inventory', 500);
+    if (!data) throw new AppError('Inventory changed while stock was being reserved; retry the request', 409);
+    return { success: true, available: available - quantityToReserve };
   }
 
   async releaseStock(
-    variantId: string,
+    productId: string,
     quantityToRelease: number,
     reservationKey?: string
   ): Promise<{ success: boolean }> {
-    try {
-      const { data } = await supabaseAdmin
-        .from(this.tableName)
-        .select('id, reserved_quantity')
-        .or(`variant_id.eq.${variantId},product_id.eq.${variantId},id.eq.${variantId}`)
-        .single();
+    this.requirePositiveInteger(quantityToRelease, 'Release');
+    void reservationKey;
 
-      if (!data) return { success: false };
-      const newReserved = Math.max(0, data.reserved_quantity - quantityToRelease);
+    const inventory = await this.getInventory(productId);
+    if (!inventory) throw new AppError('Inventory record not found', 404);
 
-      const { error } = await supabaseAdmin
-        .from(this.tableName)
-        .update({
-          reserved_quantity: newReserved,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', data.id);
+    const { data, error } = await supabaseAdmin
+      .from(this.tableName)
+      .update({
+        reserved_quantity: Math.max(0, inventory.reserved_quantity - quantityToRelease),
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', inventory.id)
+      .eq('reserved_quantity', inventory.reserved_quantity)
+      .select('id')
+      .maybeSingle();
 
-      if (reservationKey) {
-        try {
-          await supabaseAdmin
-            .from(this.reservationTable)
-            .update({ status: 'RELEASED' })
-            .or(`order_id.eq.${reservationKey},reservation_key.eq.${reservationKey}`)
-            .eq('variant_id', variantId);
-        } catch {
-          // Table missing fallback
-        }
-      }
-
-      return { success: !error };
-    } catch {
-      return { success: false };
-    }
+    if (error) throw new AppError('Failed to release reserved inventory', 500);
+    if (!data) throw new AppError('Inventory changed while stock was being released; retry the request', 409);
+    return { success: true };
   }
 
-  async decrementStock(variantId: string, quantityToDecrement: number): Promise<{ success: boolean }> {
-    try {
-      const { data } = await supabaseAdmin
-        .from(this.tableName)
-        .select('id, quantity, reserved_quantity')
-        .or(`variant_id.eq.${variantId},product_id.eq.${variantId},id.eq.${variantId}`)
-        .single();
+  async decrementStock(productId: string, quantityToDecrement: number): Promise<{ success: boolean }> {
+    this.requirePositiveInteger(quantityToDecrement, 'Stock decrement');
 
-      if (!data) return { success: false };
-      const newQuantity = Math.max(0, data.quantity - quantityToDecrement);
-      const newReserved = Math.max(0, data.reserved_quantity - quantityToDecrement);
-
-      const { error } = await supabaseAdmin
-        .from(this.tableName)
-        .update({
-          quantity: newQuantity,
-          reserved_quantity: newReserved,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', data.id);
-
-      return { success: !error };
-    } catch {
-      return { success: false };
+    const inventory = await this.getInventory(productId);
+    if (!inventory) throw new AppError('Inventory record not found', 404);
+    if (inventory.quantity < quantityToDecrement) {
+      throw new AppError('Insufficient stock to complete inventory decrement', 409);
     }
+
+    const { data, error } = await supabaseAdmin
+      .from(this.tableName)
+      .update({
+        quantity: inventory.quantity - quantityToDecrement,
+        reserved_quantity: Math.max(0, inventory.reserved_quantity - quantityToDecrement),
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', inventory.id)
+      .eq('quantity', inventory.quantity)
+      .eq('reserved_quantity', inventory.reserved_quantity)
+      .select('id')
+      .maybeSingle();
+
+    if (error) throw new AppError('Failed to decrement inventory', 500);
+    if (!data) throw new AppError('Inventory changed while stock was being decremented; retry the request', 409);
+    return { success: true };
   }
 
-  async increaseStock(variantId: string, quantityToIncrease: number): Promise<{ success: boolean }> {
-    try {
-      const { data } = await supabaseAdmin
-        .from(this.tableName)
-        .select('id, quantity')
-        .or(`variant_id.eq.${variantId},product_id.eq.${variantId},id.eq.${variantId}`)
-        .single();
+  async incrementStock(productId: string, quantityToIncrease: number): Promise<{ success: boolean }> {
+    this.requirePositiveInteger(quantityToIncrease, 'Stock increment');
 
-      if (!data) return { success: false };
+    const inventory = await this.getInventory(productId);
+    if (!inventory) throw new AppError('Inventory record not found', 404);
 
-      const { error } = await supabaseAdmin
-        .from(this.tableName)
-        .update({
-          quantity: data.quantity + quantityToIncrease,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', data.id);
+    const { data, error } = await supabaseAdmin
+      .from(this.tableName)
+      .update({
+        quantity: inventory.quantity + quantityToIncrease,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', inventory.id)
+      .eq('quantity', inventory.quantity)
+      .select('id')
+      .maybeSingle();
 
-      return { success: !error };
-    } catch {
-      return { success: false };
-    }
+    if (error) throw new AppError('Failed to increment inventory', 500);
+    if (!data) throw new AppError('Inventory changed while stock was being incremented; retry the request', 409);
+    return { success: true };
+  }
+
+  async increaseStock(productId: string, quantityToIncrease: number): Promise<{ success: boolean }> {
+    return this.incrementStock(productId, quantityToIncrease);
   }
 }

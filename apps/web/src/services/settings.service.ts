@@ -62,14 +62,17 @@ export interface AdminTeamUser {
   created_at: string;
 }
 
-export async function getStoreSettings(token?: string) {
-  return apiClient.get<{ data: StoreSettingsData }>('/settings', { token });
+export async function getStoreSettings(token?: string): Promise<StoreSettingsData | null> {
+  const res = await apiClient.get<{ data: StoreSettingsData }>('/settings', { token });
+  return res?.data || null;
 }
 
-export async function updateStoreSettings(payload: Partial<StoreSettingsData>, token?: string) {
-  return apiClient.put<{ data: Partial<StoreSettingsData> }>('/settings', payload, { token });
+export async function updateStoreSettings(payload: Partial<StoreSettingsData>, token?: string): Promise<Partial<StoreSettingsData>> {
+  const res = await apiClient.put<{ data: Partial<StoreSettingsData> }>('/settings', payload, { token });
+  return res.data;
 }
 
-export async function getAdminTeamUsers(token?: string) {
-  return apiClient.get<{ data: AdminTeamUser[] }>('/settings/team', { token });
+export async function getAdminTeamUsers(token?: string): Promise<AdminTeamUser[]> {
+  const res = await apiClient.get<{ data: AdminTeamUser[] }>('/settings/team', { token });
+  return res?.data || [];
 }

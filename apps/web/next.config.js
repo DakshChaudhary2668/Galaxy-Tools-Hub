@@ -6,8 +6,15 @@ const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ['@galaxy/ui', '@galaxy/types', '@galaxy/utils', '@galaxy/constants', '@galaxy/config'],
   sassOptions: {
-    includePaths: [path.join(__dirname, 'src/styles')],
-    prependData: `@import "variables"; @import "mixins"; @import "breakpoints";`,
+    includePaths: [path.join(__dirname, 'src/styles'), path.join(__dirname, 'src')],
+    importers: [{
+      findFileUrl(url) {
+        if (url.startsWith('@/')) {
+          return new URL('file://' + path.resolve(__dirname, 'src', url.slice(2)));
+        }
+        return null;
+      }
+    }]
   },
   images: {
     unoptimized: true,

@@ -1,102 +1,72 @@
 import { Request, Response, NextFunction } from 'express';
-import crypto from 'crypto';
 import { getRazorpay } from '../config/razorpay';
 import { env } from '../config/env';
 import { OrderService } from '../services/order.service';
+import {
+  assertRazorpayPaymentFacts,
+  buildAuthoritativeCheckout,
+  buildPendingRazorpayPayment,
+  CheckoutInventory,
+  CheckoutProduct,
+  PaymentMapping,
+  requirePaymentMapping,
+  verifyRazorpayWebhookSignature,
+  verifyRazorpaySignature
+} from '../services/payment.service';
+import { finalizeRazorpayPayment, releaseOrderInventory, reserveOrderInventory } from '../services/payment-finalization.service';
 import { sendSuccess } from '../utils/response';
 import { AppError } from '../utils/app-error';
 import { supabaseAdmin } from '../config/supabase';
-import { OrderStatus, PaymentStatus, PaymentMethod } from '@galaxy/constants';
+import { PaymentMethod } from '@galaxy/constants';
+import { CheckoutRequestSchema, RazorpayVerificationRequestSchema } from '@galaxy/types';
 
 const orderService = new OrderService();
 
-interface CheckoutItem {
-  productId: string;
-  productName: string;
-  price: number;
-  quantity: number;
-  image?: string;
-  category?: string;
-  sku?: string;
-}
-
-interface CheckoutBody {
-  items: CheckoutItem[];
-  contact: { name: string; email: string; phone: string };
-  shipping: {
-    fullName: string;
-    phone: string;
-    addressLine1: string;
-    addressLine2?: string;
-    city: string;
-    state: string;
-    pincode: string;
-  };
-}
-
-/**
- * POST /payments/checkout
- * Validates cart, calculates server-side total, creates draft order + Razorpay order.
- */
 export async function createCheckout(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const body = req.body as CheckoutBody;
+    const parsed = CheckoutRequestSchema.safeParse(req.body);
+    if (!parsed.success) return next(new AppError(parsed.error.issues[0]?.message || 'Invalid checkout request', 400));
+    const body = parsed.data;
+    const productIds = [...new Set(body.items.map((item) => item.productId))];
 
-    // Validate items
-    if (!body.items || body.items.length === 0) {
-      return next(new AppError('Cart is empty', 400));
-    }
-    if (!body.contact?.name || !body.contact?.email || !body.contact?.phone) {
-      return next(new AppError('Contact information is required', 400));
-    }
-    if (!body.shipping?.fullName || !body.shipping?.addressLine1 || !body.shipping?.city || !body.shipping?.state || !body.shipping?.pincode) {
-      return next(new AppError('Shipping address is required', 400));
-    }
+    const [productsResult, inventoryResult] = await Promise.all([
+      supabaseAdmin
+        .from('products')
+        .select('id, name, sku, hsn_code, tax_rate, price, pricing_type, minimum_order_quantity, is_active, is_purchasable')
+        .in('id', productIds),
+      supabaseAdmin
+        .from('inventory')
+        .select('product_id, quantity, reserved_quantity')
+        .in('product_id', productIds)
+    ]);
+    if (productsResult.error) throw new AppError('Failed to validate checkout products', 500);
+    if (inventoryResult.error) throw new AppError('Failed to validate checkout inventory', 500);
 
-    // Server-side price calculation — never trust client total
-    const subtotal = body.items.reduce((sum, item) => {
-      if (item.price <= 0 || item.quantity <= 0) throw new AppError('Invalid item price or quantity', 400);
-      return sum + item.price * item.quantity;
-    }, 0);
+    const checkout = buildAuthoritativeCheckout(
+      body.items,
+      (productsResult.data || []) as CheckoutProduct[],
+      (inventoryResult.data || []) as CheckoutInventory[]
+    );
 
-    const shippingAmount = subtotal >= 50000 ? 0 : 500;
-    const taxAmount = Math.round((subtotal * 18) / 118);
-    const totalAmount = subtotal + shippingAmount;
-
-    // ponytail: placeholder UUID for guest checkout — replace with real auth user_id later
-    const guestUserId = '00000000-0000-0000-0000-000000000000';
-
-    // Create draft order in DB
+    // Existing guest profile contract; customer authentication is outside Sprint 4A.
+    const guestUserId = 'f870b9e4-88e1-4cdc-960f-ea02f3329806';
     const order = await orderService.createDraftOrder({
       user_id: guestUserId,
-      subtotal,
-      tax_amount: taxAmount,
-      shipping_amount: shippingAmount,
+      subtotal: checkout.subtotal,
+      tax_amount: checkout.taxAmount,
+      shipping_amount: checkout.shippingAmount,
       discount_amount: 0,
-      total_amount: totalAmount,
-      currency: 'INR',
-      customer_notes: `Contact: ${body.contact.name} | ${body.contact.email} | ${body.contact.phone}`,
+      total_amount: checkout.totalAmount,
+      currency: checkout.currency,
+      customer_notes: `Contact: ${body.contact.name} | ${body.contact.email} | ${body.contact.phone}`
     });
 
-    // Insert order items
-    const orderItems = body.items.map((item) => ({
-      order_id: order.id,
-      product_id: item.productId || null,
-      product_name: item.productName,
-      sku: item.sku || item.productId,
-      hsn_code: '9030', // ponytail: generic HSN for testing instruments, refine per-product later
-      quantity: item.quantity,
-      unit_price: item.price,
-      discount_amount: 0,
-      tax_rate: 18,
-      tax_amount: Math.round((item.price * item.quantity * 18) / 118),
-      total_amount: item.price * item.quantity,
-    }));
+    const orderItemsResult = await supabaseAdmin.from('order_items').insert(
+      checkout.items.map((item) => ({ ...item, order_id: order.id }))
+    );
+    if (orderItemsResult.error) throw new AppError('Order was created, but its items could not be saved', 500);
 
-    await supabaseAdmin.from('order_items').insert(orderItems);
-
-    // Insert shipping address
-    await supabaseAdmin.from('order_addresses').insert({
+    const addressResult = await supabaseAdmin.from('order_addresses').insert({
       order_id: order.id,
       address_type: 'SHIPPING',
       full_name: body.shipping.fullName,
@@ -106,156 +76,190 @@ export async function createCheckout(req: Request, res: Response, next: NextFunc
       city: body.shipping.city,
       state: body.shipping.state,
       postal_code: body.shipping.pincode,
-      country: 'India',
+      country: 'India'
     });
+    if (addressResult.error) throw new AppError('Order was created, but its shipping address could not be saved', 500);
 
-    // Create Razorpay order
-    const razorpay = getRazorpay();
-    const razorpayOrder = await razorpay.orders.create({
-      amount: Math.round(totalAmount * 100), // Razorpay expects paise
-      currency: 'INR',
-      receipt: order.order_number,
-      notes: {
-        orderId: order.id,
-        customerName: body.contact.name,
-        customerEmail: body.contact.email,
-      },
-    });
+    await reserveOrderInventory(order.id);
 
-    // Store razorpay order ID on the order
-    await supabaseAdmin
-      .from('orders')
-      .update({
-        status: OrderStatus.PENDING_PAYMENT,
-        payment_status: PaymentStatus.PENDING,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', order.id);
+    let razorpayOrder: { id: string };
+    try {
+      razorpayOrder = await getRazorpay().orders.create({
+        amount: checkout.amountInPaise,
+        currency: checkout.currency,
+        receipt: order.order_number,
+        notes: {
+          orderId: order.id,
+          customerName: body.contact.name,
+          customerEmail: body.contact.email
+        }
+      });
+
+      const paymentResult = await supabaseAdmin
+        .from('payments')
+        .insert(buildPendingRazorpayPayment(order.id, razorpayOrder.id, checkout.totalAmount, checkout.currency))
+        .select('id')
+        .single();
+      if (paymentResult.error || !paymentResult.data) {
+        throw new AppError('Payment order was created, but its internal binding could not be saved', 500);
+      }
+    } catch (error) {
+      await releaseOrderInventory(order.id);
+      throw error;
+    }
 
     sendSuccess(res, {
       data: {
         orderId: order.id,
         orderNumber: order.order_number,
         razorpayOrderId: razorpayOrder.id,
-        amount: totalAmount,
-        amountInPaise: Math.round(totalAmount * 100),
-        currency: 'INR',
+        amount: checkout.totalAmount,
+        amountInPaise: checkout.amountInPaise,
+        currency: checkout.currency,
         keyId: env.RAZORPAY_KEY_ID,
-        contact: body.contact,
+        contact: body.contact
       },
       message: 'Checkout initiated',
-      statusCode: 201,
+      statusCode: 201
     });
   } catch (error) {
     next(error);
   }
 }
 
-/**
- * POST /payments/verify
- * Verifies Razorpay payment signature and marks order as paid.
- */
 export async function verifyPayment(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const {
+    const parsed = RazorpayVerificationRequestSchema.safeParse(req.body);
+    if (!parsed.success) return next(new AppError(parsed.error.issues[0]?.message || 'Invalid payment verification request', 400));
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, orderId } = parsed.data;
+
+    const mappingResult = await supabaseAdmin
+      .from('payments')
+      .select('id, order_id, status, amount, currency, transaction_id, gateway_reference')
+      .eq('payment_method', PaymentMethod.GATEWAY)
+      .eq('gateway_reference', razorpay_order_id)
+      .maybeSingle();
+    if (mappingResult.error) throw new AppError('Failed to resolve the payment order mapping', 500);
+    const mapping = requirePaymentMapping(
+      mappingResult.data as PaymentMapping | null,
       razorpay_order_id,
-      razorpay_payment_id,
-      razorpay_signature,
-      orderId,
-    } = req.body;
-
-    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !orderId) {
-      return next(new AppError('Missing payment verification parameters', 400));
+      orderId
+    );
+    if (!env.RAZORPAY_KEY_SECRET) throw new AppError('Payment verification is not configured', 500);
+    if (!verifyRazorpaySignature(razorpay_order_id, razorpay_payment_id, razorpay_signature, env.RAZORPAY_KEY_SECRET)) {
+      throw new AppError('Payment verification failed', 400);
     }
 
-    // HMAC SHA256 signature verification
-    const secret = env.RAZORPAY_KEY_SECRET;
-    if (!secret) {
-      return next(new AppError('Payment verification not configured', 500));
-    }
-
-    const expectedSignature = crypto
-      .createHmac('sha256', secret)
-      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
-      .digest('hex');
-
-    if (expectedSignature !== razorpay_signature) {
-      // Mark payment as failed
-      await supabaseAdmin
-        .from('orders')
-        .update({ payment_status: PaymentStatus.FAILED, updated_at: new Date().toISOString() })
-        .eq('id', orderId);
-
-      return next(new AppError('Payment verification failed — signature mismatch', 400));
-    }
-
-    // Insert payment record
-    await supabaseAdmin.from('payments').insert({
-      order_id: orderId,
-      payment_method: PaymentMethod.GATEWAY,
-      status: PaymentStatus.PAID,
-      amount: 0, // ponytail: amount already on order, update from razorpay fetch if needed
-      currency: 'INR',
-      transaction_id: razorpay_payment_id,
-      gateway_reference: razorpay_order_id,
-      paid_at: new Date().toISOString(),
+    const razorpayPayment = await getRazorpay().payments.fetch(razorpay_payment_id);
+    assertRazorpayPaymentFacts(razorpayPayment, {
+      paymentId: razorpay_payment_id,
+      razorpayOrderId: razorpay_order_id,
+      amount: Number(mapping.amount),
+      currency: mapping.currency
     });
 
-    // Mark order as paid (uses existing service which also decrements inventory)
-    await orderService.markPaid(orderId);
-
+    let finalization;
+    try {
+      finalization = await finalizeRazorpayPayment(mapping, razorpay_payment_id);
+    } catch (error) {
+      if (error instanceof AppError && error.statusCode === 503) {
+        sendSuccess(res, {
+          data: {
+            orderId: mapping.order_id,
+            paymentId: razorpay_payment_id,
+            status: 'processing',
+            recoverable: true
+          },
+          message: 'Payment was captured and is awaiting internal confirmation',
+          statusCode: 202
+        });
+        return;
+      }
+      throw error;
+    }
     sendSuccess(res, {
-      data: { orderId, paymentId: razorpay_payment_id, status: 'paid' },
-      message: 'Payment verified and order confirmed',
+      data: finalization,
+      message: finalization.replay ? 'Payment was already verified' : 'Payment verified and order confirmed'
     });
   } catch (error) {
     next(error);
   }
 }
 
-/**
- * GET /payments/order-status/:id
- * Public endpoint to fetch order confirmation details without exposing sensitive admin data.
- */
+export async function handleRazorpayWebhook(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const rawBody = (req as Request & { rawBody?: Buffer }).rawBody;
+    const signature = req.header('x-razorpay-signature') || '';
+    if (!rawBody || !env.RAZORPAY_WEBHOOK_SECRET) {
+      throw new AppError('Razorpay webhook verification is not configured', 503);
+    }
+    if (!verifyRazorpayWebhookSignature(rawBody, signature, env.RAZORPAY_WEBHOOK_SECRET)) {
+      throw new AppError('Invalid Razorpay webhook signature', 400);
+    }
+
+    const event = typeof req.body?.event === 'string' ? req.body.event : '';
+    if (event === 'payment.failed') {
+      sendSuccess(res, { data: { received: true, action: 'none' }, message: 'Failed attempt acknowledged; reservation retained' });
+      return;
+    }
+    if (event !== 'payment.captured' && event !== 'order.paid') {
+      sendSuccess(res, { data: { received: true, action: 'ignored' }, message: 'Webhook event ignored' });
+      return;
+    }
+
+    const paymentId = req.body?.payload?.payment?.entity?.id;
+    if (typeof paymentId !== 'string' || !paymentId) throw new AppError('Razorpay webhook payment is missing', 400);
+
+    const razorpayPayment = await getRazorpay().payments.fetch(paymentId);
+    const razorpayOrderId = razorpayPayment.order_id;
+    if (typeof razorpayOrderId !== 'string' || !razorpayOrderId) throw new AppError('Razorpay payment order is missing', 400);
+
+    const mappingResult = await supabaseAdmin
+      .from('payments')
+      .select('id, order_id, status, amount, currency, transaction_id, gateway_reference')
+      .eq('payment_method', PaymentMethod.GATEWAY)
+      .eq('gateway_reference', razorpayOrderId)
+      .maybeSingle();
+    if (mappingResult.error) throw new AppError('Failed to resolve the payment order mapping', 503);
+    const mapping = requirePaymentMapping(mappingResult.data as PaymentMapping | null, razorpayOrderId);
+    assertRazorpayPaymentFacts(razorpayPayment, {
+      paymentId,
+      razorpayOrderId,
+      amount: Number(mapping.amount),
+      currency: mapping.currency
+    });
+
+    const finalization = await finalizeRazorpayPayment(mapping, paymentId);
+    sendSuccess(res, {
+      data: finalization,
+      message: finalization.replay ? 'Webhook replay acknowledged' : 'Payment finalized'
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 export async function getPublicOrderStatus(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const { id } = req.params;
-    const order = await orderService.getOrderById(id);
-    if (!order) {
-      return next(new AppError('Order not found', 404));
-    }
-
-    const { data: addresses } = await supabaseAdmin
-      .from('order_addresses')
-      .select('*')
-      .eq('order_id', id)
-      .limit(1);
-
-    const { data: items } = await supabaseAdmin
-      .from('order_items')
-      .select('*')
-      .eq('order_id', id);
+    const { data: order, error } = await supabaseAdmin
+      .from('orders')
+      .select('order_number, status, payment_status, created_at, placed_at')
+      .eq('id', id)
+      .maybeSingle();
+    if (error) throw new AppError('Failed to retrieve order status', 500);
+    if (!order) return next(new AppError('Order not found', 404));
 
     sendSuccess(res, {
       data: {
-        id: order.id,
         orderNumber: order.order_number,
         status: order.status,
         paymentStatus: order.payment_status,
-        subtotal: order.subtotal,
-        taxAmount: order.tax_amount,
-        shippingAmount: order.shipping_amount,
-        totalAmount: order.total_amount,
-        currency: order.currency || 'INR',
-        placedAt: order.created_at || order.placed_at || new Date().toISOString(),
-        customerNotes: order.customer_notes,
-        address: addresses?.[0] || null,
-        items: items || [],
+        placedAt: order.placed_at || order.created_at
       },
-      message: 'Order status retrieved successfully',
+      message: 'Order status retrieved successfully'
     });
   } catch (error) {
     next(error);
   }
 }
-

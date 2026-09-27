@@ -20,7 +20,7 @@ import { CategoryNav } from '../../components/CategoryNav/CategoryNav';
 import { Footer } from '../../components/Footer/Footer';
 import { CartDrawer } from '../../components/CartDrawer/CartDrawer';
 import { useCartStore } from '../../store/useCartStore';
-import { apiClient } from '../../services/api';
+import { createCheckoutSession, verifyPayment } from '../../services/payment.service';
 import styles from './Checkout.module.scss';
 
 // Declare Razorpay on window
@@ -191,13 +191,8 @@ export default function CheckoutPage() {
       // 1. Prepare checkout payload
       const checkoutPayload = {
         items: items.map((item) => ({
-          productId: item.product.id,
-          productName: item.product.name,
-          price: item.product.price,
-          quantity: item.quantity,
-          image: item.product.image,
-          category: item.product.category,
-          sku: item.product.sku || item.product.id
+          productId: item.product.id || '',
+          quantity: item.quantity
         })),
         contact: {
           name: formData.fullName.trim(),
@@ -216,19 +211,7 @@ export default function CheckoutPage() {
       };
 
       // 2. Call backend to create draft order + Razorpay order
-      const res = await apiClient.post<{
-        data: {
-          orderId: string;
-          orderNumber: string;
-          razorpayOrderId: string;
-          amountInPaise: number;
-          currency: string;
-          keyId: string;
-          contact: { name: string; email: string; phone: string };
-        };
-      }>('/payments/checkout', checkoutPayload);
-
-      const orderData = res.data;
+      const orderData = await createCheckoutSession(checkoutPayload);
 
       if (!orderData?.razorpayOrderId) {
         throw new Error('Failed to create payment session. Please try again.');
@@ -268,7 +251,7 @@ export default function CheckoutPage() {
         }) => {
           try {
             // 4. Verify payment signature on backend
-            await apiClient.post('/payments/verify', {
+            await verifyPayment({
               orderId: orderData.orderId,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_order_id: response.razorpay_order_id,
@@ -595,8 +578,8 @@ export default function CheckoutPage() {
                 {items.map(({ product, quantity }) => (
                   <div key={product.id} className={styles.summaryItem}>
                     <Image
-                      src={product.image}
-                      alt={product.name}
+                      src={product.image || '/images/placeholder.jpg'}
+                      alt={product.name || 'Product Image'}
                       width={48}
                       height={48}
                       className={styles.itemThumb}
@@ -606,11 +589,11 @@ export default function CheckoutPage() {
                         {product.name}
                       </div>
                       <div className={styles.itemMeta}>
-                        Qty: {quantity} × {product.currency}{formatPrice(product.price)}
+                        Qty: {quantity} × {product.currency || '₹'}{formatPrice(product.price || 0)}
                       </div>
                     </div>
                     <div className={styles.itemTotal}>
-                      {product.currency}{formatPrice(product.price * quantity)}
+                      {product.currency || '₹'}{formatPrice((product.price || 0) * quantity)}
                     </div>
                   </div>
                 ))}

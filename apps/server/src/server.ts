@@ -17,7 +17,15 @@ export function createServer(): express.Application {
   app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
 
   // JSON Parsing limits
-  app.use(express.json({ limit: '10mb' }));
+  app.use(express.json({
+    limit: '10mb',
+    verify: (req, _res, buffer) => {
+      const request = req as express.Request & { rawBody?: Buffer };
+      if (request.originalUrl.split('?')[0] === '/api/v1/payments/webhook/razorpay') {
+        request.rawBody = Buffer.from(buffer);
+      }
+    }
+  }));
   app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
   // Request ID & Version headers

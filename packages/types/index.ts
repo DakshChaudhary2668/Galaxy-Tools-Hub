@@ -12,7 +12,8 @@ import {
   ShipmentStatus,
   CartStatus,
   DocumentType,
-  InventoryTransactionType
+  InventoryTransactionType,
+  StorageBuckets
 } from '@galaxy/constants';
 
 // --- API Envelope Types ---
@@ -40,15 +41,16 @@ export interface ApiErrorResponse {
   };
 }
 
-// --- 1. ADMIN USERS (Clerk Auth) ---
+// --- 1. ADMIN USERS (Supabase Auth & RBAC) ---
 export const AdminUserSchema = z.object({
   id: z.string().uuid(),
-  clerk_user_id: z.string(),
+  user_id: z.string().uuid(),
   name: z.string().min(1),
   email: z.string().email(),
   role: z.enum([Roles.OWNER, Roles.MANAGER, Roles.STAFF]),
   status: z.enum([AdminStatus.ACTIVE, AdminStatus.INACTIVE, AdminStatus.SUSPENDED]).default(AdminStatus.ACTIVE),
-  created_at: z.string().optional()
+  created_at: z.string().optional(),
+  updated_at: z.string().optional()
 });
 export type AdminUserDto = z.infer<typeof AdminUserSchema>;
 
@@ -200,7 +202,28 @@ export const ProductSchema = z.object({
 });
 export type ProductDto = z.infer<typeof ProductSchema>;
 
-export const CreateProductSchema = ProductSchema.omit({ id: true, created_at: true, updated_at: true });
+/** UI view-model extending the backend DTO with display-only fields. */
+export type ProductView = Partial<ProductDto> & {
+  image?: string;
+  image_url?: string;
+  images?: any[];
+  category?: Pick<CategoryDto, 'id' | 'name' | 'slug'> | null;
+  brand?: Pick<BrandDto, 'id' | 'name' | 'slug'> | null;
+  statusLabel?: string;
+  discount?: number;
+  badge?: string;
+  currency?: string;
+  gstIncluded?: boolean;
+  secondaryAction?: string;
+  technicalSpecs?: string;
+  compare_at_price?: number | null;
+};
+
+export const CreateProductSchema = ProductSchema.omit({ id: true, created_at: true, updated_at: true }).extend({
+  image_url: z.string().optional(),
+  stock: z.number().int().min(0).optional(),
+  lowStockThreshold: z.number().int().min(0).optional()
+});
 export type CreateProductDto = z.infer<typeof CreateProductSchema>;
 
 export const UpdateProductSchema = CreateProductSchema.partial();
@@ -225,47 +248,10 @@ export const ProductCardSchema = ProductSchema.pick({
 });
 export type ProductCardDto = z.infer<typeof ProductCardSchema>;
 
-// --- 8b. PRODUCT VARIANTS ---
-export const ProductVariantSchema = z.object({
-  id: z.string().uuid(),
-  product_id: z.string().uuid(),
-  brand_id: z.string().uuid().nullable().optional(),
-  model: z.string().min(1),
-  sku: z.string().min(1),
-  price: z.number().min(0),
-  compare_at_price: z.number().min(0).nullable().optional(),
-  hsn_code: z.string().nullable().optional(),
-  tax_rate: z.number().min(0).default(18.00),
-  specifications: z.record(z.unknown()).default({}),
-  is_active: z.boolean().default(true),
-  created_at: z.string().optional(),
-  updated_at: z.string().optional(),
-  brand: BrandSchema.pick({ id: true, name: true, slug: true, logo_url: true }).optional(),
-  inventory: z.object({
-    quantity: z.number().int(),
-    reserved_quantity: z.number().int(),
-    reorder_level: z.number().int().nullable().optional()
-  }).optional()
-});
-export type ProductVariantDto = z.infer<typeof ProductVariantSchema>;
-
-export const CreateProductVariantSchema = ProductVariantSchema.omit({
-  id: true,
-  created_at: true,
-  updated_at: true,
-  brand: true,
-  inventory: true
-});
-export type CreateProductVariantDto = z.infer<typeof CreateProductVariantSchema>;
-
-export const UpdateProductVariantSchema = CreateProductVariantSchema.partial();
-export type UpdateProductVariantDto = z.infer<typeof UpdateProductVariantSchema>;
-
 // Detailed Product DTO (Product Details page - PDP)
 export const ProductDetailSchema = ProductSchema.extend({
   category: CategorySchema.optional(),
   brand: BrandSchema.optional(),
-  variants: z.array(ProductVariantSchema).optional(),
   images: z.array(z.unknown()).optional(),
   inventory_quantity: z.number().int().optional()
 });
@@ -273,9 +259,9 @@ export type ProductDetailDto = z.infer<typeof ProductDetailSchema>;
 
 // Product Query Filter Schema
 export const ProductQuerySchema = z.object({
-  page: z.string().optional().transform((val) => (val ? parseInt(val, 10) : 1)),
-  limit: z.string().optional().transform((val) => (val ? parseInt(val, 10) : 12)),
-  search: z.string().optional(),
+  page: z.coerce.number().int().min(1).optional().default(1),
+  limit: z.coerce.number().int().min(1).max(100).optional().default(12),
+  search: z.string().trim().max(100).transform((val) => val.replace(/\s+/g, ' ')).optional(),
   category: z.string().optional(),
   brand: z.string().optional(),
   vendor: z.string().optional(),
@@ -283,6 +269,7 @@ export const ProductQuerySchema = z.object({
   maxPrice: z.string().optional().transform((val) => (val ? parseFloat(val) : undefined)),
   sort: z.enum(['price_asc', 'price_desc', 'latest', 'oldest', 'name_asc', 'name_desc', 'featured']).optional().default('latest'),
   featured: z.string().optional().transform((val) => val === 'true'),
+  discounted: z.string().optional().transform((val) => val === 'true'),
   active: z.string().optional().transform((val) => (val !== undefined ? val === 'true' : true))
 });
 export type ProductQueryParams = z.infer<typeof ProductQuerySchema>;
@@ -402,20 +389,17 @@ export const OrderSchema = z.object({
   order_number: z.string().min(1),
   user_id: z.string().uuid(),
   status: z.enum([
-    OrderStatus.DRAFT,
-    OrderStatus.PENDING_PAYMENT,
-    OrderStatus.PAID,
+    OrderStatus.PENDING,
+    OrderStatus.CONFIRMED,
+    OrderStatus.PROCESSING,
     OrderStatus.PACKED,
     OrderStatus.SHIPPED,
     OrderStatus.DELIVERED,
     OrderStatus.CANCELLED,
-    OrderStatus.REFUNDED,
-    OrderStatus.PENDING,
-    OrderStatus.CONFIRMED,
-    OrderStatus.PROCESSING,
     OrderStatus.RETURN_REQUESTED,
-    OrderStatus.RETURNED
-  ]).default(OrderStatus.DRAFT),
+    OrderStatus.RETURNED,
+    OrderStatus.REFUNDED
+  ]).default(OrderStatus.PENDING),
   payment_status: z.enum([
     PaymentStatus.PENDING,
     PaymentStatus.UNDER_REVIEW,
@@ -438,42 +422,6 @@ export const OrderSchema = z.object({
   updated_at: z.string().optional()
 });
 export type OrderDto = z.infer<typeof OrderSchema>;
-
-// --- 16b. COUPONS & DISCOUNTS ---
-export const DiscountType = {
-  PERCENTAGE: 'PERCENTAGE',
-  FIXED: 'FIXED'
-} as const;
-export type DiscountType = (typeof DiscountType)[keyof typeof DiscountType];
-
-export const CouponSchema = z.object({
-  id: z.string().uuid(),
-  code: z.string().min(1),
-  discount_type: z.enum([DiscountType.PERCENTAGE, DiscountType.FIXED]).default(DiscountType.PERCENTAGE),
-  discount_value: z.number().positive(),
-  min_order_value: z.number().min(0).default(0),
-  max_discount_amount: z.number().min(0).nullable().optional(),
-  usage_limit: z.number().int().positive().nullable().optional(),
-  usage_count: z.number().int().min(0).default(0),
-  per_customer_limit: z.number().int().positive().default(1),
-  start_date: z.string().nullable().optional(),
-  end_date: z.string().nullable().optional(),
-  is_active: z.boolean().default(true),
-  created_at: z.string().optional(),
-  updated_at: z.string().optional()
-});
-export type CouponDto = z.infer<typeof CouponSchema>;
-
-export const CreateCouponSchema = CouponSchema.omit({
-  id: true,
-  usage_count: true,
-  created_at: true,
-  updated_at: true
-});
-export type CreateCouponDto = z.infer<typeof CreateCouponSchema>;
-
-export const UpdateCouponSchema = CreateCouponSchema.partial();
-export type UpdateCouponDto = z.infer<typeof UpdateCouponSchema>;
 
 export const OrderItemSchema = z.object({
   id: z.string().uuid(),
@@ -539,6 +487,39 @@ export const PaymentSchema = z.object({
 });
 export type PaymentDto = z.infer<typeof PaymentSchema>;
 
+export const CheckoutItemSchema = z.object({
+  productId: z.string().uuid(),
+  quantity: z.number().int().positive()
+});
+export type CheckoutItemDto = z.infer<typeof CheckoutItemSchema>;
+
+export const CheckoutRequestSchema = z.object({
+  items: z.array(CheckoutItemSchema).min(1, 'Cart is empty'),
+  contact: z.object({
+    name: z.string().trim().min(1),
+    email: z.string().trim().email(),
+    phone: z.string().trim().min(1)
+  }),
+  shipping: z.object({
+    fullName: z.string().trim().min(1),
+    phone: z.string().trim().min(1),
+    addressLine1: z.string().trim().min(1),
+    addressLine2: z.string().trim().optional(),
+    city: z.string().trim().min(1),
+    state: z.string().trim().min(1),
+    pincode: z.string().trim().min(1)
+  })
+});
+export type CheckoutRequestDto = z.infer<typeof CheckoutRequestSchema>;
+
+export const RazorpayVerificationRequestSchema = z.object({
+  razorpay_payment_id: z.string().trim().min(1),
+  razorpay_order_id: z.string().trim().min(1),
+  razorpay_signature: z.string().trim().regex(/^[a-fA-F0-9]{64}$/, 'Invalid Razorpay signature'),
+  orderId: z.string().uuid().optional()
+});
+export type RazorpayVerificationRequestDto = z.infer<typeof RazorpayVerificationRequestSchema>;
+
 export const PaymentVerificationSchema = z.object({
   id: z.string().uuid(),
   payment_id: z.string().uuid(),
@@ -583,7 +564,67 @@ export type ShipmentDto = z.infer<typeof ShipmentSchema>;
 
 // --- 20. STORAGE SIGNED URL REQUEST ---
 export const SignedUrlRequestSchema = z.object({
-  bucket: z.string().min(1),
-  path: z.string().min(1)
+  bucket: z.enum([
+    StorageBuckets.PRODUCT_IMAGES,
+    StorageBuckets.PRODUCT_DOCUMENTS,
+    StorageBuckets.BRAND_LOGOS,
+    StorageBuckets.PAYMENT_PROOFS,
+    StorageBuckets.INVOICES
+  ]),
+  path: z
+    .string()
+    .trim()
+    .min(1)
+    .max(1024)
+    .refine(
+      (path) =>
+        !path.startsWith('/') &&
+        !path.includes('\\') &&
+        !/[\u0000-\u001F\u007F]/.test(path) &&
+        path.split('/').every((segment) => segment !== '' && segment !== '.' && segment !== '..'),
+      'Storage path must be a safe relative object path'
+    )
 });
 export type SignedUrlRequestDto = z.infer<typeof SignedUrlRequestSchema>;
+
+// --- 21. PRODUCT IMAGE SIGNED UPLOAD & COMPLETION (SPRINT 3) ---
+export const ProductImageSignedUploadRequestSchema = z.object({
+  product_id: z.string().uuid({ message: 'Invalid product ID format' }),
+  mime_type: z.enum(['image/jpeg', 'image/png', 'image/webp'], {
+    errorMap: () => ({ message: 'Only JPEG, PNG, and WebP images are allowed' })
+  }),
+  file_size: z
+    .number()
+    .int()
+    .positive({ message: 'File size must be positive' })
+    .max(5 * 1024 * 1024, { message: 'File size must not exceed 5 MB' }),
+  extension: z.enum(['jpg', 'jpeg', 'png', 'webp'], {
+    errorMap: () => ({ message: 'Extension must be jpg, jpeg, png, or webp' })
+  })
+}).refine(
+  (data) => {
+    if (data.mime_type === 'image/jpeg') return data.extension === 'jpg' || data.extension === 'jpeg';
+    if (data.mime_type === 'image/png') return data.extension === 'png';
+    if (data.mime_type === 'image/webp') return data.extension === 'webp';
+    return false;
+  },
+  {
+    message: 'File extension does not match MIME type',
+    path: ['extension']
+  }
+);
+export type ProductImageSignedUploadRequestDto = z.infer<typeof ProductImageSignedUploadRequestSchema>;
+
+export const ProductImageCompleteRequestSchema = z.object({
+  storage_path: z
+    .string()
+    .trim()
+    .min(1)
+    .max(1024)
+    .regex(/^products\/[0-9a-fA-F-]{36}\/[0-9a-fA-F-]{36}\.(jpg|jpeg|png|webp)$/, {
+      message: 'Storage path must match format: products/{productId}/{uuid}.{ext}'
+    }),
+  mime_type: z.enum(['image/jpeg', 'image/png', 'image/webp']).optional(),
+  alt_text: z.string().max(255).optional()
+});
+export type ProductImageCompleteRequestDto = z.infer<typeof ProductImageCompleteRequestSchema>;

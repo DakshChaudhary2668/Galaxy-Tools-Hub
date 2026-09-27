@@ -15,7 +15,7 @@ export const CartDrawer: React.FC = () => {
   if (!isOpen) return null;
 
   const totalAmount = items.reduce(
-    (sum, item) => sum + item.product.price * item.quantity,
+    (sum, item) => sum + (item.product.price || 0) * item.quantity,
     0
   );
 
@@ -43,8 +43,8 @@ export const CartDrawer: React.FC = () => {
               {items.map(({ product, quantity }) => (
                 <div key={product.id} className={styles.item}>
                   <Image
-                    src={product.image}
-                    alt={product.name}
+                    src={product.image || '/images/placeholder.jpg'}
+                    alt={product.name || 'Product Image'}
                     width={64}
                     height={64}
                     className={styles.itemImg}
@@ -52,26 +52,26 @@ export const CartDrawer: React.FC = () => {
                   <div className={styles.itemDetails}>
                     <h4 className={styles.itemName}>{product.name}</h4>
                     <p className={styles.itemPrice}>
-                      {product.currency}
-                      {new Intl.NumberFormat('en-IN').format(product.price)}
+                      {product.currency || '₹'}
+                      {new Intl.NumberFormat('en-IN').format(product.price || 0)}
                     </p>
                     <div className={styles.qtyControls}>
                       <button
                         className={styles.qtyBtn}
-                        onClick={() => updateQuantity(product.id, quantity - 1)}
+                        onClick={() => updateQuantity(product.id!, quantity - 1)}
                       >
                         -
                       </button>
                       <span className={styles.qtyVal}>{quantity}</span>
                       <button
                         className={styles.qtyBtn}
-                        onClick={() => updateQuantity(product.id, quantity + 1)}
+                        onClick={() => updateQuantity(product.id!, quantity + 1)}
                       >
                         +
                       </button>
                       <button
                         className={styles.removeBtn}
-                        onClick={() => removeFromCart(product.id)}
+                        onClick={() => removeFromCart(product.id!)}
                         aria-label={`Remove ${product.name}`}
                       >
                         <Trash2 size={16} />

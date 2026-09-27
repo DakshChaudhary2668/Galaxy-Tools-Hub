@@ -1,3 +1,6 @@
-export default function OrderConfirmationPage() {
-  return <div>OrderConfirmation</div>;
+import { redirect } from 'next/navigation';
+
+export default async function OrderConfirmationPage({ params }: { params: Promise<{ orderId: string }> }) {
+  const { orderId } = await params;
+  redirect(`/order-success?orderId=${encodeURIComponent(orderId)}`);
 }

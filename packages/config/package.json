@@ -2,9 +2,12 @@
   "name": "@galaxy/config",
   "version": "1.0.0",
   "private": true,
-  "main": "index.ts",
-  "types": "index.ts",
+  "type": "commonjs",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": "./dist/index.js",
   "scripts": {
+    "build": "tsc -p tsconfig.json",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {

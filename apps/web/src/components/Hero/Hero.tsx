@@ -1,6 +1,5 @@
-'use client';
-
 import React from 'react';
+import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import styles from './Hero.module.scss';
 
@@ -22,13 +21,13 @@ export const Hero: React.FC = () => {
               Equip your workforce with precision-engineered tools designed for rugged industrial environments and exacting specifications.
             </p>
             <div className={styles.buttonGroup}>
-              <button className={styles.btnPrimary}>
+              <Link href="/products" className={styles.btnPrimary}>
                 <span>EXPLORE CATALOG</span>
                 <ArrowRight size={14} />
-              </button>
-              <button className={styles.btnSecondary}>
+              </Link>
+              <Link href="/contact" className={styles.btnSecondary}>
                 REQUEST QUOTE
-              </button>
+              </Link>
             </div>
           </div>
 

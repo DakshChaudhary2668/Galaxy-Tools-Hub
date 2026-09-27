@@ -4,7 +4,7 @@ import { sendSuccess } from '../utils/response';
 import { env } from '../config/env';
 
 // In-memory persistent default settings (fallback / editable)
-let storeSettings = {
+const storeSettings = {
   general: {
     storeName: 'Galaxy Tools Hub',
     businessName: 'Galaxy Tools & Instruments Private Limited',
@@ -44,7 +44,7 @@ export async function getSettings(_req: Request, res: Response, next: NextFuncti
       environment: process.env.NODE_ENV || 'development',
       apiVersion: 'v1.0.0',
       database: 'Connected (Supabase PostgreSQL)',
-      authSystem: 'Clerk Auth (Admins) + Supabase Auth (Buyers)',
+      authSystem: 'Supabase Auth (Unified RBAC & Customer)',
       storageSystem: 'Supabase Storage Bucket (galaxy-tools-assets)'
     };
 

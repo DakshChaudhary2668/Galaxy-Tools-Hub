@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import React from 'react';
 import { AnnouncementBar } from '../components/AnnouncementBar/AnnouncementBar';
 import { Header } from '../components/Header/Header';
@@ -10,11 +12,19 @@ import { LatestBlogs } from '../components/LatestBlogs/LatestBlogs';
 import { BrandsStrip } from '../components/BrandsStrip/BrandsStrip';
 import { Footer } from '../components/Footer/Footer';
 import { CartDrawer } from '../components/CartDrawer/CartDrawer';
+import { getProducts } from '../services/product.service';
 
-import { FEATURED_PRODUCTS } from '../data/products';
-import { TRENDING_PRODUCTS, DISCOUNTED_PRODUCTS } from '../data/homepageSeed';
+export default async function HomePage() {
+  const [featuredRes, discountedRes, trendingRes] = await Promise.all([
+    getProducts({ is_active: 'true', featured: 'true', limit: '4' }),
+    getProducts({ is_active: 'true', discounted: 'true', limit: '4' }),
+    getProducts({ is_active: 'true', sort: 'latest', limit: '4' }),
+  ]);
 
-export default function HomePage() {
+  const featured = featuredRes?.data || [];
+  const discounted = discountedRes?.data || [];
+  const trending = trendingRes?.data || [];
+
   return (
     <main style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <AnnouncementBar />
@@ -22,9 +32,9 @@ export default function HomePage() {
       <CategoryNav />
       <Hero />
       <TrustStrip />
-      <ProductSection title="FEATURED INSTRUMENTS" products={FEATURED_PRODUCTS} viewAllHref="/products" />
-      <ProductSection title="TRENDING PRODUCTS" products={TRENDING_PRODUCTS} viewAllHref="/products" />
-      <ProductSection title="DISCOUNTED PRODUCTS" products={DISCOUNTED_PRODUCTS} viewAllHref="/products" />
+      <ProductSection title="FEATURED INSTRUMENTS" products={featured} viewAllHref="/products" />
+      <ProductSection title="TRENDING PRODUCTS" products={trending} viewAllHref="/products" />
+      <ProductSection title="DISCOUNTED PRODUCTS" products={discounted} viewAllHref="/products" />
       <TopCategories />
       <LatestBlogs />
       <BrandsStrip />

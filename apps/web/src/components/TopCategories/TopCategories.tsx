@@ -1,13 +1,16 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
-import { TOP_CATEGORIES } from '../../data/homepageSeed';
+import { ArrowRight, Package } from 'lucide-react';
+import { useCategories } from '@/hooks/useCategories';
 import styles from './TopCategories.module.scss';
 
 export const TopCategories: React.FC = () => {
+  const { data: categories = [] } = useCategories();
+  // Show up to 10 active categories
+  const top = categories.filter((c) => c.is_active !== false).slice(0, 10);
+
   return (
     <section className={styles.section}>
       <div className={styles.container}>
@@ -19,27 +22,26 @@ export const TopCategories: React.FC = () => {
           </Link>
         </div>
 
-        <div className={styles.grid}>
-          {TOP_CATEGORIES.map((cat) => (
-            <Link key={cat.id} href={cat.href} className={styles.card}>
-              <div className={styles.imageWrap}>
-                <Image
-                  src={cat.image}
-                  alt={cat.name}
-                  width={280}
-                  height={180}
-                  className={styles.cardImage}
-                />
-              </div>
-              <div className={styles.cardContent}>
-                <span className={styles.cardName}>{cat.name}</span>
-                <span className={styles.explore}>
-                  Explore <ArrowRight size={12} />
-                </span>
-              </div>
-            </Link>
-          ))}
-        </div>
+        {top.length > 0 && (
+          <div className={styles.grid}>
+            {top.map((cat) => (
+              <Link key={cat.id} href={`/products?category=${cat.id}`} className={styles.card}>
+                <div className={styles.imageWrap}>
+                  {/* ponytail: placeholder icon until category images are uploaded */}
+                  <div className={styles.iconPlaceholder}>
+                    <Package size={36} strokeWidth={1.5} />
+                  </div>
+                </div>
+                <div className={styles.cardContent}>
+                  <span className={styles.cardName}>{cat.name}</span>
+                  <span className={styles.explore}>
+                    Explore <ArrowRight size={12} />
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

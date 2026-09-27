@@ -76,10 +76,10 @@ The Galaxy Tools Hub database architecture has been completely overhauled from a
 
 | Aspect | Detail |
 |--------|--------|
-| **What changed** | Table renamed from `users` to `admin_users` |
-| **Why** | The old name `users` was ambiguous. The system now has two types of users: customers (authenticated via Supabase Auth → `profiles` table) and admin/internal staff (authenticated via Clerk → `admin_users` table). Renaming eliminates confusion. |
-| **Columns preserved** | All original columns (`id`, `clerk_user_id`, `name`, `email`, `role`, `status`, `created_at`) are preserved unchanged |
-| **Impact** | `rbac.middleware.ts` and any queries referencing `users` will need to reference `admin_users` instead |
+| **What changed** | Table renamed from `users` to `admin_users` and migrated to Supabase Auth |
+| **Why** | The old name `users` was ambiguous. The system now unifies all authentication on Supabase Auth: customers via `profiles` and internal staff via `admin_users` (linked to `auth.users(id)`). |
+| **Columns updated** | `user_id` (UUID references `auth.users(id)`), `name`, `email`, `role`, `status`, `is_active`, `created_at`, `updated_at` |
+| **Impact** | `adminAuthGuard` and RBAC middleware query `admin_users` by `user_id` or `email` |
 
 ---
 
@@ -454,7 +454,7 @@ Enables fast product search across name and description using PostgreSQL's built
 ### Admin Access
 
 - All admin users access data through the Express backend using the Supabase service role key
-- The backend enforces authorization via Clerk JWT + RBAC middleware
+- The backend enforces authorization via Supabase JWT + RBAC middleware
 - Audit logs track all admin actions with IP address and user agent
 
 ### Separation of Auth Concerns
@@ -462,8 +462,8 @@ Enables fast product search across name and description using PostgreSQL's built
 | Before | After |
 |--------|-------|
 | `customers` table with direct email/phone (no auth) | Supabase Auth (`auth.users`) handles customer authentication |
-| `users` table with Clerk IDs for admins | `admin_users` table with Clerk IDs for admins (preserved) |
-| Single ambiguous auth model | Dual-auth: Supabase Auth for customers, Clerk for admins |
+| `users` table with direct records | `admin_users` table with Supabase `user_id` FK (RBAC roles) |
+| Split / ambiguous auth models | Unified Supabase Auth for both customers and admin staff |
 
 ---
 
@@ -614,7 +614,7 @@ idx_orders_status       — orders(order_status, payment_status)
 | `packages/types/index.ts` | Update Zod schemas for all modified tables; add new schemas for new tables |
 | `apps/server/src/repositories/base.repository.ts` | Update table references (`users` → `admin_users`) |
 | `apps/server/src/repositories/product.repository.ts` | Update to use new product fields |
-| `apps/server/src/middlewares/auth.middleware.ts` | No changes needed (Clerk auth preserved) |
+| `apps/server/src/middlewares/auth.middleware.ts` | Updated to pure Supabase Auth guards (`adminAuthGuard`, `customerAuthGuard`) |
 | `apps/server/src/middlewares/rbac.middleware.ts` | No changes needed (role values preserved) |
 | `apps/server/src/routes/order.routes.ts` | Update for new order/payment structure |
 | `apps/server/src/controllers/*` | Update DTOs for expanded table structures |
@@ -692,10 +692,10 @@ idx_orders_status       — orders(order_status, payment_status)
 |------|--------|--------|
 | Application source code | Unchanged | This was a schema-only task |
 | `.env.example` | Unchanged | No new environment variables needed |
-| Clerk authentication | Preserved | Existing admin auth works; no reason to change |
+| Unified Supabase Auth | Migrated | Replaced legacy third-party auth with native Supabase Auth across stack |
 | `invoices` table | Preserved | Existing structure is adequate |
 | `notifications` table | Preserved | Existing structure is adequate for MVP |
-| Role values (`Owner`, `Manager`, `Staff`) | Preserved | Existing middleware depends on them |
+| Role values (`OWNER`, `MANAGER`, `STAFF`) | Standardized | Canonical uppercase enums used across backend & DB |
 | Supabase Storage upload flow | Preserved | Existing signed-URL approach is correct |
 | API response envelope format | Preserved | Existing `{ success, message, data, meta }` is good |
 | Monorepo structure | Preserved | pnpm workspaces + Turborepo is fine |

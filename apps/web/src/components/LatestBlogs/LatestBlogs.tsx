@@ -4,7 +4,21 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import { LATEST_BLOGS } from '../../data/homepageSeed';
+export interface BlogItem {
+  id: string;
+  title: string;
+  excerpt: string;
+  tag: string;
+  image: string;
+  href: string;
+}
+
+const LATEST_BLOGS: BlogItem[] = [
+  { id: 'blog-01', title: 'How to Choose the Right Digital Multimeter', excerpt: 'A buyer\'s guide covering counts, accuracy class, safety category, and feature checklist for industrial multimeters.', tag: 'Buying Guide', image: '/images/cat-multimeter.jpg', href: '#' },
+  { id: 'blog-02', title: 'Multimeter vs Clamp Meter: Which One Should You Use?', excerpt: 'Understand when to reach for a clamp meter over a standard DMM and the trade-offs in accuracy and convenience.', tag: 'Comparison', image: '/images/cat-clampmeter.jpg', href: '#' },
+  { id: 'blog-03', title: 'Understanding Oscilloscopes for Beginners', excerpt: 'Bandwidth, sample rate, channels — decoded for engineers setting up their first bench.', tag: 'Tutorial', image: '/images/cat-oscilloscope.jpg', href: '#' },
+  { id: 'blog-04', title: '5 Essential Testing Tools for Electrical Engineers', excerpt: 'The minimum kit every field engineer should carry, from insulation testers to IR thermometers.', tag: 'Industry', image: '/images/cat-insulation.jpg', href: '#' },
+];
 import styles from './LatestBlogs.module.scss';
 
 export const LatestBlogs: React.FC = () => {

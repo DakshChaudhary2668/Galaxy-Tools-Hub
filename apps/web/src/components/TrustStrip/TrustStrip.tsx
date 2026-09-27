@@ -2,7 +2,21 @@
 
 import React from 'react';
 import { Award, ShieldCheck, Box, Wrench, FileCheck, Target, FlaskConical } from 'lucide-react';
-import { TRUST_BADGES } from '../../data/products';
+export interface TrustBadgeItem {
+  id: string;
+  icon: string;
+  label: string;
+}
+
+const TRUST_BADGES: TrustBadgeItem[] = [
+  { id: 'iso', icon: 'Award', label: 'ISO 9001' },
+  { id: 'secure', icon: 'ShieldCheck', label: 'SECURE' },
+  { id: 'oem', icon: 'Box', label: 'OEM DIRECT' },
+  { id: 'calibrated', icon: 'Wrench', label: 'CALIBRATED' },
+  { id: 'compliant', icon: 'FileCheck', label: 'COMPLIANT' },
+  { id: 'precise', icon: 'Target', label: 'PRECISE' },
+  { id: 'tested', icon: 'FlaskConical', label: 'TESTED' },
+];
 import styles from './TrustStrip.module.scss';
 
 const ICON_MAP: Record<string, React.FC<{ className?: string }>> = {

@@ -1,3 +1,5 @@
+@use "@/styles/_shared.scss" as *;
+
 .section {
   padding-top: 32px;
   padding-bottom: 48px;
@@ -45,6 +47,8 @@
   letter-spacing: 0.04em;
   color: $color-black;
   text-transform: uppercase;
+  text-decoration: none;
+  display: inline-block;
   transition: border-color $transition-fast, box-shadow $transition-fast;
 
   &:hover {

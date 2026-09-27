@@ -1,3 +1,5 @@
+@use "@/styles/_shared.scss" as *;
+
 .bar {
   background-color: $color-yellow;
   color: $color-black;
