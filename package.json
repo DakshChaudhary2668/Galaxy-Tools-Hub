@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "pnpm exec turbo run build",
+    "build": "pnpm exec turbo run build && cp -a apps/web/.next .next",
     "build:web": "pnpm exec turbo run build --filter=galaxy-web...",
     "build:server": "pnpm exec turbo run build --filter=galaxy-server...",
     "start": "pnpm --filter galaxy-web start",
