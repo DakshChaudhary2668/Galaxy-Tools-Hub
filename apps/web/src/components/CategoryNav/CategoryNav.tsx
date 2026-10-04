@@ -6,8 +6,6 @@ const CATEGORIES = [
   { id: 'environmental', label: 'ENVIRONMENT' },
   { id: 'lab', label: 'LABORATORY / LAB TESTING' },
   { id: 'accessories', label: 'ACCESSORIES' },
-  { id: 'safety', label: 'SAFETY' },
-  { id: 'machinery', label: 'MACHINERY' },
 ];
 import { CategoryMegaMenu, CATEGORY_MENUS } from '../CategoryMegaMenu/CategoryMegaMenu';
 import styles from './CategoryNav.module.scss';

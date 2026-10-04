@@ -48,9 +48,13 @@
 }
 
 .logoImage {
-  height: 28px;
+  height: 42px;
   width: auto;
   object-fit: contain;
+
+  @include mobile {
+    height: 34px;
+  }
 }
 
 .searchContainer {

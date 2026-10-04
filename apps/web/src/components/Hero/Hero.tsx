@@ -10,11 +10,12 @@ export const Hero: React.FC = () => {
         <div className={styles.heroGrid}>
           {/* Left Content Card */}
           <div className={styles.leftCard}>
-            <span className={styles.industrialBadge}>INDUSTRIAL GRADE</span>
+            <span className={styles.industrialBadge}>A HOUSE OF</span>
             <h1 className={styles.mainHeading}>
-              PROFESSIONAL<br />
-              GRADE TESTING &<br />
-              SOLDERING<br />
+              ELECTRICALS,<br />
+              ELECTRONICS,<br />
+              ENVIRONMENT TESTING &<br />
+              MEASURING<br />
               INSTRUMENTS
             </h1>
             <p className={styles.description}>

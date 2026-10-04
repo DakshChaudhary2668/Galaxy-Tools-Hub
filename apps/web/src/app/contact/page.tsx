@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Mail, Phone, MapPin, Clock, ChevronRight, Send } from 'lucide-react';
+import { Mail, Phone, MapPin, UserRound, ChevronRight, Send } from 'lucide-react';
 import { AnnouncementBar } from '../../components/AnnouncementBar/AnnouncementBar';
 import { Header } from '../../components/Header/Header';
 import { CategoryNav } from '../../components/CategoryNav/CategoryNav';
@@ -34,32 +34,32 @@ export default function ContactPage() {
               <div className={styles.infoItem}>
                 <MapPin size={20} color="#111827" />
                 <div>
-                  <strong>Central Distribution & Calibration Depot</strong>
-                  <p>Plot 48, Okhla Industrial Area Phase-III, New Delhi, Delhi 110020, India</p>
+                  <strong>Sales Office</strong>
+                  <p>1674/4, Ground Floor, Bhagirath Palace, Delhi 110006</p>
                 </div>
               </div>
 
               <div className={styles.infoItem}>
                 <Phone size={20} color="#111827" />
                 <div>
-                  <strong>Direct Technical Helpline</strong>
-                  <p>+91 (011) 4892-0000 / +91 98765 43210</p>
+                  <strong>Contact Numbers</strong>
+                  <p>+91 90151 33267 / 011-43603957</p>
                 </div>
               </div>
 
               <div className={styles.infoItem}>
                 <Mail size={20} color="#111827" />
                 <div>
-                  <strong>Official RFQ & Procurement Inquiries</strong>
-                  <p>sales@galaxytools.com / tenders@galaxytools.com</p>
+                  <strong>Sales Email</strong>
+                  <p>galaxyinstruments9@gmail.com</p>
                 </div>
               </div>
 
               <div className={styles.infoItem}>
-                <Clock size={20} color="#111827" />
+                <UserRound size={20} color="#111827" />
                 <div>
-                  <strong>Operating Hours</strong>
-                  <p>Monday – Saturday: 09:30 AM – 06:30 PM IST</p>
+                  <strong>Sales Contact</strong>
+                  <p>Nitin Verma</p>
                 </div>
               </div>
             </div>

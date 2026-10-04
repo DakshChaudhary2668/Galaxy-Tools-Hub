@@ -24,8 +24,8 @@ export const Header: React.FC = () => {
           <Image
             src="/images/logo.png"
             alt="Galaxy Tools Hub Logo"
-            width={140}
-            height={32}
+            width={190}
+            height={44}
             className={styles.logoImage}
             priority
           />
