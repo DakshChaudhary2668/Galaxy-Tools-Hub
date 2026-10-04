@@ -12,6 +12,7 @@ import { analyticsRouter } from './analytics.routes';
 import { customerRouter } from './customer.routes';
 import { settingsRouter } from './settings.routes';
 import { inventoryRouter } from './inventory.routes';
+import { couponRouter } from './coupon.routes';
 
 export const apiRouter: Router = Router();
 
@@ -28,4 +29,4 @@ apiRouter.use('/analytics', analyticsRouter);
 apiRouter.use('/customers', customerRouter);
 apiRouter.use('/settings', settingsRouter);
 apiRouter.use('/inventory', inventoryRouter);
-
+apiRouter.use('/coupons', couponRouter);

@@ -114,3 +114,16 @@ export async function deleteProductPrimaryImage(
     { token }
   );
 }
+
+export async function deleteProductImage(productId: string, imageId: string, token?: string): Promise<void> {
+  await apiClient.delete(`/products/admin/${productId}/images/${imageId}`, { token });
+}
+
+export async function setPrimaryProductImage(productId: string, imageId: string, token?: string): Promise<ProductImageDto> {
+  const res = await apiClient.put<{ data: ProductImageDto }>(
+    `/products/admin/${productId}/images/${imageId}/primary`,
+    {},
+    { token }
+  );
+  return res.data;
+}

@@ -51,6 +51,7 @@ export default function AdminNewProductPage() {
   const [slug, setSlug] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [brandId, setBrandId] = useState('');
+  const [customBrandName, setCustomBrandName] = useState('');
   const [vendorId, setVendorId] = useState('');
   const [price, setPrice] = useState<string>('');
   const [compareAtPrice, setCompareAtPrice] = useState<string>('');
@@ -64,12 +65,14 @@ export default function AdminNewProductPage() {
   const [seoDescription, setSeoDescription] = useState('');
   const [isActive, setIsActive] = useState(false);
   const [isFeatured, setIsFeatured] = useState(false);
+  const [showOnHomepage, setShowOnHomepage] = useState(false);
+  const [isPurchasable, setIsPurchasable] = useState(false);
 
   const [specs, setSpecs] = useState<SpecPair[]>([]);
 
   const [saving, setSaving] = useState(false);
   const [saveStepText, setSaveStepText] = useState('');
-  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
+  const [selectedImageFiles, setSelectedImageFiles] = useState<File[]>([]);
   const [createdProductId, setCreatedProductId] = useState<string | null>(null);
   const [imageUploadError, setImageUploadError] = useState<string | null>(null);
   const [retryingImage, setRetryingImage] = useState(false);
@@ -130,11 +133,15 @@ export default function AdminNewProductPage() {
   };
 
   const handleRetryImageUpload = async () => {
-    if (!createdProductId || !selectedImageFile) return;
+    if (!createdProductId || selectedImageFiles.length === 0) return;
     setRetryingImage(true);
     setImageUploadError(null);
     try {
-      await uploadProductImage(createdProductId, selectedImageFile);
+      for (let index = 0; index < selectedImageFiles.length; index += 1) {
+        try { await uploadProductImage(createdProductId, selectedImageFiles[index]); }
+        catch (uploadError) { setSelectedImageFiles(selectedImageFiles.slice(index)); throw uploadError; }
+      }
+      setSelectedImageFiles([]);
       setSuccess(true);
       setTimeout(() => {
         router.push('/admin/products');
@@ -160,7 +167,7 @@ export default function AdminNewProductPage() {
       setError('Product SKU is required.');
       return;
     }
-    if (!sourceModelNo.trim() || !categoryId || !brandId || !vendorId) {
+    if (!sourceModelNo.trim() || !categoryId || (brandId === '__other__' ? !customBrandName.trim() : !brandId) || !vendorId) {
       setError('Model number, category, brand, and source vendor are required.');
       return;
     }
@@ -196,7 +203,8 @@ export default function AdminNewProductPage() {
         source_model_no: sourceModelNo.trim(),
         source_vendor_id: vendorId,
         category_id: categoryId,
-        brand_id: brandId,
+        brand_id: brandId === '__other__' ? undefined : brandId,
+        custom_brand_name: brandId === '__other__' ? customBrandName.trim() : undefined,
         price: Number(price),
         compare_at_price: compareAtPrice ? Number(compareAtPrice) : null,
         hsn_code: hsnCode.trim(),
@@ -209,17 +217,23 @@ export default function AdminNewProductPage() {
         seo_title: seoTitle.trim() || name.trim(),
         seo_description: seoDescription.trim() || shortDescription.trim() || null,
         is_active: isActive,
-        is_featured: isFeatured
+        is_featured: isFeatured,
+        show_on_homepage: showOnHomepage,
+        is_purchasable: isPurchasable
       };
 
       const newProduct = await createProduct(payload);
       setCreatedProductId(newProduct.id);
 
       // Correction 2: Create-then-upload sequence
-      if (selectedImageFile) {
-        setSaveStepText('Uploading primary image...');
+      if (selectedImageFiles.length > 0) {
+        setSaveStepText('Uploading product images...');
         try {
-          await uploadProductImage(newProduct.id, selectedImageFile);
+          for (let index = 0; index < selectedImageFiles.length; index += 1) {
+            try { await uploadProductImage(newProduct.id, selectedImageFiles[index]); }
+            catch (uploadError) { setSelectedImageFiles(selectedImageFiles.slice(index)); throw uploadError; }
+          }
+          setSelectedImageFiles([]);
           setSuccess(true);
           setTimeout(() => {
             router.push('/admin/products');
@@ -279,7 +293,7 @@ export default function AdminNewProductPage() {
             <span>{imageUploadError}</span>
           </div>
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-            {selectedImageFile && createdProductId && (
+            {selectedImageFiles.length > 0 && createdProductId && (
               <button
                 type="button"
                 onClick={handleRetryImageUpload}
@@ -408,7 +422,17 @@ export default function AdminNewProductPage() {
                       {b.name}
                     </option>
                   ))}
+                  <option value="__other__">Other / Add new brand</option>
                 </select>
+                {brandId === '__other__' && (
+                  <input
+                    type="text"
+                    value={customBrandName}
+                    onChange={(e) => setCustomBrandName(e.target.value)}
+                    placeholder="Enter brand name"
+                    required
+                  />
+                )}
               </div>
             </div>
 
@@ -583,6 +607,16 @@ export default function AdminNewProductPage() {
                 />
                 <span>Show in Featured Carousel</span>
               </label>
+
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>
+                <input type="checkbox" checked={showOnHomepage} onChange={(e) => setShowOnHomepage(e.target.checked)} />
+                <span>Show on Homepage</span>
+              </label>
+
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>
+                <input type="checkbox" checked={isPurchasable} onChange={(e) => setIsPurchasable(e.target.checked)} />
+                <span>Allow Purchase</span>
+              </label>
             </div>
           </div>
 
@@ -624,8 +658,8 @@ export default function AdminNewProductPage() {
             </div>
 
             <ImageUploadWidget
-              onFileChange={(file) => {
-                setSelectedImageFile(file);
+              onFilesChange={(files) => {
+                setSelectedImageFiles(files);
                 setImageUploadError(null);
               }}
               disabled={saving || retryingImage}

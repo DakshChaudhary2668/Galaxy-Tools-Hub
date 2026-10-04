@@ -6,10 +6,10 @@ import {
   updateProduct,
   deleteProduct,
   getProductImages,
-  addProductImage,
   deleteProductImage,
   completeProductImage,
-  removeProductPrimaryImage
+  removeProductPrimaryImage,
+  setPrimaryProductImage
 } from '../controllers/product.controller';
 import { adminAuthGuard } from '../middlewares/auth.middleware';
 import { rbacGuard } from '../middlewares/rbac.middleware';
@@ -17,7 +17,6 @@ import { validateRequest } from '../middlewares/validate.middleware';
 import {
   CreateProductSchema,
   UpdateProductSchema,
-  CreateProductImageSchema,
   ProductImageCompleteRequestSchema
 } from '@galaxy/types';
 import { Roles } from '@galaxy/constants';
@@ -76,16 +75,15 @@ productRouter.delete(
   removeProductPrimaryImage
 );
 
-productRouter.post(
-  '/admin/:id/images',
-  adminAuthGuard,
-  rbacGuard([Roles.OWNER, Roles.MANAGER]),
-  validateRequest(CreateProductImageSchema),
-  addProductImage
-);
 productRouter.delete(
   '/admin/:id/images/:imageId',
   adminAuthGuard,
   rbacGuard([Roles.OWNER, Roles.MANAGER]),
   deleteProductImage
+);
+productRouter.put(
+  '/admin/:id/images/:imageId/primary',
+  adminAuthGuard,
+  rbacGuard([Roles.OWNER, Roles.MANAGER]),
+  setPrimaryProductImage
 );

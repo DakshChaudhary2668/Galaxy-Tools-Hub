@@ -62,7 +62,7 @@ export default function ProductDetailClient({ id }: { id: string }) {
   };
 
   const thumbs = (product.images && product.images.length > 0)
-    ? (product.images as any[]).map(img => img.image_url).slice(0, 4)
+    ? (product.images as any[]).map(img => img.image_url).slice(0, 6)
     : ['/images/placeholder.jpg'];
 
   const specifications = product.specifications as Record<string, string>;

@@ -38,6 +38,10 @@ export class ProductRepository extends BaseRepository<ProductDto> {
       query = query.eq('is_featured', true);
     }
 
+    if (params.homepage) {
+      query = query.eq('show_on_homepage', true);
+    }
+
     // Discounted filter
     if (params.discounted) {
       query = query.not('compare_at_price', 'is', null).gt('compare_at_price', 0);

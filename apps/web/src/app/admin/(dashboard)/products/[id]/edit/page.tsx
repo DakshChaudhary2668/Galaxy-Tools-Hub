@@ -52,6 +52,7 @@ export default function AdminEditProductPage({
   const [slug, setSlug] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [brandId, setBrandId] = useState('');
+  const [customBrandName, setCustomBrandName] = useState('');
   const [price, setPrice] = useState<string>('');
   const [compareAtPrice, setCompareAtPrice] = useState<string>('');
   const [hsnCode, setHsnCode] = useState('');
@@ -61,13 +62,13 @@ export default function AdminEditProductPage({
   const [inventoryId, setInventoryId] = useState<string | null>(null);
   const [stockDirty, setStockDirty] = useState(false);
   const [thresholdDirty, setThresholdDirty] = useState(false);
-  const [imageUrl, setImageUrl] = useState('');
   const [shortDescription, setShortDescription] = useState('');
   const [description, setDescription] = useState('');
   const [seoTitle, setSeoTitle] = useState('');
   const [seoDescription, setSeoDescription] = useState('');
   const [isActive, setIsActive] = useState(true);
   const [isFeatured, setIsFeatured] = useState(false);
+  const [showOnHomepage, setShowOnHomepage] = useState(true);
   const [isPurchasable, setIsPurchasable] = useState(true);
 
   const [specs, setSpecs] = useState<SpecPair[]>([]);
@@ -104,14 +105,8 @@ export default function AdminEditProductPage({
         setSeoDescription(p.seo_description || '');
         setIsActive(Boolean(p.is_active));
         setIsFeatured(Boolean(p.is_featured));
+        setShowOnHomepage(p.show_on_homepage !== false);
         setIsPurchasable(p.is_purchasable !== false);
-
-        // Primary image
-        if (p.images && p.images.length > 0) {
-          const images = p.images as { image_url?: string; is_primary?: boolean }[];
-          const firstImg = images.find((image) => image.is_primary) || images[0];
-          setImageUrl(firstImg.image_url || '');
-        }
 
         // Specifications
         if (p.specifications && typeof p.specifications === 'object') {
@@ -199,7 +194,8 @@ export default function AdminEditProductPage({
         source_model_no: sourceModelNo.trim(),
         slug: (slug || name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
         category_id: categoryId || undefined,
-        brand_id: brandId || undefined,
+        brand_id: brandId === '__other__' ? undefined : brandId || undefined,
+        custom_brand_name: brandId === '__other__' ? customBrandName.trim() : undefined,
         price: Number(price),
         compare_at_price: compareAtPrice ? Number(compareAtPrice) : null,
         hsn_code: hsnCode.trim(),
@@ -213,6 +209,7 @@ export default function AdminEditProductPage({
         seo_description: seoDescription.trim() || null,
         is_active: isActive,
         is_featured: isFeatured,
+        show_on_homepage: showOnHomepage,
         is_purchasable: isPurchasable
       };
 
@@ -411,7 +408,17 @@ export default function AdminEditProductPage({
                       {b.name}
                     </option>
                   ))}
+                  <option value="__other__">Other / Add new brand</option>
                 </select>
+                {brandId === '__other__' && (
+                  <input
+                    type="text"
+                    value={customBrandName}
+                    onChange={(e) => setCustomBrandName(e.target.value)}
+                    placeholder="Enter brand name"
+                    required
+                  />
+                )}
               </div>
             </div>
           </div>
@@ -569,6 +576,11 @@ export default function AdminEditProductPage({
               </label>
 
               <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>
+                <input type="checkbox" checked={showOnHomepage} onChange={(e) => setShowOnHomepage(e.target.checked)} />
+                <span>Show on Homepage</span>
+              </label>
+
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>
                 <input
                   type="checkbox"
                   checked={isPurchasable}
@@ -617,8 +629,6 @@ export default function AdminEditProductPage({
 
             <ImageUploadWidget
               productId={productId}
-              initialImageUrl={imageUrl}
-              onImageChange={(url) => setImageUrl(url || '')}
               disabled={saving}
             />
           </div>

@@ -12,6 +12,7 @@ import {
   Users,
   BarChart3,
   Settings,
+  TicketPercent,
   ExternalLink,
   LogOut,
   Bell,
@@ -50,6 +51,7 @@ const NAV_SECTIONS: NavSection[] = [
       { label: 'Products', href: '/admin/products', icon: Package },
       { label: 'Categories', href: '/admin/categories', icon: FolderTree },
       { label: 'Inventory', href: '/admin/inventory', icon: Boxes },
+      { label: 'Coupons', href: '/admin/coupons', icon: TicketPercent },
       { label: 'Customers', href: '/admin/customers', icon: Users }
     ]
   },

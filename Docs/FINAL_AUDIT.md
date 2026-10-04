@@ -7,14 +7,23 @@
 
 ---
 
-## Current launch state — September 22, 2026
+## Current launch state — October 4, 2026
 
-The original audit findings are **not** the current blocker list. Across Sprints 1–6, all six catalogued P0 findings were fixed, including the Sprint 4C live payment/inventory integrity verification; nine of eleven P1 findings were fixed, while coupons and variants were deliberately disabled/deferred for the MVP. One P2 was fixed and the remaining eight P2/P3 items are post-launch work, not launch gates. The current code/build checks, active customer/admin route review, and read-only API smoke are recorded in [Sprint 6 launch prep](SPRINT_6_LAUNCH_PREP_REPORT.md). No production deployment has occurred.
+Sprint 7C.5 is code-complete for internal category navigation, normalized custom brands, independent homepage placement, six-image signed-upload management, and an empty admin-only coupons foundation. Payment/inventory finalization was not changed and checkout coupon redemption remains disabled until it can be made atomic with successful payment finalization. The reviewed migration is live; focused tests (11/11), live Supabase/admin/image tests (14/14), Sprint 5A (22/22), Sprint 4A, Sprint 4B (30/30), Sprint 5B (11/11), direct typechecks, zero-error lint, server build, and web production build passed with complete fixture cleanup. Temporary Hostinger redeployment/public verification remains. See [Sprint 7C.5 report](SPRINT_7C5_MERCHANDISING_COUPONS.md).
+
+Sprint 7C audited the temporary public Hostinger frontend/backend on baseline `fdab7bd`. The reported Admin Orders dropdown defect did **not** reproduce: an authenticated `PROCESSING -> PACKED` transition persisted once, left `payment_status` unchanged, and appeared after the UI refetch; `PACKED -> CONFIRMED` returned the expected HTTP 400. The 21-check disposable admin suite, public customer/catalog/cart/checkout/order-success checks, complete Sprint 4A/4B/4C payment regressions, database invariants, exact five-minute cron, typechecks, lint, and production builds passed. No code patch or redeployment was warranted. Full evidence is in [Sprint 7C pre-production audit](SPRINT_7C_PREPRODUCTION_AUDIT.md).
+
+**Current P0:** 0 open. **Current P1:** 1 operational blocker: Supabase rejected a fresh customer sign-up with `email rate limit exceeded`. Confirmed-customer sign-in/profile/logout passed, but public sign-up must be reverified after production SMTP/rate-limit configuration. Two P2 observations remain non-blocking: Hostinger runtime logs were unavailable during the mutation, and the live inactive `QA-2026-TEST` row conflicts with prior cleanup documentation. Final production deployment has not started.
+
+### Prior launch-state overlay — September 22, 2026
+
+The original audit findings are **not** the current blocker list. Across Sprints 1–6, all six catalogued P0 findings were fixed, including the Sprint 4C live payment/inventory integrity verification; nine of eleven P1 findings were fixed. Product variants remain deferred, while the coupon finding now has a live schema and verified implementation pending only public staging confirmation. One P2 was fixed and the remaining eight P2/P3 items are post-launch work, not launch gates. No final production deployment has occurred.
 
 | Current finding disposition | Count |
 |---|---:|
 | FIXED | 16 (6 P0, 9 P1, 1 P2) |
-| DEFERRED FOR MVP | 2 (coupons, variants; routes disabled) |
+| PUBLIC STAGING VERIFICATION PENDING | 1 (coupons foundation) |
+| DEFERRED FOR MVP | 1 (variants) |
 | POST-LAUNCH | 8 (4 P2, 4 P3) |
 | ACTIVE LAUNCH BLOCKERS among original finding IDs | 0 |
 | Total catalogued finding IDs | 26 (6 P0, 11 P1, 5 P2, 4 P3) |
@@ -287,7 +296,7 @@ The following subsystems were inspected, tested, and verified to be functioning 
 ---
 
 ### GTH-P1-004: Admin Coupons Route Returns 500 (Missing `coupons` Table in DB)
-- **Status:** DEFERRED FOR MVP — Sprint 5B (September 21, 2026). No customer checkout coupon control is active. The linked admin page and coupon API mount were removed; production `/admin/coupons` and `/api/v1/coupons` now return 404 rather than exposing a broken feature. No table was invented.
+- **Status:** LIVE MIGRATION VERIFIED / PUBLIC STAGING PENDING — Sprint 7C.5 (October 4, 2026). The constrained empty table, admin-only API, OWNER/MANAGER UI, 14/14 disposable live suite, and zero-fixture cleanup passed. Checkout redemption remains disabled so payment finalization is unchanged. Mark fully FIXED after public Hostinger verification.
 - **Severity:** P1
 - **Affected Flow:** Admin coupon management (`/admin/coupons`) and coupon validation at checkout.
 - **Exact Files & Lines:** `apps/server/src/controllers/coupon.controller.ts:24`, `apps/web/src/app/admin/(dashboard)/coupons/page.tsx`
@@ -468,7 +477,7 @@ The following subsystems were inspected, tested, and verified to be functioning 
 ## 9. Database Risks — original audit observations
 
 1. **Missing Tables / Deferred Features:**
-   - `public.product_variants` and `public.coupons` remain absent, but their routes/UI were deferred for the MVP in Sprint 5B; they are no longer required by the active purchase flow.
+   - `public.product_variants` remains deferred. The live Sprint 7C.5 migration adds `public.coupons` as an empty admin-only foundation; redemption is not part of the active purchase flow.
    - `public.returns` & `public.refunds` (Referenced in order transitions)
    - `public.inventory_reservations` (Referenced in `inventory.service.ts`)
 2. **Column Name Assumptions vs PostgreSQL Reality:**

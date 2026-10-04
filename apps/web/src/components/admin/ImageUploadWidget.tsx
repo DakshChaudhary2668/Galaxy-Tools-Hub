@@ -1,432 +1,152 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
-import {
-  UploadCloud,
-  Trash2,
-  Loader2,
-  AlertCircle,
-  CheckCircle2,
-  RefreshCw
-} from 'lucide-react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { AlertCircle, CheckCircle2, ImagePlus, Loader2, Star, Trash2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import {
-  getProductImageUploadUrl,
   completeProductImage,
-  deleteProductPrimaryImage
+  deleteProductImage,
+  getProductImages,
+  getProductImageUploadUrl,
+  setPrimaryProductImage
 } from '@/services/product.service';
+import { ProductImageDto } from '@galaxy/types';
 
-const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
+const MAX_IMAGES = 6;
+const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+type LocalImage = { file: File; previewUrl: string };
 
 interface ImageUploadWidgetProps {
   productId?: string;
-  initialImageUrl?: string | null;
-  onFileChange?: (file: File | null) => void;
-  onImageChange?: (imageUrl: string | null) => void;
+  onFilesChange?: (files: File[]) => void;
   disabled?: boolean;
 }
 
-export function ImageUploadWidget({
-  productId,
-  initialImageUrl,
-  onFileChange,
-  onImageChange,
-  disabled = false
-}: ImageUploadWidgetProps) {
-  const [previewUrl, setPreviewUrl] = useState<string | null>(initialImageUrl || null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [uploadProgressText, setUploadProgressText] = useState<string>('');
+const imageUrl = (image: ProductImageDto) => image.public_url || image.storage_path;
+
+export function ImageUploadWidget({ productId, onFilesChange, disabled = false }: ImageUploadWidgetProps) {
+  const [images, setImages] = useState<ProductImageDto[]>([]);
+  const [localImages, setLocalImages] = useState<LocalImage[]>([]);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    if (initialImageUrl) {
-      setPreviewUrl(initialImageUrl);
-    } else if (!productId) {
-      // Keep existing preview if in create mode with a selected local file
-    } else {
-      setPreviewUrl(null);
-    }
-  }, [initialImageUrl, productId]);
+  const loadImages = useCallback(async () => {
+    if (!productId) return;
+    try { setImages(await getProductImages(productId)); }
+    catch (err) { setError(err instanceof Error ? err.message : 'Failed to load product images.'); }
+  }, [productId]);
 
-  const validateFile = (file: File): string | null => {
-    if (!ALLOWED_MIME_TYPES.includes(file.type)) {
-      return 'Invalid format. Allowed image types: JPEG (.jpg, .jpeg), PNG (.png), and WebP (.webp).';
-    }
-    if (file.size > MAX_FILE_SIZE_BYTES) {
-      const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
-      return `File size is ${sizeMb} MB. Maximum allowed image size is 5.0 MB.`;
-    }
-    return null;
+  useEffect(() => { loadImages(); }, [loadImages]);
+
+  const validateFiles = (files: File[]): string | null => {
+    const currentCount = productId ? images.length : localImages.length;
+    if (files.length + currentCount > MAX_IMAGES) return `A product can have at most ${MAX_IMAGES} images.`;
+    const invalidType = files.find((file) => !ALLOWED_MIME_TYPES.includes(file.type));
+    if (invalidType) return `${invalidType.name}: only JPEG, PNG, and WebP images are allowed.`;
+    const tooLarge = files.find((file) => file.size > MAX_FILE_SIZE_BYTES);
+    return tooLarge ? `${tooLarge.name}: maximum file size is 5 MB.` : null;
   };
 
-  const getExtensionFromMime = (mime: string): 'jpg' | 'jpeg' | 'png' | 'webp' => {
-    switch (mime) {
-      case 'image/jpeg':
-        return 'jpg';
-      case 'image/png':
-        return 'png';
-      case 'image/webp':
-        return 'webp';
-      default:
-        return 'jpg';
-    }
+  const uploadOne = async (file: File) => {
+    if (!productId) return;
+    const extension = file.type === 'image/jpeg' ? 'jpg' : file.type === 'image/png' ? 'png' : 'webp';
+    const signed = await getProductImageUploadUrl({
+      product_id: productId,
+      mime_type: file.type as 'image/jpeg' | 'image/png' | 'image/webp',
+      file_size: file.size,
+      extension
+    });
+    const { error: uploadError } = await supabase.storage
+      .from('product-images')
+      .uploadToSignedUrl(signed.path, signed.token, file, { contentType: file.type });
+    if (uploadError) throw new Error(uploadError.message);
+    await completeProductImage(productId, { storage_path: signed.path, alt_text: file.name });
   };
 
-  const handleFileSelect = async (file: File) => {
+  const selectFiles = async (selected: File[]) => {
     setError(null);
-    setSuccessMsg(null);
+    setMessage(null);
+    const validationError = validateFiles(selected);
+    if (validationError) { setError(validationError); return; }
 
-    const validationError = validateFile(file);
-    if (validationError) {
-      setError(validationError);
+    if (!productId) {
+      const next = [...localImages, ...selected.map((file) => ({ file, previewUrl: URL.createObjectURL(file) }))];
+      setLocalImages(next);
+      onFilesChange?.(next.map((item) => item.file));
       return;
     }
 
-    // Mode 1: Edit Mode with real Product ID (Immediate server-side upload & safe replacement)
-    if (productId) {
-      setUploading(true);
-      setUploadProgressText('Authorizing secure image upload...');
-      try {
-        const ext = getExtensionFromMime(file.type);
-        const signResult = await getProductImageUploadUrl({
-          product_id: productId,
-          mime_type: file.type as 'image/jpeg' | 'image/png' | 'image/webp',
-          file_size: file.size,
-          extension: ext
-        });
-
-        setUploadProgressText('Uploading image bytes to storage...');
-        const { error: uploadError } = await supabase.storage
-          .from('product-images')
-          .uploadToSignedUrl(signResult.path, signResult.token, file, {
-            contentType: file.type
-          });
-
-        if (uploadError) {
-          // Fallback direct PUT to signed URL if SDK fails
-          const putRes = await fetch(signResult.signedUrl, {
-            method: 'PUT',
-            headers: { 'Content-Type': file.type },
-            body: file
-          });
-          if (!putRes.ok) {
-            throw new Error(`Upload failed: ${uploadError.message || putRes.statusText}`);
-          }
-        }
-
-        setUploadProgressText('Completing product image registration...');
-        const completedRecord = await completeProductImage(productId, {
-          storage_path: signResult.path
-        });
-
-        const newPublicUrl = completedRecord.public_url || signResult.publicUrl;
-        setPreviewUrl(newPublicUrl);
-        onImageChange?.(newPublicUrl);
-        setSuccessMsg('Product image updated successfully.');
-      } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : 'Image upload failed. Please try again.';
-        setError(msg);
-      } finally {
-        setUploading(false);
-        setUploadProgressText('');
-      }
-      return;
-    }
-
-    // Mode 2: Create Mode (Product not created yet, keep local file & preview for create-then-upload flow)
-    const localUrl = URL.createObjectURL(file);
-    setPreviewUrl(localUrl);
-    onFileChange?.(file);
-    onImageChange?.(localUrl);
+    setBusy(true);
+    try {
+      for (const file of selected) await uploadOne(file);
+      await loadImages();
+      setMessage(`${selected.length} image${selected.length === 1 ? '' : 's'} uploaded.`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Image upload failed.');
+      await loadImages();
+    } finally { setBusy(false); }
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    if (!disabled && !uploading) {
-      setIsDragging(true);
-    }
+  const removeLocal = (index: number) => {
+    URL.revokeObjectURL(localImages[index].previewUrl);
+    const next = localImages.filter((_, itemIndex) => itemIndex !== index);
+    setLocalImages(next);
+    onFilesChange?.(next.map((item) => item.file));
   };
 
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    if (disabled || uploading) return;
-
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      const file = e.dataTransfer.files[0];
-      handleFileSelect(file);
-    }
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-      handleFileSelect(file);
-    }
-    // reset input value so re-selecting the same file triggers onChange
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
-
-  const handleRemoveImage = async () => {
+  const removeSaved = async (image: ProductImageDto) => {
+    if (!productId || !confirm('Remove this product image?')) return;
+    setBusy(true);
     setError(null);
-    setSuccessMsg(null);
-
-    // If on edit page with an existing product, delete from DB & Storage
-    if (productId && previewUrl) {
-      setUploading(true);
-      setUploadProgressText('Removing image...');
-      try {
-        await deleteProductPrimaryImage(productId);
-        setPreviewUrl(null);
-        onImageChange?.(null);
-        setSuccessMsg('Product image removed.');
-      } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : 'Failed to remove image.';
-        setError(msg);
-      } finally {
-        setUploading(false);
-        setUploadProgressText('');
-      }
-      return;
-    }
-
-    // If on create page, clear local file
-    setPreviewUrl(null);
-    onFileChange?.(null);
-    onImageChange?.(null);
+    try {
+      await deleteProductImage(productId, image.id);
+      await loadImages();
+      setMessage('Image removed from the product and managed storage.');
+    } catch (err) { setError(err instanceof Error ? err.message : 'Failed to remove image.'); }
+    finally { setBusy(false); }
   };
+
+  const makePrimary = async (image: ProductImageDto) => {
+    if (!productId || image.is_primary) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await setPrimaryProductImage(productId, image.id);
+      await loadImages();
+      setMessage('Primary image updated.');
+    } catch (err) { setError(err instanceof Error ? err.message : 'Failed to update primary image.'); }
+    finally { setBusy(false); }
+  };
+
+  const displayImages = productId
+    ? images.map((image) => ({ id: image.id, url: imageUrl(image), primary: image.is_primary, saved: image }))
+    : localImages.map((image, index) => ({ id: `${image.file.name}-${index}`, url: image.previewUrl, primary: index === 0, index }));
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-      {/* Hidden file input */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/jpeg,image/png,image/webp"
-        style={{ display: 'none' }}
-        onChange={handleInputChange}
-        disabled={disabled || uploading}
-      />
-
-      {/* Error alert */}
-      {error && (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            backgroundColor: '#FEF2F2',
-            border: '1px solid #FCA5A5',
-            color: '#991B1B',
-            padding: '10px 14px',
-            borderRadius: '6px',
-            fontSize: '12px',
-            fontWeight: 600
-          }}
-        >
-          <AlertCircle size={16} style={{ flexShrink: 0 }} />
-          <span>{error}</span>
-        </div>
-      )}
-
-      {/* Success alert */}
-      {successMsg && (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            backgroundColor: '#DCFCE7',
-            border: '1px solid #BBF7D0',
-            color: '#16A34A',
-            padding: '10px 14px',
-            borderRadius: '6px',
-            fontSize: '12px',
-            fontWeight: 600
-          }}
-        >
-          <CheckCircle2 size={16} style={{ flexShrink: 0 }} />
-          <span>{successMsg}</span>
-        </div>
-      )}
-
-      {/* Main Container: Preview State or Dropzone State */}
-      {previewUrl ? (
-        <div
-          style={{
-            border: '1px solid #E2E8F0',
-            borderRadius: '8px',
-            backgroundColor: '#F8FAFC',
-            padding: '16px',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '14px',
-            position: 'relative'
-          }}
-        >
-          <div
-            style={{
-              width: '100%',
-              maxWidth: '260px',
-              height: '180px',
-              backgroundColor: '#FFFFFF',
-              border: '1px solid #CBD5E1',
-              borderRadius: '6px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              overflow: 'hidden'
-            }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={previewUrl}
-              alt="Primary product preview"
-              style={{
-                maxWidth: '100%',
-                maxHeight: '100%',
-                objectFit: 'contain'
-              }}
-            />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <input ref={fileInputRef} hidden multiple type="file" accept="image/jpeg,image/png,image/webp"
+        disabled={disabled || busy || displayImages.length >= MAX_IMAGES}
+        onChange={(event) => { selectFiles(Array.from(event.target.files || [])); event.target.value = ''; }} />
+      {error && <div style={{ color: '#991B1B', background: '#FEF2F2', padding: 10, borderRadius: 6, fontSize: 12, display: 'flex', gap: 8 }}><AlertCircle size={16} />{error}</div>}
+      {message && <div style={{ color: '#166534', background: '#DCFCE7', padding: 10, borderRadius: 6, fontSize: 12, display: 'flex', gap: 8 }}><CheckCircle2 size={16} />{message}</div>}
+      {displayImages.length > 0 && <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 10 }}>
+        {displayImages.map((image) => <div key={image.id} style={{ border: image.primary ? '2px solid #F5C710' : '1px solid #CBD5E1', borderRadius: 8, padding: 8, background: '#FFF' }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={image.url} alt="Product preview" style={{ width: '100%', height: 110, objectFit: 'contain' }} />
+          <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
+            {productId && 'saved' in image && <button type="button" disabled={busy || image.primary} onClick={() => makePrimary(image.saved)}><Star size={14} fill={image.primary ? 'currentColor' : 'none'} /> {image.primary ? 'Primary' : 'Make primary'}</button>}
+            {!productId && image.primary && <span style={{ fontSize: 11, fontWeight: 700 }}>Primary</span>}
+            <button type="button" aria-label="Remove image" disabled={busy} onClick={() => productId && 'saved' in image ? removeSaved(image.saved) : 'index' in image && removeLocal(image.index)}><Trash2 size={14} /></button>
           </div>
-
-          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center' }}>
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={disabled || uploading}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                height: '34px',
-                padding: '0 14px',
-                fontSize: '12px',
-                fontWeight: 700,
-                color: '#0F172A',
-                backgroundColor: '#FFFFFF',
-                border: '1px solid #CBD5E1',
-                borderRadius: '6px',
-                cursor: disabled || uploading ? 'not-allowed' : 'pointer'
-              }}
-            >
-              {uploading ? (
-                <Loader2 size={14} className="animate-spin" />
-              ) : (
-                <RefreshCw size={14} />
-              )}
-              <span>{uploading ? 'Processing...' : 'Replace Image'}</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={handleRemoveImage}
-              disabled={disabled || uploading}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                height: '34px',
-                padding: '0 14px',
-                fontSize: '12px',
-                fontWeight: 700,
-                color: '#DC2626',
-                backgroundColor: '#FEF2F2',
-                border: '1px solid #FCA5A5',
-                borderRadius: '6px',
-                cursor: disabled || uploading ? 'not-allowed' : 'pointer'
-              }}
-            >
-              <Trash2 size={14} />
-              <span>Remove</span>
-            </button>
-          </div>
-
-          {uploading && (
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                fontSize: '12px',
-                color: '#475569',
-                fontWeight: 600
-              }}
-            >
-              <Loader2 size={14} className="animate-spin" />
-              <span>{uploadProgressText || 'Uploading image...'}</span>
-            </div>
-          )}
-        </div>
-      ) : (
-        <div
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          onClick={() => {
-            if (!disabled && !uploading) {
-              fileInputRef.current?.click();
-            }
-          }}
-          style={{
-            border: isDragging ? '2px dashed #2563EB' : '2px dashed #CBD5E1',
-            borderRadius: '8px',
-            backgroundColor: isDragging ? '#EFF6FF' : '#F8FAFC',
-            padding: '28px 16px',
-            textAlign: 'center',
-            cursor: disabled || uploading ? 'not-allowed' : 'pointer',
-            transition: 'all 0.2s ease',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '8px'
-          }}
-        >
-          {uploading ? (
-            <>
-              <Loader2 size={36} color="#2563EB" className="animate-spin" />
-              <div style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>
-                {uploadProgressText || 'Uploading product image...'}
-              </div>
-            </>
-          ) : (
-            <>
-              <div
-                style={{
-                  width: '44px',
-                  height: '44px',
-                  borderRadius: '50%',
-                  backgroundColor: '#E2E8F0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#475569'
-                }}
-              >
-                <UploadCloud size={22} />
-              </div>
-              <div style={{ fontSize: '14px', fontWeight: 700, color: '#0F172A' }}>
-                Click to browse or drag & drop image here
-              </div>
-              <div style={{ fontSize: '12px', color: '#64748B' }}>
-                Supports JPEG, PNG, and WebP (Max 5.0 MB)
-              </div>
-            </>
-          )}
-        </div>
-      )}
+        </div>)}
+      </div>}
+      <button type="button" disabled={disabled || busy || displayImages.length >= MAX_IMAGES} onClick={() => fileInputRef.current?.click()} style={{ minHeight: 42 }}>
+        {busy ? <Loader2 size={16} className="animate-spin" /> : <ImagePlus size={16} />} {displayImages.length ? 'Add images' : 'Choose images'} ({displayImages.length}/{MAX_IMAGES})
+      </button>
+      <small>JPEG, PNG, or WebP. Maximum 5 MB each. The first image is primary until changed.</small>
     </div>
   );
 }

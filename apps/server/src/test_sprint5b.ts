@@ -61,10 +61,10 @@ test('reservation cron has the stable five-minute database-function schedule', (
 const apiRoutes = fs.readFileSync(path.join(root, 'apps/server/src/routes/index.ts'), 'utf8');
 const productRoutes = fs.readFileSync(path.join(root, 'apps/server/src/routes/product.routes.ts'), 'utf8');
 const adminLayout = fs.readFileSync(path.join(root, 'apps/web/src/app/admin/(dashboard)/layout.tsx'), 'utf8');
-test('deferred coupons and variants are not mounted or linked', () => {
-  assert.doesNotMatch(apiRoutes, /coupon|variant/i);
+test('coupon administration is mounted while variants remain deferred', () => {
+  assert.match(apiRoutes, /couponRouter/);
   assert.doesNotMatch(productRoutes, /variant/i);
-  assert.doesNotMatch(adminLayout, /admin\/coupons/i);
+  assert.match(adminLayout, /admin\/coupons/i);
 });
 
 assert.equal(passed, 11);

@@ -196,6 +196,7 @@ export const ProductSchema = z.object({
   meta_keywords: z.string().nullable().optional(),
   is_purchasable: z.boolean().default(true),
   is_featured: z.boolean().default(false),
+  show_on_homepage: z.boolean().default(true),
   is_active: z.boolean().default(true),
   created_at: z.string().optional(),
   updated_at: z.string().optional()
@@ -219,14 +220,20 @@ export type ProductView = Partial<ProductDto> & {
   compare_at_price?: number | null;
 };
 
-export const CreateProductSchema = ProductSchema.omit({ id: true, created_at: true, updated_at: true }).extend({
+const ProductWriteSchema = ProductSchema.omit({ id: true, brand_id: true, created_at: true, updated_at: true }).extend({
+  brand_id: z.string().uuid().optional(),
+  custom_brand_name: z.string().trim().min(1).max(120).optional(),
   image_url: z.string().optional(),
   stock: z.number().int().min(0).optional(),
   lowStockThreshold: z.number().int().min(0).optional()
 });
+export const CreateProductSchema = ProductWriteSchema.refine(
+  (value) => Boolean(value.brand_id || value.custom_brand_name),
+  { message: 'Select a brand or enter a custom brand name', path: ['brand_id'] }
+);
 export type CreateProductDto = z.infer<typeof CreateProductSchema>;
 
-export const UpdateProductSchema = CreateProductSchema.partial();
+export const UpdateProductSchema = ProductWriteSchema.partial();
 export type UpdateProductDto = z.infer<typeof UpdateProductSchema>;
 
 // Optimized Product Card DTO (Listings, Search, Catalog grids)
@@ -244,6 +251,7 @@ export const ProductCardSchema = ProductSchema.pick({
   compare_at_price: true,
   is_purchasable: true,
   is_featured: true,
+  show_on_homepage: true,
   is_active: true
 });
 export type ProductCardDto = z.infer<typeof ProductCardSchema>;
@@ -269,6 +277,7 @@ export const ProductQuerySchema = z.object({
   maxPrice: z.string().optional().transform((val) => (val ? parseFloat(val) : undefined)),
   sort: z.enum(['price_asc', 'price_desc', 'latest', 'oldest', 'name_asc', 'name_desc', 'featured']).optional().default('latest'),
   featured: z.string().optional().transform((val) => val === 'true'),
+  homepage: z.string().optional().transform((val) => val === 'true'),
   discounted: z.string().optional().transform((val) => val === 'true'),
   active: z.string().optional().transform((val) => (val !== undefined ? val === 'true' : true))
 });
@@ -628,3 +637,57 @@ export const ProductImageCompleteRequestSchema = z.object({
   alt_text: z.string().max(255).optional()
 });
 export type ProductImageCompleteRequestDto = z.infer<typeof ProductImageCompleteRequestSchema>;
+
+// --- 22. COUPONS (ADMIN FOUNDATION; REDEMPTION IS NOT ENABLED) ---
+const CouponBaseSchema = z.object({
+  id: z.string().uuid(),
+  code: z.string().trim().min(1).max(50),
+  description: z.string().max(500).nullable().optional(),
+  discount_type: z.enum(['PERCENTAGE', 'FIXED']),
+  discount_value: z.number().positive(),
+  minimum_order_amount: z.number().min(0).nullable().optional(),
+  maximum_discount_amount: z.number().min(0).nullable().optional(),
+  usage_limit: z.number().int().positive().nullable().optional(),
+  usage_count: z.number().int().min(0).default(0),
+  starts_at: z.string().datetime().nullable().optional(),
+  expires_at: z.string().datetime().nullable().optional(),
+  is_active: z.boolean().default(true),
+  created_at: z.string().optional(),
+  updated_at: z.string().optional()
+});
+
+type CouponValidationFields = Pick<
+  z.infer<typeof CouponBaseSchema>,
+  'discount_type' | 'discount_value' | 'maximum_discount_amount' | 'starts_at' | 'expires_at'
+>;
+
+const validateCoupon = (coupon: CouponValidationFields, ctx: z.RefinementCtx) => {
+  if (coupon.discount_type === 'PERCENTAGE' && coupon.discount_value > 100) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['discount_value'], message: 'Percentage discount cannot exceed 100' });
+  }
+  if (coupon.discount_type === 'FIXED' && coupon.maximum_discount_amount != null) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['maximum_discount_amount'], message: 'Maximum discount only applies to percentage coupons' });
+  }
+  if (coupon.starts_at && coupon.expires_at && new Date(coupon.starts_at) >= new Date(coupon.expires_at)) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['expires_at'], message: 'Expiry must be after the start date' });
+  }
+};
+
+export const CouponSchema = CouponBaseSchema.superRefine(validateCoupon);
+export type CouponDto = z.infer<typeof CouponSchema>;
+
+export const CreateCouponSchema = CouponBaseSchema.omit({
+  id: true,
+  usage_count: true,
+  created_at: true,
+  updated_at: true
+}).superRefine(validateCoupon);
+export type CreateCouponDto = z.infer<typeof CreateCouponSchema>;
+
+export const UpdateCouponSchema = CouponBaseSchema.omit({
+  id: true,
+  usage_count: true,
+  created_at: true,
+  updated_at: true
+}).partial();
+export type UpdateCouponDto = z.infer<typeof UpdateCouponSchema>;

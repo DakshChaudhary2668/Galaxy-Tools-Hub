@@ -22,7 +22,7 @@ export class StorageRepository {
   async deleteObject(bucket: string, path: string): Promise<void> {
     const { error } = await supabaseAdmin.storage.from(bucket).remove([path]);
     if (error) {
-      console.error(`[StorageRepository] Error deleting object ${bucket}/${path}:`, error.message);
+      throw new Error(`Failed to delete storage object ${bucket}/${path}: ${error.message}`);
     }
   }
 }

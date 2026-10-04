@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
+import { randomUUID } from 'node:crypto';
 import { ProductRepository } from '../repositories/product.repository';
-import { BaseRepository } from '../repositories/base.repository';
 import { StorageRepository } from '../repositories/storage.repository';
 import { supabaseAdmin } from '../config/supabase';
 import { ProductQuerySchema, ProductImageDto, ProductImageCompleteRequestDto } from '@galaxy/types';
@@ -10,6 +10,58 @@ import { AppError } from '../utils/app-error';
 
 const productRepository = new ProductRepository();
 const storageRepository = new StorageRepository();
+const MAX_PRODUCT_IMAGES = 6;
+
+function normalizeBrandName(name: string): string {
+  return name.trim().replace(/\s+/g, ' ');
+}
+
+function slugify(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+}
+
+async function resolveBrandId(brandId?: string, customBrandName?: string): Promise<string> {
+  if (!customBrandName) {
+    if (!brandId) throw new AppError('Select a brand or enter a custom brand name', 400);
+    return brandId;
+  }
+
+  const normalized = normalizeBrandName(customBrandName);
+  const { data: brands, error: lookupError } = await supabaseAdmin.from('brands').select('id, name');
+  if (lookupError) throw new AppError('Failed to check existing brands', 500);
+
+  const existing = (brands || []).find((brand) => normalizeBrandName(brand.name).toLowerCase() === normalized.toLowerCase());
+  if (existing) return existing.id;
+
+  const baseSlug = slugify(normalized);
+  if (!baseSlug) throw new AppError('Custom brand name must contain letters or numbers', 400);
+
+  let slug = baseSlug;
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const { data, error } = await supabaseAdmin
+      .from('brands')
+      .insert({ name: normalized, slug, is_active: true })
+      .select('id')
+      .single();
+    if (data) return data.id;
+    if (error?.code !== '23505') throw new AppError('Failed to create custom brand', 500);
+
+    const { data: concurrentBrands } = await supabaseAdmin.from('brands').select('id, name');
+    const concurrent = (concurrentBrands || []).find((brand) => normalizeBrandName(brand.name).toLowerCase() === normalized.toLowerCase());
+    if (concurrent) return concurrent.id;
+    slug = `${baseSlug}-${randomUUID().slice(0, 8)}`;
+  }
+
+  throw new AppError('Failed to create custom brand', 409);
+}
+
+function sortProductImages(images: any[]): any[] {
+  return [...images].sort((a, b) =>
+    Number(Boolean(b.is_primary)) - Number(Boolean(a.is_primary)) ||
+    Number(a.sort_order || 0) - Number(b.sort_order || 0) ||
+    String(a.created_at || '').localeCompare(String(b.created_at || ''))
+  );
+}
 
 
 // GET /api/v1/products (Search, Filtering, Sorting, Pagination)
@@ -24,10 +76,10 @@ export async function getProducts(req: Request, res: Response, next: NextFunctio
     // Map product_images from DB join to images array and top-level image/image_url for ProductCard
     const mappedProducts = result.products.map((p: any) => {
       const rawImages = p.images || p.product_images || [];
-      const images = rawImages.map((img: any) => ({
+      const images = sortProductImages(rawImages.map((img: any) => ({
         ...img,
         image_url: img.public_url || img.image_url || img.storage_path
-      }));
+      })));
       const primary = images.find((img: any) => img.is_primary) || images[0];
       const primaryUrl = primary?.image_url || null;
       return {
@@ -71,17 +123,17 @@ export async function getProductBySlug(req: Request, res: Response, next: NextFu
       product.brand_id
         ? supabaseAdmin.from('brands').select('id, name, slug, logo_url').eq('id', product.brand_id).single()
         : Promise.resolve({ data: null }),
-      supabaseAdmin.from('product_images').select('*').eq('product_id', product.id)
+      supabaseAdmin.from('product_images').select('*').eq('product_id', product.id).order('sort_order').order('created_at')
     ]);
 
     const category = categoryRes.status === 'fulfilled' && 'data' in categoryRes.value ? categoryRes.value.data : null;
     const brand = brandRes.status === 'fulfilled' && 'data' in brandRes.value ? brandRes.value.data : null;
     const images = imagesRes.status === 'fulfilled' && 'data' in imagesRes.value ? (imagesRes.value.data || []) : [];
 
-    const normalizedImages = (images || []).map((img: any) => ({
+    const normalizedImages = sortProductImages((images || []).map((img: any) => ({
       ...img,
       image_url: img.public_url || img.image_url || img.storage_path
-    }));
+    })));
     const primaryImg = normalizedImages.find((img: any) => img.is_primary) || normalizedImages[0];
     const primaryUrl = primaryImg?.image_url || null;
 
@@ -105,7 +157,7 @@ export async function getProductBySlug(req: Request, res: Response, next: NextFu
 // POST /api/v1/products/admin
 export async function createProduct(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const payload = req.body;
+    const payload = { ...req.body };
     if (!payload.name) return next(new AppError('Product name is required', 400));
     if (!payload.sku) return next(new AppError('Product SKU is required', 400));
 
@@ -130,7 +182,8 @@ export async function createProduct(req: Request, res: Response, next: NextFunct
       if (v) payload.source_vendor_id = v.id;
     }
 
-    const { image_url, image, images, product_images, stock, lowStockThreshold, ...productData } = payload;
+    payload.brand_id = await resolveBrandId(payload.brand_id, payload.custom_brand_name);
+    const { image_url, image, images, product_images: _productImages, stock, lowStockThreshold, custom_brand_name: _customBrandName, ...productData } = payload;
     const newProduct = await productRepository.create(productData as any);
 
     // Initial stock
@@ -171,7 +224,7 @@ export async function createProduct(req: Request, res: Response, next: NextFunct
 // PUT /api/v1/products/admin/:id
 export async function updateProduct(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const payload = req.body;
+    const payload = { ...req.body };
     const productId = req.params.id;
 
     // Check SKU uniqueness if changed
@@ -182,7 +235,10 @@ export async function updateProduct(req: Request, res: Response, next: NextFunct
       }
     }
 
-    const { image_url, image, images, product_images, stock, lowStockThreshold, ...productPayload } = payload;
+    if (payload.custom_brand_name) {
+      payload.brand_id = await resolveBrandId(payload.brand_id, payload.custom_brand_name);
+    }
+    const { image_url, image, images, product_images: _productImages, stock, lowStockThreshold, custom_brand_name: _customBrandName, ...productPayload } = payload;
     let updatedProduct: any;
     if (Object.keys(productPayload).length > 0) {
       updatedProduct = await productRepository.update(productId, {
@@ -339,7 +395,7 @@ export async function deleteProduct(req: Request, res: Response, next: NextFunct
 export async function getProductImages(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const productId = req.params.id;
-    const { data, error } = await supabaseAdmin.from('product_images').select('*').eq('product_id', productId);
+    const { data, error } = await supabaseAdmin.from('product_images').select('*').eq('product_id', productId).order('sort_order').order('created_at');
     if (error) throw new Error(error.message);
     sendSuccess(res, { data: (data || []) as ProductImageDto[], message: 'Product images retrieved successfully' });
   } catch (error) {
@@ -348,21 +404,37 @@ export async function getProductImages(req: Request, res: Response, next: NextFu
 }
 
 // POST /api/v1/products/admin/:id/images
-export async function addProductImage(req: Request, res: Response, next: NextFunction): Promise<void> {
-  try {
-    const imageRepo = new BaseRepository<ProductImageDto>('product_images');
-    const newImage = await imageRepo.create({ ...req.body, product_id: req.params.id });
-    sendSuccess(res, { data: newImage, message: 'Product image metadata saved successfully', statusCode: 201 });
-  } catch (error) {
-    next(error);
-  }
-}
-
 // DELETE /api/v1/products/admin/:id/images/:imageId
 export async function deleteProductImage(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const imageRepo = new BaseRepository<ProductImageDto>('product_images');
-    await imageRepo.delete(req.params.imageId);
+    const productId = req.params.id;
+    const imageId = req.params.imageId;
+    const { data: image, error } = await supabaseAdmin
+      .from('product_images')
+      .select('id, storage_path, is_primary')
+      .eq('id', imageId)
+      .eq('product_id', productId)
+      .maybeSingle();
+    if (error) throw new AppError('Failed to retrieve product image', 500);
+    if (!image) return next(new AppError('Product image not found', 404));
+
+    if (image.storage_path?.startsWith(`products/${productId}/`)) {
+      await storageRepository.deleteObject(StorageBuckets.PRODUCT_IMAGES, image.storage_path);
+    }
+    const { error: deleteError } = await supabaseAdmin.from('product_images').delete().eq('id', imageId).eq('product_id', productId);
+    if (deleteError) throw new AppError('Failed to delete product image record', 500);
+
+    if (image.is_primary) {
+      const { data: nextImage } = await supabaseAdmin
+        .from('product_images')
+        .select('id')
+        .eq('product_id', productId)
+        .order('sort_order')
+        .order('created_at')
+        .limit(1)
+        .maybeSingle();
+      if (nextImage) await supabaseAdmin.from('product_images').update({ is_primary: true }).eq('id', nextImage.id);
+    }
     sendSuccess(res, { data: { imageId: req.params.imageId }, message: 'Product image deleted successfully' });
   } catch (error) {
     next(error);
@@ -375,13 +447,7 @@ export async function completeProductImage(req: Request, res: Response, next: Ne
     const productId = req.params.id;
     const { storage_path, alt_text } = req.body as ProductImageCompleteRequestDto;
 
-    // 1. Verify product exists
-    const product = await productRepository.findById(productId);
-    if (!product) {
-      return next(new AppError('Product not found', 404));
-    }
-
-    // 2. Validate that storage_path belongs strictly to this product
+    // 1. Validate that storage_path belongs strictly to this product
     if (!storage_path.startsWith(`products/${productId}/`)) {
       return next(new AppError('Storage path does not match this product ID', 400));
     }
@@ -391,20 +457,37 @@ export async function completeProductImage(req: Request, res: Response, next: Ne
       return next(new AppError('Invalid managed storage path format', 400));
     }
 
+    // 2. Verify product exists and clean up a just-uploaded object if it was deleted concurrently.
+    const product = await productRepository.findById(productId);
+    if (!product) {
+      await storageRepository.deleteObject(StorageBuckets.PRODUCT_IMAGES, storage_path);
+      return next(new AppError('Product not found', 404));
+    }
+
     // 3. Derive public CDN URL server-side (never trust client-supplied public_url)
     const public_url = storageRepository.getPublicUrl(StorageBuckets.PRODUCT_IMAGES, storage_path);
 
-    // 4. Safe replacement: query existing images first to prepare for safe cleanup
+    // 4. Enforce the product-level image limit before registering metadata.
     const { data: existingImages, error: fetchErr } = await supabaseAdmin
       .from('product_images')
-      .select('id, storage_path')
+      .select('id, sort_order, is_primary')
       .eq('product_id', productId);
 
     if (fetchErr) {
+      await storageRepository.deleteObject(StorageBuckets.PRODUCT_IMAGES, storage_path);
       throw new AppError('Failed to query existing product images', 500);
     }
 
-    // 5. Insert new primary image record
+    if ((existingImages?.length || 0) >= MAX_PRODUCT_IMAGES) {
+      await storageRepository.deleteObject(StorageBuckets.PRODUCT_IMAGES, storage_path);
+      return next(new AppError(`A product can have at most ${MAX_PRODUCT_IMAGES} images`, 409));
+    }
+
+    // 5. Append metadata. The first image becomes primary; later uploads preserve it.
+    const isPrimary = !existingImages || existingImages.length === 0;
+    const nextSortOrder = existingImages?.length
+      ? Math.max(...existingImages.map((image) => Number(image.sort_order || 0))) + 1
+      : 0;
     const { data: newImage, error: insertErr } = await supabaseAdmin
       .from('product_images')
       .insert({
@@ -412,8 +495,8 @@ export async function completeProductImage(req: Request, res: Response, next: Ne
         storage_path,
         public_url,
         alt_text: alt_text || null,
-        is_primary: true,
-        sort_order: 0
+        is_primary: isPrimary,
+        sort_order: nextSortOrder
       })
       .select('*')
       .single();
@@ -425,22 +508,36 @@ export async function completeProductImage(req: Request, res: Response, next: Ne
       throw new AppError('Failed to save product image record', 500);
     }
 
-    // 6. If insert succeeded, safely cleanup previous image records and managed storage objects
-    if (existingImages && existingImages.length > 0) {
-      for (const oldImg of existingImages) {
-        // Only delete storage object if it is a managed Supabase key (not external URL)
-        if (oldImg.storage_path && oldImg.storage_path.startsWith('products/') && !oldImg.storage_path.startsWith('http')) {
-          await storageRepository.deleteObject(StorageBuckets.PRODUCT_IMAGES, oldImg.storage_path);
-        }
-        await supabaseAdmin.from('product_images').delete().eq('id', oldImg.id);
-      }
-    }
-
     sendSuccess(res, {
       data: newImage,
       message: 'Product image upload completed and saved successfully',
       statusCode: 201
     });
+  } catch (error) {
+    next(error);
+  }
+}
+
+// PUT /api/v1/products/admin/:id/images/:imageId/primary
+export async function setPrimaryProductImage(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const productId = req.params.id;
+    const imageId = req.params.imageId;
+    const { data: image, error } = await supabaseAdmin
+      .from('product_images')
+      .select('id')
+      .eq('id', imageId)
+      .eq('product_id', productId)
+      .maybeSingle();
+    if (error) throw new AppError('Failed to retrieve product image', 500);
+    if (!image) return next(new AppError('Product image not found', 404));
+
+    const { data: updated, error: updateError } = await supabaseAdmin.rpc('set_primary_product_image', {
+      p_product_id: productId,
+      p_image_id: imageId
+    });
+    if (updateError || !updated) throw new AppError('Failed to update primary image', 500);
+    sendSuccess(res, { data: updated, message: 'Primary product image updated successfully' });
   } catch (error) {
     next(error);
   }
