@@ -86,7 +86,14 @@ export default function ProductDetailClient({ id }: { id: string }) {
       <div className={styles.productLayout}>
         {/* Gallery Left */}
         <section className={styles.gallerySection}>
-          <div className={styles.mainImageCard}>
+          <div
+            className={styles.mainImageCard}
+            onPointerMove={(event) => {
+              const bounds = event.currentTarget.getBoundingClientRect();
+              event.currentTarget.style.setProperty('--zoom-x', `${((event.clientX - bounds.left) / bounds.width) * 100}%`);
+              event.currentTarget.style.setProperty('--zoom-y', `${((event.clientY - bounds.top) / bounds.height) * 100}%`);
+            }}
+          >
             <span className={styles.stockTag}>{mappedProduct.statusLabel}</span>
             <Image
               src={thumbs[selectedThumb] || thumbs[0]}

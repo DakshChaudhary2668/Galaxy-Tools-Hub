@@ -39,7 +39,7 @@
 .track {
   display: flex;
   width: max-content;
-  animation: brand-marquee 30s linear infinite;
+  animation: brand-marquee 42s linear infinite;
   will-change: transform;
 
   &:hover,
@@ -59,8 +59,8 @@
   border: 1px solid #E0E0E0;
   border-radius: $radius-xs;
   width: 220px;
-  height: 96px;
-  padding: 14px 20px;
+  height: 100px;
+  padding: 16px 20px;
   text-decoration: none;
   display: flex;
   align-items: center;
@@ -81,15 +81,20 @@
 
   @include mobile {
     width: 170px;
-    height: 82px;
+    height: 88px;
     padding: 12px 16px;
   }
 }
 
 .logo {
-  width: 100%;
-  height: 100%;
+  width: 180px;
+  height: 63px;
   object-fit: contain;
+
+  @include mobile {
+    width: 150px;
+    height: 53px;
+  }
 }
 
 @keyframes brand-marquee {
