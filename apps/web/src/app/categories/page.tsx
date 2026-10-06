@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, Package, AlertCircle } from 'lucide-react';
 import { useCategories } from '@/hooks/useCategories';
@@ -8,6 +9,7 @@ import { Header } from '@/components/Header/Header';
 import { Footer } from '@/components/Footer/Footer';
 import { AnnouncementBar } from '@/components/AnnouncementBar/AnnouncementBar';
 import { CartDrawer } from '@/components/CartDrawer/CartDrawer';
+import { getCategoryImage } from '@/lib/categoryImages';
 import styles from './Categories.module.scss';
 
 export default function CategoriesPage() {
@@ -57,8 +59,14 @@ export default function CategoriesPage() {
                 href={`/products?category=${cat.id}`}
                 className={styles.card}
               >
-                <div className={styles.cardIcon}>
-                  <Package size={32} strokeWidth={1.5} />
+                <div className={styles.cardImageWrap}>
+                  <Image
+                    src={getCategoryImage(cat)}
+                    alt={`${cat.name} category`}
+                    fill
+                    sizes="(max-width: 640px) 112px, 96px"
+                    className={styles.cardImage}
+                  />
                 </div>
                 <div className={styles.cardBody}>
                   <h2 className={styles.cardName}>{cat.name}</h2>

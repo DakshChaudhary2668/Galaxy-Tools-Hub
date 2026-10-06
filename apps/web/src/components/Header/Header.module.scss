@@ -26,8 +26,15 @@
 .logoLink {
   display: flex;
   align-items: center;
-  gap: 8px;
   flex-shrink: 0;
+  width: 230px;
+  height: 66px;
+  overflow: hidden;
+
+  @include mobile {
+    width: 170px;
+    height: 48px;
+  }
 }
 
 .logoText {
@@ -48,13 +55,9 @@
 }
 
 .logoImage {
-  height: 56px;
-  width: auto;
-  object-fit: contain;
-
-  @include mobile {
-    height: 44px;
-  }
+  width: 100%;
+  height: auto;
+  transform: translateY(-16.5%);
 }
 
 .searchContainer {
