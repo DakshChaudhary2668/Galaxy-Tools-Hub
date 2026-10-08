@@ -13,8 +13,9 @@ export interface StoreGeneralSettings {
 export interface StoreCommerceSettings {
   currency: string;
   defaultGSTRate: number;
-  freeShippingThreshold: number;
-  flatShippingFee: number;
+  lightFreightFee: number;
+  heavyFreightFee: number;
+  freightThresholdGrams: number;
   lowStockThreshold: number;
   minimumOrderQuantity: number;
 }

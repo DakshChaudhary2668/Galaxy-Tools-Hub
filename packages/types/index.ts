@@ -190,6 +190,7 @@ export const ProductSchema = z.object({
   tax_rate: z.number().min(0).default(18.00),
   minimum_order_quantity: z.number().int().positive().nullable().optional(),
   weight: z.number().nullable().optional(),
+  weight_grams: z.number().int().positive().nullable().optional(),
   dimensions: z.string().nullable().optional(),
   seo_title: z.string().nullable().optional(),
   seo_description: z.string().nullable().optional(),

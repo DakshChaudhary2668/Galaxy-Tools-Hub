@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { X, Trash2, ShoppingBag, ArrowRight } from 'lucide-react';
 import { useCartStore } from '../../store/useCartStore';
+import { calculateCartTotals } from '../../lib/cartTotals';
 import styles from './CartDrawer.module.scss';
 
 export const CartDrawer: React.FC = () => {
@@ -14,12 +15,8 @@ export const CartDrawer: React.FC = () => {
 
   if (!isOpen) return null;
 
-  const totalAmount = items.reduce(
-    (sum, item) => sum + (item.product.price || 0) * item.quantity,
-    0
-  );
-
-  const formattedTotal = new Intl.NumberFormat('en-IN').format(totalAmount);
+  const { subtotal } = calculateCartTotals(items);
+  const formattedTotal = new Intl.NumberFormat('en-IN').format(subtotal);
 
   return (
     <>
@@ -87,7 +84,7 @@ export const CartDrawer: React.FC = () => {
         {items.length > 0 && (
           <div className={styles.footer}>
             <div className={styles.subtotalRow}>
-              <span>Est. Total (GST Inc.):</span>
+              <span>Base subtotal (GST extra):</span>
               <span>₹{formattedTotal}</span>
             </div>
             <div className={styles.actionButtons}>

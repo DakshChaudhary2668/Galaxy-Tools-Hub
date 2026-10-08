@@ -47,8 +47,9 @@ export default function AdminSettingsPage() {
 
   const [currency, setCurrency] = useState('INR (₹)');
   const [defaultGSTRate, setDefaultGSTRate] = useState(18);
-  const [freeShippingThreshold, setFreeShippingThreshold] = useState(50000);
-  const [flatShippingFee, setFlatShippingFee] = useState(500);
+  const [lightFreightFee, setLightFreightFee] = useState(60);
+  const [heavyFreightFee, setHeavyFreightFee] = useState(120);
+  const [freightThresholdGrams, setFreightThresholdGrams] = useState(1000);
   const [lowStockThreshold, setLowStockThreshold] = useState(5);
 
   const [orderEmail, setOrderEmail] = useState(true);
@@ -77,8 +78,9 @@ export default function AdminSettingsPage() {
 
         setCurrency(s.commerce.currency || 'INR (₹)');
         setDefaultGSTRate(s.commerce.defaultGSTRate ?? 18);
-        setFreeShippingThreshold(s.commerce.freeShippingThreshold ?? 50000);
-        setFlatShippingFee(s.commerce.flatShippingFee ?? 500);
+        setLightFreightFee(s.commerce.lightFreightFee ?? 60);
+        setHeavyFreightFee(s.commerce.heavyFreightFee ?? 120);
+        setFreightThresholdGrams(s.commerce.freightThresholdGrams ?? 1000);
         setLowStockThreshold(s.commerce.lowStockThreshold ?? 5);
 
         setOrderEmail(Boolean(s.notifications.orderConfirmationEmail));
@@ -121,8 +123,9 @@ export default function AdminSettingsPage() {
         commerce: {
           currency,
           defaultGSTRate: Number(defaultGSTRate),
-          freeShippingThreshold: Number(freeShippingThreshold),
-          flatShippingFee: Number(flatShippingFee),
+          lightFreightFee: Number(lightFreightFee),
+          heavyFreightFee: Number(heavyFreightFee),
+          freightThresholdGrams: Number(freightThresholdGrams),
           lowStockThreshold: Number(lowStockThreshold),
           minimumOrderQuantity: 1
         },
@@ -366,6 +369,7 @@ export default function AdminSettingsPage() {
                       onChange={(e) => setDefaultGSTRate(Number(e.target.value))}
                       min="0"
                       max="28"
+                      disabled
                     />
                     <span className={styles.hint}>Standard HSN 9030 testing instruments GST is 18%.</span>
                   </div>
@@ -373,27 +377,44 @@ export default function AdminSettingsPage() {
 
                 <div className={styles.grid2}>
                   <div className={styles.formGroup}>
-                    <label htmlFor="freeShip">Free Shipping Threshold (₹)</label>
+                    <label htmlFor="freightThreshold">Freight Weight Threshold (grams)</label>
                     <input
-                      id="freeShip"
+                      id="freightThreshold"
                       type="number"
-                      value={freeShippingThreshold}
-                      onChange={(e) => setFreeShippingThreshold(Number(e.target.value))}
+                      value={freightThresholdGrams}
+                      onChange={(e) => setFreightThresholdGrams(Number(e.target.value))}
                       min="0"
+                      disabled
                     />
-                    <span className={styles.hint}>Orders at or above this subtotal qualify for complimentary dispatch.</span>
+                    <span className={styles.hint}>Orders at or below this weight use the light freight fee.</span>
                   </div>
 
                   <div className={styles.formGroup}>
-                    <label htmlFor="flatShip">Standard Flat Shipping Fee (₹)</label>
+                    <label htmlFor="lightFreight">Light Freight Fee (₹)</label>
                     <input
-                      id="flatShip"
+                      id="lightFreight"
                       type="number"
-                      value={flatShippingFee}
-                      onChange={(e) => setFlatShippingFee(Number(e.target.value))}
+                      value={lightFreightFee}
+                      onChange={(e) => setLightFreightFee(Number(e.target.value))}
                       min="0"
+                      disabled
                     />
-                    <span className={styles.hint}>Applied on orders below the free shipping threshold.</span>
+                    <span className={styles.hint}>Applied once per order at or below the weight threshold.</span>
+                  </div>
+                </div>
+
+                <div className={styles.grid2}>
+                  <div className={styles.formGroup}>
+                    <label htmlFor="heavyFreight">Heavy Freight Fee (₹)</label>
+                    <input
+                      id="heavyFreight"
+                      type="number"
+                      value={heavyFreightFee}
+                      onChange={(e) => setHeavyFreightFee(Number(e.target.value))}
+                      min="0"
+                      disabled
+                    />
+                    <span className={styles.hint}>Applied once per order above the weight threshold.</span>
                   </div>
                 </div>
 

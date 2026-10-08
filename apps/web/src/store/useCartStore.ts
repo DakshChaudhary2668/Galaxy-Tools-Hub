@@ -31,6 +31,8 @@ function compactProduct(product: ProductView): ProductView {
     category_id: product.category_id,
     category: product.category,
     price: product.price,
+    tax_rate: product.tax_rate,
+    weight_grams: product.weight_grams,
     compare_at_price: product.compare_at_price,
     image: product.image,
     image_url: product.image_url,

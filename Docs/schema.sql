@@ -148,6 +148,7 @@ CREATE TABLE products (
 
   -- Physical
   weight                 NUMERIC(8,2),
+  weight_grams           INTEGER        CHECK (weight_grams IS NULL OR weight_grams > 0),
   dimensions             VARCHAR(100),
 
   -- SEO

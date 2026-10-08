@@ -21,6 +21,7 @@ import { Footer } from '../../components/Footer/Footer';
 import { CartDrawer } from '../../components/CartDrawer/CartDrawer';
 import { useCartStore } from '../../store/useCartStore';
 import { createCheckoutSession, verifyPayment } from '../../services/payment.service';
+import { calculateCartTotals } from '../../lib/cartTotals';
 import styles from './Checkout.module.scss';
 
 // Declare Razorpay on window
@@ -91,17 +92,7 @@ export default function CheckoutPage() {
     }
   }, []);
 
-  // Pricing calculations matching /cart logic
-  const subtotal = items.reduce(
-    (sum, item) => sum + (item.product.price || 0) * item.quantity,
-    0
-  );
-
-  const shippingThreshold = 50000;
-  const shippingRate = 500;
-  const shipping = items.length === 0 || subtotal >= shippingThreshold ? 0 : shippingRate;
-  const gstAmount = Math.round((subtotal * 18) / 118);
-  const grandTotal = subtotal + shipping;
+  const { subtotal, gst: gstAmount, freight, total: grandTotal } = calculateCartTotals(items);
 
   const formatPrice = (amount: number) =>
     new Intl.NumberFormat('en-IN').format(amount);
@@ -607,19 +598,13 @@ export default function CheckoutPage() {
                 </div>
 
                 <div className={styles.summaryRow}>
-                  <span>GST (18% Included)</span>
+                  <span>GST (18%)</span>
                   <span>₹{formatPrice(gstAmount)}</span>
                 </div>
 
                 <div className={styles.summaryRow}>
-                  <span>Shipping Fee</span>
-                  <span>
-                    {shipping === 0 ? (
-                      <span className={styles.freeShippingText}>FREE</span>
-                    ) : (
-                      `₹${formatPrice(shipping)}`
-                    )}
-                  </span>
+                  <span>Freight / Delivery Charges</span>
+                  <span>{freight === null ? 'Calculated securely' : `₹${formatPrice(freight)}`}</span>
                 </div>
               </div>
 
@@ -627,7 +612,7 @@ export default function CheckoutPage() {
 
               <div className={styles.totalRow}>
                 <span className={styles.totalLabel}>Grand Total</span>
-                <span className={styles.totalAmount}>₹{formatPrice(grandTotal)}</span>
+                <span className={styles.totalAmount}>{grandTotal === null ? 'Confirmed at payment' : `₹${formatPrice(grandTotal)}`}</span>
               </div>
 
               <button
@@ -641,7 +626,7 @@ export default function CheckoutPage() {
                 ) : (
                   <>
                     <Lock size={16} />
-                    <span>Place Order & Pay ₹{formatPrice(grandTotal)}</span>
+                    <span>{grandTotal === null ? 'Place Order & Confirm Total' : `Place Order & Pay ₹${formatPrice(grandTotal)}`}</span>
                   </>
                 )}
               </button>

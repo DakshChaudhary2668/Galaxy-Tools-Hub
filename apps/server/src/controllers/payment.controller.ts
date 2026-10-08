@@ -32,7 +32,7 @@ export async function createCheckout(req: Request, res: Response, next: NextFunc
     const [productsResult, inventoryResult] = await Promise.all([
       supabaseAdmin
         .from('products')
-        .select('id, name, sku, hsn_code, tax_rate, price, pricing_type, minimum_order_quantity, is_active, is_purchasable')
+        .select('id, name, sku, hsn_code, tax_rate, price, pricing_type, minimum_order_quantity, weight_grams, is_active, is_purchasable')
         .in('id', productIds),
       supabaseAdmin
         .from('inventory')

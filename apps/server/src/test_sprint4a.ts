@@ -25,6 +25,7 @@ const product: CheckoutProduct = {
   price: 1250,
   pricing_type: PricingType.FIXED,
   minimum_order_quantity: 1,
+  weight_grams: 500,
   is_active: true,
   is_purchasable: true
 };
@@ -81,13 +82,13 @@ assert.match(
 const pending = buildPendingRazorpayPayment(orderId, 'order_rzp_123', lowPriceCheckout.totalAmount, 'INR');
 assert.equal(pending.order_id, orderId, 'Razorpay order must bind to the correct internal order');
 assert.equal(pending.gateway_reference, 'order_rzp_123');
-assert.equal(pending.amount, 3000, 'pending payment must persist the authoritative non-zero amount');
+assert.equal(pending.amount, 3010, 'pending payment must persist base price, GST, and freight');
 
 const mapping: PaymentMapping = {
   id: '44444444-4444-4444-8444-444444444444',
   order_id: orderId,
   status: PaymentStatus.PENDING,
-  amount: 3000,
+  amount: 3010,
   currency: 'INR',
   transaction_id: null,
   gateway_reference: 'order_rzp_123'
@@ -102,7 +103,7 @@ assert.equal(requirePaymentMapping(mapping, 'order_rzp_123', orderId).order_id, 
 const validFacts = {
   id: 'pay_rzp_123',
   order_id: 'order_rzp_123',
-  amount: 300000,
+  amount: 301000,
   currency: 'INR',
   status: 'captured',
   captured: true
@@ -110,20 +111,20 @@ const validFacts = {
 assert.doesNotThrow(() => assertRazorpayPaymentFacts(validFacts, {
   paymentId: 'pay_rzp_123',
   razorpayOrderId: 'order_rzp_123',
-  amount: 3000,
+  amount: 3010,
   currency: 'INR'
 }));
 assert.match(errorMessage(() => assertRazorpayPaymentFacts({ ...validFacts, amount: 1 }, {
-  paymentId: 'pay_rzp_123', razorpayOrderId: 'order_rzp_123', amount: 3000, currency: 'INR'
+  paymentId: 'pay_rzp_123', razorpayOrderId: 'order_rzp_123', amount: 3010, currency: 'INR'
 })), /amount does not match/);
 assert.match(errorMessage(() => assertRazorpayPaymentFacts({ ...validFacts, currency: 'USD' }, {
-  paymentId: 'pay_rzp_123', razorpayOrderId: 'order_rzp_123', amount: 3000, currency: 'INR'
+  paymentId: 'pay_rzp_123', razorpayOrderId: 'order_rzp_123', amount: 3010, currency: 'INR'
 })), /currency does not match/);
 assert.match(errorMessage(() => assertRazorpayPaymentFacts({ ...validFacts, order_id: 'order_other' }, {
-  paymentId: 'pay_rzp_123', razorpayOrderId: 'order_rzp_123', amount: 3000, currency: 'INR'
+  paymentId: 'pay_rzp_123', razorpayOrderId: 'order_rzp_123', amount: 3010, currency: 'INR'
 })), /does not belong/);
 assert.match(errorMessage(() => assertRazorpayPaymentFacts({ ...validFacts, status: 'authorized', captured: false }, {
-  paymentId: 'pay_rzp_123', razorpayOrderId: 'order_rzp_123', amount: 3000, currency: 'INR'
+  paymentId: 'pay_rzp_123', razorpayOrderId: 'order_rzp_123', amount: 3010, currency: 'INR'
 })), /not been captured/);
 
 const secret = 'test_secret_not_returned';

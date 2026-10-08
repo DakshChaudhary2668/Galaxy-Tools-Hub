@@ -57,6 +57,7 @@ export default function AdminEditProductPage({
   const [compareAtPrice, setCompareAtPrice] = useState<string>('');
   const [hsnCode, setHsnCode] = useState('');
   const [taxRate, setTaxRate] = useState('');
+  const [weightGrams, setWeightGrams] = useState('');
   const [stock, setStock] = useState('');
   const [lowStockThreshold, setLowStockThreshold] = useState('5');
   const [inventoryId, setInventoryId] = useState<string | null>(null);
@@ -99,6 +100,7 @@ export default function AdminEditProductPage({
         setCompareAtPrice(p.compare_at_price ? String(p.compare_at_price) : '');
         setHsnCode(p.hsn_code || '');
         setTaxRate(p.tax_rate !== null && p.tax_rate !== undefined ? String(p.tax_rate) : '');
+        setWeightGrams(p.weight_grams ? String(p.weight_grams) : '');
         setShortDescription(p.short_description || '');
         setDescription(p.description || '');
         setSeoTitle(p.seo_title || '');
@@ -165,6 +167,10 @@ export default function AdminEditProductPage({
       setError('A valid selling price greater than 0 is required.');
       return;
     }
+    if (weightGrams !== '' && (!Number.isInteger(Number(weightGrams)) || Number(weightGrams) <= 0)) {
+      setError('Weight must be a positive whole number of grams.');
+      return;
+    }
     if (stockDirty && (stock.trim() === '' || !Number.isInteger(Number(stock)) || Number(stock) < 0)) {
       setError('Enter a verified, non-negative stock quantity.');
       return;
@@ -200,6 +206,7 @@ export default function AdminEditProductPage({
         compare_at_price: compareAtPrice ? Number(compareAtPrice) : null,
         hsn_code: hsnCode.trim(),
         tax_rate: Number(taxRate),
+        weight_grams: weightGrams ? Number(weightGrams) : null,
         stock: stockDirty ? Number(stock) : undefined,
         lowStockThreshold: stockDirty ? Number(lowStockThreshold) : undefined,
         short_description: shortDescription.trim() || null,
@@ -438,7 +445,7 @@ export default function AdminEditProductPage({
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
                   min="0"
-                  step="1"
+                  step="0.01"
                   required
                 />
               </div>
@@ -479,6 +486,19 @@ export default function AdminEditProductPage({
                   onChange={(e) => setHsnCode(e.target.value)}
                 />
               </div>
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="weightGrams">Weight (grams)</label>
+              <input
+                id="weightGrams"
+                type="number"
+                value={weightGrams}
+                onChange={(e) => setWeightGrams(e.target.value)}
+                min="1"
+                step="1"
+                placeholder="Required before checkout"
+              />
             </div>
           </div>
 

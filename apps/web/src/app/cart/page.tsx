@@ -11,17 +11,14 @@ import { CategoryNav } from '../../components/CategoryNav/CategoryNav';
 import { Footer } from '../../components/Footer/Footer';
 import { CartDrawer } from '../../components/CartDrawer/CartDrawer';
 import { useCartStore } from '../../store/useCartStore';
+import { calculateCartTotals } from '../../lib/cartTotals';
 import styles from './Cart.module.scss';
 
 export default function CartPage() {
   const router = useRouter();
   const { items, updateQuantity, removeFromCart, clearCart } = useCartStore();
 
-  // Pricing calculations
-  const subtotal = items.reduce(
-    (sum, item) => sum + (item.product.price || 0) * item.quantity,
-    0
-  );
+  const { subtotal, gst: gstAmount, freight, total: grandTotal } = calculateCartTotals(items);
 
   const discount = items.reduce((sum, item) => {
     if (item.product.compare_at_price && item.product.price && item.product.compare_at_price > item.product.price) {
@@ -29,16 +26,6 @@ export default function CartPage() {
     }
     return sum;
   }, 0);
-
-  // Business Rule: Free shipping for orders >= ₹50,000, else flat ₹500 (or ₹0 if empty)
-  const shippingThreshold = 50000;
-  const shippingRate = 500;
-  const shipping = items.length === 0 || subtotal >= shippingThreshold ? 0 : shippingRate;
-
-  // Estimated GST (18% included in product price)
-  const gstAmount = Math.round((subtotal * 18) / 118);
-
-  const grandTotal = subtotal + shipping;
 
   const handleProceedToCheckout = () => {
     if (items.length === 0) return;
@@ -205,19 +192,13 @@ export default function CartPage() {
                 )}
 
                 <div className={styles.summaryRow}>
-                  <span>GST (18% Included)</span>
+                  <span>GST (18%)</span>
                   <span>₹{formatPrice(gstAmount)}</span>
                 </div>
 
                 <div className={styles.summaryRow}>
-                  <span>Shipping</span>
-                  <span>
-                    {shipping === 0 ? (
-                      <span className={styles.freeShippingText}>FREE</span>
-                    ) : (
-                      `₹${formatPrice(shipping)}`
-                    )}
-                  </span>
+                  <span>Freight / Delivery Charges</span>
+                  <span>{freight === null ? 'Calculated at checkout' : `₹${formatPrice(freight)}`}</span>
                 </div>
               </div>
 
@@ -225,7 +206,7 @@ export default function CartPage() {
 
               <div className={styles.totalRow}>
                 <span className={styles.totalLabel}>Grand Total</span>
-                <span className={styles.totalAmount}>₹{formatPrice(grandTotal)}</span>
+                <span className={styles.totalAmount}>{grandTotal === null ? 'Pending weight' : `₹${formatPrice(grandTotal)}`}</span>
               </div>
 
               <button

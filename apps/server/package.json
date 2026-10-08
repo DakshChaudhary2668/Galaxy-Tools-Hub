@@ -17,6 +17,8 @@
     "test:sprint5b": "tsx src/test_sprint5b.ts",
     "test:sprint7c5": "tsx src/test_sprint7c5.ts",
     "test:sprint7c5:live": "tsx src/test_sprint7c5_live.ts",
+    "test:fluke": "tsx src/test_fluke_import.ts",
+    "import:fluke": "tsx src/scripts/import-fluke-catalogue.ts",
     "reservations:expire": "tsx src/scripts/expire-reservations.ts"
   },
   "dependencies": {

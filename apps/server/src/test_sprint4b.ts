@@ -56,7 +56,7 @@ test('unknown gateway mapping fails', () => assert.match(message(() => requirePa
 test('callback correlation mismatch fails', () => assert.match(message(() => requirePaymentMapping(mapping, 'order_1', 'internal_2')), /correlation/));
 test('correct gateway mapping passes', () => assert.equal(requirePaymentMapping(mapping, 'order_1', 'internal_1').id, 'p1'));
 
-const product: CheckoutProduct = { id: 'product_1', name: 'Meter', sku: 'M1', hsn_code: '9030', tax_rate: 18, price: 125, pricing_type: PricingType.FIXED, minimum_order_quantity: 1, is_active: true, is_purchasable: true };
+const product: CheckoutProduct = { id: 'product_1', name: 'Meter', sku: 'M1', hsn_code: '9030', tax_rate: 18, price: 125, pricing_type: PricingType.FIXED, minimum_order_quantity: 1, weight_grams: 500, is_active: true, is_purchasable: true };
 const inventory: CheckoutInventory = { product_id: 'product_1', quantity: 2, reserved_quantity: 1 };
 test('authoritative checkout ignores browser price', () => assert.equal(buildAuthoritativeCheckout([{ productId: 'product_1', quantity: 1, price: 1 } as never], [product], [inventory]).subtotal, 125));
 test('missing inventory blocks checkout', () => assert.match(message(() => buildAuthoritativeCheckout([{ productId: 'product_1', quantity: 1 }], [product], [])), /inventory is unavailable/));

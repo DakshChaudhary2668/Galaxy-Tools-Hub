@@ -57,6 +57,7 @@ export default function AdminNewProductPage() {
   const [compareAtPrice, setCompareAtPrice] = useState<string>('');
   const [hsnCode, setHsnCode] = useState('');
   const [taxRate, setTaxRate] = useState('');
+  const [weightGrams, setWeightGrams] = useState('');
   const [stock, setStock] = useState('');
   const [lowStockThreshold, setLowStockThreshold] = useState('5');
   const [shortDescription, setShortDescription] = useState('');
@@ -183,6 +184,10 @@ export default function AdminNewProductPage() {
       setError('Enter the verified HSN code and GST rate.');
       return;
     }
+    if (weightGrams !== '' && (!Number.isInteger(Number(weightGrams)) || Number(weightGrams) <= 0)) {
+      setError('Weight must be a positive whole number of grams.');
+      return;
+    }
 
     setSaving(true);
     setSaveStepText('Creating product record...');
@@ -209,6 +214,7 @@ export default function AdminNewProductPage() {
         compare_at_price: compareAtPrice ? Number(compareAtPrice) : null,
         hsn_code: hsnCode.trim(),
         tax_rate: Number(taxRate),
+        weight_grams: weightGrams ? Number(weightGrams) : null,
         stock: Number(stock),
         lowStockThreshold: Number(lowStockThreshold) || 5,
         short_description: shortDescription.trim() || null,
@@ -461,7 +467,7 @@ export default function AdminNewProductPage() {
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
                   min="0"
-                  step="1"
+                  step="0.01"
                   required
                 />
               </div>
@@ -506,6 +512,19 @@ export default function AdminNewProductPage() {
                   required
                 />
               </div>
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="weightGrams">Weight (grams)</label>
+              <input
+                id="weightGrams"
+                type="number"
+                value={weightGrams}
+                onChange={(e) => setWeightGrams(e.target.value)}
+                min="1"
+                step="1"
+                placeholder="Required before checkout"
+              />
             </div>
           </div>
 

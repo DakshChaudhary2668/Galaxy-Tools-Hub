@@ -12,6 +12,7 @@ export interface CheckoutProduct {
   price: number | string | null;
   pricing_type: string;
   minimum_order_quantity?: number | null;
+  weight_grams?: number | null;
   is_active: boolean;
   is_purchasable: boolean;
 }
@@ -64,8 +65,9 @@ export interface PaymentMapping {
   gateway_reference: string;
 }
 
-const FREE_SHIPPING_THRESHOLD_PAISE = 5_000_000;
-const STANDARD_SHIPPING_PAISE = 50_000;
+const GST_RATE = 18;
+const LIGHT_FREIGHT_PAISE = 6_000;
+const HEAVY_FREIGHT_PAISE = 12_000;
 
 function rupeesFromPaise(paise: number): number {
   return Number((paise / 100).toFixed(2));
@@ -88,7 +90,7 @@ export function buildAuthoritativeCheckout(
   const inventoryByProduct = new Map(inventories.map((inventory) => [inventory.product_id, inventory]));
   const items: AuthoritativeLineItem[] = [];
   let subtotalPaise = 0;
-  let taxPaise = 0;
+  let totalWeightGrams = 0;
 
   for (const [productId, quantity] of requestedByProduct) {
     const product = productsById.get(productId);
@@ -117,14 +119,14 @@ export function buildAuthoritativeCheckout(
       throw new AppError(`Insufficient stock for ${product.name}. Available: ${Math.max(available, 0)}`, 409);
     }
 
-    const lineTotalPaise = unitPricePaise * quantity;
-    const taxRate = Number(product.tax_rate);
-    const lineTaxPaise = Number.isFinite(taxRate) && taxRate > 0
-      ? Math.round((lineTotalPaise * taxRate) / (100 + taxRate))
-      : 0;
+    const weightGrams = Number(product.weight_grams);
+    if (!Number.isInteger(weightGrams) || weightGrams <= 0) {
+      throw new AppError('Shipping weight is unavailable for one or more products. Please contact support or try again later.', 409);
+    }
 
+    const lineTotalPaise = unitPricePaise * quantity;
     subtotalPaise += lineTotalPaise;
-    taxPaise += lineTaxPaise;
+    totalWeightGrams += weightGrams * quantity;
     items.push({
       product_id: product.id,
       product_name: product.name,
@@ -133,14 +135,26 @@ export function buildAuthoritativeCheckout(
       quantity,
       unit_price: rupeesFromPaise(unitPricePaise),
       discount_amount: 0,
-      tax_rate: taxRate,
-      tax_amount: rupeesFromPaise(lineTaxPaise),
+      tax_rate: GST_RATE,
+      tax_amount: 0,
       total_amount: rupeesFromPaise(lineTotalPaise)
     });
   }
 
-  const shippingPaise = subtotalPaise >= FREE_SHIPPING_THRESHOLD_PAISE ? 0 : STANDARD_SHIPPING_PAISE;
-  const totalPaise = subtotalPaise + shippingPaise;
+  const taxPaise = Math.round((subtotalPaise * GST_RATE) / 100);
+  let allocatedTaxPaise = 0;
+  items.forEach((item, index) => {
+    const lineBasePaise = Math.round(item.unit_price * 100) * item.quantity;
+    const lineTaxPaise = index === items.length - 1
+      ? taxPaise - allocatedTaxPaise
+      : Math.round((lineBasePaise * GST_RATE) / 100);
+    allocatedTaxPaise += lineTaxPaise;
+    item.tax_amount = rupeesFromPaise(lineTaxPaise);
+    item.total_amount = rupeesFromPaise(lineBasePaise + lineTaxPaise);
+  });
+
+  const shippingPaise = totalWeightGrams <= 1_000 ? LIGHT_FREIGHT_PAISE : HEAVY_FREIGHT_PAISE;
+  const totalPaise = subtotalPaise + taxPaise + shippingPaise;
   return {
     items,
     subtotal: rupeesFromPaise(subtotalPaise),

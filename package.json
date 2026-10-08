@@ -12,6 +12,8 @@
     "dev": "turbo run dev",
     "lint": "turbo run lint",
     "type-check": "turbo run type-check",
+    "test:fluke": "pnpm --filter galaxy-server test:fluke",
+    "import:fluke": "pnpm --filter galaxy-server import:fluke",
     "clean": "turbo run clean && rm -rf node_modules"
   },
   "devDependencies": {

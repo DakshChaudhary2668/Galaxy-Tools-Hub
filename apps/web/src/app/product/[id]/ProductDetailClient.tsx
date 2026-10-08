@@ -58,7 +58,7 @@ export default function ProductDetailClient({ id }: { id: string }) {
     image: (product.images && product.images.length > 0) ? (product.images[0] as any).image_url : '/images/placeholder.jpg',
     statusLabel: (product.inventory_quantity ?? 1) > 0 ? 'IN STOCK' : 'OUT OF STOCK',
     currency: '₹',
-    gstIncluded: true
+    gstIncluded: false
   };
 
   const thumbs = (product.images && product.images.length > 0)

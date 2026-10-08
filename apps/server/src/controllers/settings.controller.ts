@@ -17,8 +17,9 @@ const storeSettings = {
   commerce: {
     currency: 'INR (₹)',
     defaultGSTRate: 18,
-    freeShippingThreshold: 50000,
-    flatShippingFee: 500,
+    lightFreightFee: 60,
+    heavyFreightFee: 120,
+    freightThresholdGrams: 1000,
     lowStockThreshold: 5,
     minimumOrderQuantity: 1
   },
@@ -78,7 +79,14 @@ export async function updateSettings(req: Request, res: Response, next: NextFunc
       storeSettings.general = { ...storeSettings.general, ...general };
     }
     if (commerce) {
-      storeSettings.commerce = { ...storeSettings.commerce, ...commerce };
+      storeSettings.commerce = {
+        ...storeSettings.commerce,
+        ...commerce,
+        defaultGSTRate: 18,
+        lightFreightFee: 60,
+        heavyFreightFee: 120,
+        freightThresholdGrams: 1000
+      };
     }
     if (notifications) {
       storeSettings.notifications = { ...storeSettings.notifications, ...notifications };

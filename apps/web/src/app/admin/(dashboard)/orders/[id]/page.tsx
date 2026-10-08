@@ -244,12 +244,12 @@ export default function AdminOrderDetailPage({
                 <span>₹{formatPrice(order.subtotal)}</span>
               </div>
               <div className={styles.summaryLine}>
-                <span>GST (18% Included)</span>
+                <span>GST (18%)</span>
                 <span>₹{formatPrice(order.tax_amount)}</span>
               </div>
               <div className={styles.summaryLine}>
-                <span>Shipping Fee</span>
-                <span>{order.shipping_amount === 0 ? 'FREE' : `₹${formatPrice(order.shipping_amount)}`}</span>
+                <span>Freight / Delivery Charges</span>
+                <span>₹{formatPrice(order.shipping_amount)}</span>
               </div>
               {order.discount_amount > 0 && (
                 <div className={styles.summaryLine} style={{ color: '#16A34A' }}>
