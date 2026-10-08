@@ -2,7 +2,7 @@
 
 ## Current status
 
-The catalogue is fully represented in a deterministic manifest and the application changes are locally verified. Live database apply and deployment are pending because external network approval was unavailable during this run. No unsafe or partial database mutation was attempted.
+The catalogue is fully represented in a deterministic manifest and the application changes are locally verified. Live database apply and deployment are pending because the workspace has no Supabase CLI access token or database password. No unsafe or partial database mutation was attempted.
 
 ## Source audit
 
@@ -144,8 +144,9 @@ The freight test covers:
 - Existing products updated during this run: 0
 - New products inserted during this run: 0
 - Inventory/images/orders/payments changed: 0
-- Dry-run attempt: blocked by sandbox DNS/network restriction
-- Migration/apply/deployment: pending external access
+- Read-only live connection: pass
+- Dry-run result: stopped safely with `Apply the weight_grams migration before running the catalogue importer.`
+- Migration/apply/deployment: pending Supabase migration credentials
 
 Required live sequence once external access is available:
 
