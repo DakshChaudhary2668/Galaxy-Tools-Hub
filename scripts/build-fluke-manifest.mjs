@@ -4,6 +4,9 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const output = path.join(root, 'scripts/data/fluke-retail-price-list-2026-07-04.json');
+const previousProducts = fs.existsSync(output)
+  ? new Map(JSON.parse(fs.readFileSync(output, 'utf8')).products.map((product) => [product.model, product]))
+  : new Map();
 
 const sections = [
   [2, 'Digital Multimeters', 'Testing&Measurement', '1 year', [
@@ -85,6 +88,23 @@ const verifiedWeights = {
 const existingMatches = new Set(['101', '106', '107', '59 MAX+', '961C', 'T+Pro']);
 const slugify = (value) => value.toLowerCase().replace(/\+/g, '-plus').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 const cbicSource = 'https://cbic-gst.gov.in/hindi/gst-goods-services-rates.html';
+const productTypeBySection = {
+  'Digital Multimeters': 'Digital Multimeter',
+  'Digital Clamp Meters': 'Clamp Meter',
+  'Infrared Thermometers': 'Infrared Thermometer',
+  'Mobile Thermal Cameras': 'Mobile Thermal Camera',
+  'Portable Infrared Thermal Imagers': 'Thermal Imager',
+  'Laser Distance Meters': 'Laser Distance Meter',
+  'Insulation Tester': 'Insulation Tester',
+  'Environmental and HVAC Range': 'Environmental Measuring Instrument',
+  'Electrical Testers': 'Electrical Tester',
+  'Spares & Accessories': 'Test Accessory'
+};
+function displayName(section, model, brand) {
+  if (brand !== 'Fluke') return model;
+  const suffix = productTypeBySection[section];
+  return `Fluke ${model}${model.toLowerCase().includes(suffix.toLowerCase()) ? '' : ` ${suffix}`}`;
+}
 function resolveHsn(section, model, brand) {
   if (brand !== 'Fluke') return null;
   if (['Digital Multimeters', 'Digital Clamp Meters', 'Insulation Tester', 'Electrical Testers'].includes(section)) return '9030';
@@ -104,12 +124,14 @@ const products = sections.flatMap(([sourcePage, sourceSection, category, warrant
   const weight = verifiedWeights[model];
   const existing = brand === 'Fluke' && existingMatches.has(model);
   const hsnCode = resolveHsn(sourceSection, model, brand);
+  const name = displayName(sourceSection, model, brand);
+  const skuModel = slugify(model).toUpperCase();
   return {
     sourcePage,
     sourceSection,
     brand,
     model,
-    displayName: brand === 'Fluke' ? `Fluke ${model}` : model,
+    displayName: name,
     cataloguePrice,
     hiddenReductionPercent: brand === 'Fluke' ? 25 : 0,
     websiteBasePrice: brand === 'Fluke' ? Number((cataloguePrice * 0.75).toFixed(2)) : null,
@@ -117,28 +139,75 @@ const products = sections.flatMap(([sourcePage, sourceSection, category, warrant
     warranty,
     specifications: { catalogueSection: sourceSection, catalogueEffectiveDate: '2026-07-04' },
     weightGrams: weight?.[0] ?? null,
+    weightType: weight ? 'NET_PRODUCT' : 'UNRESOLVED',
     weightSource: weight?.[1] ?? null,
+    weightSourceTitle: weight ? `Official Fluke source for ${model}` : null,
     weightConfidence: weight ? 'OFFICIAL_MANUFACTURER' : 'UNRESOLVED',
     category,
-    sku: `FLUKE-20260704-${slugify(model).toUpperCase()}`,
-    slug: `fluke-${slugify(model)}`,
+    sku: `GTH-FLU-${skuModel}`,
+    slug: slugify(name),
     hsnCode,
+    hsnBasis: hsnCode ? `${sourceSection} classification under the applicable CBIC heading` : 'HSN_REVIEW_REQUIRED',
     hsnSource: hsnCode ? cbicSource : null,
+    hsnConfidence: hsnCode ? 'CATEGORY_CONFIRMED' : 'UNRESOLVED',
+    description: `${name} is listed in the Fluke Retail Price List effective 4 July 2026 under ${sourceSection}. Manufacturer warranty: ${warranty}.`,
+    officialImageUrl: previousProducts.get(model)?.officialImageUrl ?? null,
+    officialImageSource: previousProducts.get(model)?.officialImageSource ?? null,
     existingProductId: null,
-    imageStatus: existing ? 'EXISTING_IMAGE_PRESERVED' : 'REVIEW_REQUIRED',
+    imageStatus: existing
+      ? 'EXISTING_IMAGE_PRESERVED'
+      : previousProducts.get(model)?.officialImageUrl
+        ? 'OFFICIAL'
+        : 'REVIEW_REQUIRED',
     importStatus: brand !== 'Fluke'
       ? 'NON_FLUKE_REVIEW'
       : existing
         ? 'READY_FOR_EXISTING_MATCH'
-        : !weight && !hsnCode
-          ? 'UNRESOLVED_WEIGHT_HSN_VENDOR'
-          : !weight
-            ? 'UNRESOLVED_WEIGHT_VENDOR'
-            : !hsnCode
-              ? 'UNRESOLVED_HSN_VENDOR'
-              : 'VENDOR_REVIEW_REQUIRED'
+        : !hsnCode
+          ? 'HSN_REVIEW_REQUIRED'
+          : weight
+            ? 'SAFE_TO_CREATE'
+            : 'SAFE_CATALOG_ONLY'
   };
 }));
+
+if (process.argv.includes('--enrich-official-assets')) {
+  const normalize = (value) => value.toLowerCase().replace(/[^a-z0-9]+/g, '');
+  const findProduct = (value) => {
+    if (!value || typeof value !== 'object') return null;
+    if (value['@type'] === 'Product') return value;
+    for (const child of Object.values(value)) {
+      const found = Array.isArray(child)
+        ? child.map(findProduct).find(Boolean)
+        : findProduct(child);
+      if (found) return found;
+    }
+    return null;
+  };
+
+  for (const product of products) {
+    if (product.brand !== 'Fluke' || !product.weightSource || product.weightSource.toLowerCase().endsWith('.pdf')) continue;
+    const sourceSlug = normalize(new URL(product.weightSource).pathname.split('/').filter(Boolean).at(-1) || '');
+    if (![normalize(product.model), normalize(`fluke-${product.model}`)].includes(sourceSlug)) continue;
+    try {
+      const response = await fetch(product.weightSource, { headers: { 'user-agent': 'Mozilla/5.0' } });
+      if (!response.ok) continue;
+      const html = await response.text();
+      const scripts = [...html.matchAll(/<script[^>]+type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi)];
+      const official = scripts.map((match) => {
+        try { return findProduct(JSON.parse(match[1])); } catch { return null; }
+      }).find(Boolean);
+      const image = Array.isArray(official?.image) ? official.image[0] : official?.image;
+      if (!official?.name || !normalize(official.name).includes(normalize(product.model)) || !/^https:\/\/media\.fluke\.com\//.test(image || '')) continue;
+      product.officialImageUrl = image;
+      product.officialImageSource = product.weightSource;
+      product.imageStatus = product.importStatus === 'READY_FOR_EXISTING_MATCH' ? 'EXISTING_IMAGE_PRESERVED' : 'OFFICIAL';
+      if (official.description) product.description = official.description;
+    } catch {
+      // Network enrichment is best-effort; the storefront already has a safe image fallback.
+    }
+  }
+}
 
 if (products.length !== 76 || products.filter((product) => product.brand === 'Fluke').length !== 75) {
   throw new Error('Catalogue line count changed; expected 76 total and 75 Fluke products.');

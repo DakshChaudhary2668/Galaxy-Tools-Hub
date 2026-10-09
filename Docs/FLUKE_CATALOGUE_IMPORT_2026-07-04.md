@@ -1,158 +1,148 @@
-# Fluke Catalogue Import — 4 July 2026
+# Fluke Catalogue Import - 4 July 2026
 
-## Current status
+## Result
 
-The catalogue is fully represented in a deterministic manifest and the application changes are locally verified. Live database apply and deployment are pending because the workspace has no Supabase CLI access token or database password. No unsafe or partial database mutation was attempted.
+The verified catalogue manifest contains 76 sellable lines: 75 Fluke rows and one excluded Raytek MT4 review row. Six existing Fluke products were already commercially correct. The controlled bulk import created 53 of the remaining 69 Fluke products; 16 remain blocked because their HSN classification is unresolved.
 
-## Source audit
+No stock was invented. Every newly created product has quantity and reserved quantity set to zero, is active for catalogue visibility, and is not purchasable.
 
-- Source: `Fluke Retail Price List - 4 July 2026.pdf`
-- Effective date: 4 July 2026
-- Pages visually reviewed: 4 (product pages 2–4)
-- Sellable lines: 76
-- Fluke lines: 75
-- Non-Fluke review line: 1 (`Raytek MT4`)
-- Manifest: `scripts/data/fluke-retail-price-list-2026-07-04.json`
+## Canonical records
 
-The manifest generator asserts both source counts, so a missing or accidental extra row fails immediately.
+- Brand: existing `Fluke` brand reused.
+- Supplier: one `Fluke` vendor created with code `FLUKE`.
+- Existing six supplier links: safely normalized to the canonical Fluke vendor.
+- Raytek MT4: excluded; no Fluke brand or vendor assignment.
 
-## Implemented commercial rules
+## Commercial rules
 
 ```text
-website base price = PDF catalogue price × 0.75
-GST = website base subtotal × 18%
-freight = ₹60 when total order weight <= 1,000 g, otherwise ₹120
+website base price = PDF catalogue price x 0.75
+GST = website base subtotal x 18%
+freight = Rs 60 when total cart weight <= 1,000 g, otherwise Rs 120
 payable total = website base subtotal + GST + freight
 ```
 
-- The 25% reduction is stored directly in `products.price`; it is not presented as a coupon or strike-through discount.
-- GST is added after the base price and rounded once at order level.
-- Freight is applied once per order with no free-shipping threshold.
-- Browser-submitted prices remain ignored.
-- Razorpay order amount and payment verification remain backend-authoritative.
-- Any product without a positive authoritative `weight_grams` is rejected before an order is created.
+The 25% reduction is stored as the normal pre-GST selling price. No discount badge, strike-through catalogue price, coupon, per-product freight, free-shipping threshold, or GST-inclusive extraction is used. Checkout and Razorpay amounts remain server-authoritative.
 
-Verified Fluke 101 example:
+## Enrichment summary for the 69 new rows
 
-| Component | Amount |
+### Weights
+
+| Classification | Count |
 | --- | ---: |
-| PDF catalogue price | ₹4,770.00 |
-| Website base price (75%) | ₹3,577.50 |
-| GST at 18% | ₹643.95 |
-| Freight (160 g) | ₹60.00 |
-| Payable total | ₹4,281.45 |
-| Razorpay amount | 428145 paise |
+| NET_PRODUCT | 30 |
+| SELLABLE_KIT | 0 |
+| PACKAGE_ONLY | 0 |
+| UNRESOLVED | 39 |
 
-## Manifest resolution
+Official Fluke product pages, manuals, and manufacturer-hosted documents are recorded in the manifest. Unresolved weights remain null; no estimate is used.
 
-| Status | Count | Handling |
-| --- | ---: | --- |
-| Existing Fluke match ready for safe update | 6 | Update price, GST rate, and manufacturer weight only; preserve IDs, stock, reservations, images, and order history |
-| Fluke row explicitly unresolved | 69 | Do not create or expose for purchase |
-| Raytek review row | 1 | Excluded from the Fluke import |
+### HSN
 
-Ready existing matches:
+| Status | Count |
+| --- | ---: |
+| Resolved | 53 |
+| Unresolved / review required | 16 |
 
-| Model | PDF price | Website base price | Official weight |
-| --- | ---: | ---: | ---: |
-| Fluke 101 | ₹4,770 | ₹3,577.50 | 160 g |
-| Fluke 106 | ₹6,490 | ₹4,867.50 | 200 g |
-| Fluke 107 | ₹8,350 | ₹6,262.50 | 200 g |
-| Fluke 59 MAX+ | ₹8,350 | ₹6,262.50 | 220 g |
-| Fluke 961C | ₹7,210 | ₹5,407.50 | 78 g |
-| Fluke T+Pro | ₹17,800 | ₹13,350.00 | 280 g |
+Resolved groups use the applicable CBIC heading recorded in the manifest. Thermal cameras/imagers and ambiguous accessories/fuses remain blocked rather than receiving a guessed classification.
 
-Official manufacturer weight sources are embedded per row in the manifest. Official product/net weights were found for 36 Fluke rows; 39 remain `UNRESOLVED` after official Fluke page/manual/datasheet searches. New products remain blocked independently by vendor review even when weight and HSN are resolved.
+### Images
 
-## HSN research
+| Status | Count |
+| --- | ---: |
+| Exact-match official Fluke asset | 13 |
+| PDF fallback | 0 |
+| Storefront fallback required | 56 |
 
-The manifest records category-level headings only where the official CBIC description clearly matches the product function:
+Thirteen official images were uploaded to the `product-images` bucket and registered as primary images. Verification found 13 matching metadata rows, 13 matching Storage objects, and zero orphans. Missing images did not block otherwise safe catalogue rows.
 
-| Product group | HSN | Basis |
-| --- | --- | --- |
-| Multimeters, clamp meters, insulation/electrical testers | 9030 | Measuring/checking electrical quantities |
-| Infrared thermometers; temperature/humidity instruments | 9025 | Thermometers, pyrometers, hygrometers and combinations |
-| Laser distance meters | 9015 | Rangefinders |
-| Vane anemometer | 9026 | Measuring/checking flow or variables of gases |
-| Tachometers | 9029 | Revolution counters, speed indicators and tachometers |
-| Light/sound meters | 9027 | Measuring/checking quantities of sound or light |
+### Product disposition
 
-- HSN resolved: 59 Fluke rows
-- HSN unresolved: 16 Fluke rows (thermal cameras/imagers and accessories/fuses where a more specific classification decision is required)
-- GST rate for all Fluke rows: 18%, matching the client rule and the applicable CBIC schedule rate for the resolved headings
+| Status | Count |
+| --- | ---: |
+| SAFE_TO_CREATE | 26 |
+| SAFE_CATALOG_ONLY | 27 |
+| HSN_BLOCKED | 16 |
+| OTHER_BLOCKED | 0 |
 
-## Why 69 Fluke rows remain unresolved
+The 27 catalogue-only rows have unresolved weight and remain non-purchasable. The 16 HSN-blocked rows were not inserted.
 
-- New `products` rows require `source_vendor_id`, and the database audit found no dedicated Fluke vendor. The importer will not silently assign G-Tech, Meco, HTC, Galaxy, or another unrelated vendor.
-- Sixteen new rows still require authoritative HSN classification. The importer does not reuse `9030` across thermal cameras, accessories, and fuses.
-- Thirty-nine Fluke rows still lack a manufacturer-confirmed sellable/package weight. Product dimensions or guessed packaging are not accepted.
-- New catalogue images require a verified manufacturer asset and storage import. Existing good product images are preserved.
+## Apply verification
 
-Each row is marked with its exact unresolved state in the manifest rather than being silently omitted.
+- New products inserted: 53
+- New inventory rows: 53
+- New vendor rows: 1
+- Official images uploaded: 13
+- Existing products commercially changed: 0
+- Existing supplier links corrected: 6
+- Duplicate products/SKUs/slugs created: 0
+- Price mismatches: 0
+- Tax mismatches: 0
+- New rows with quantity 0: 53
+- New rows with reserved quantity 0: 53
+- New rows purchasable: 0
+- Total Fluke-brand rows after apply: 62 (53 catalogue imports plus 9 pre-existing rows)
 
-## Importer behavior
+The six verified catalogue matches retained their IDs, prices, tax rates, weights, inventory quantities, reservations, images, active flags, and purchasable flags. Only their source vendor changed to the client-confirmed canonical Fluke supplier.
 
-`pnpm import:fluke` performs a read-only dry run. `pnpm import:fluke -- --apply` is the only mutation mode.
+Post-apply dry run:
 
-The importer:
+- Imported rows unchanged: 53
+- New rows proposed: 0
+- Existing commercial drift: 0
+- Supplier changes proposed: 0
+- Conflicts: 0
 
-- reuses the existing Fluke brand and refuses to create a duplicate;
-- discovers existing product IDs at runtime rather than hard-coding environment-specific UUIDs;
-- requires exactly one match per eligible model;
-- requires existing HSN, 18% GST, official positive weight, and calculated website price;
-- updates only `price`, `tax_rate`, and `weight_grams` for safe existing matches;
-- preserves inventory, reservations, images, product IDs, and historical order/payment rows;
-- is idempotent and reports already-correct rows as unchanged;
-- skips every unresolved and non-Fluke row.
+## Admin and storefront verification
 
-## Schema and application changes
+Live database/API checks verified all imported names, deterministic SKUs, prices, GST rates, weights, brand, supplier, categories, active state, non-purchasable state, and zero inventory.
 
-- Added nullable positive `products.weight_grams` with a database check constraint.
-- Added weight entry to admin product create/edit screens.
-- Persisted weight and tax fields in the cart snapshot.
-- Replaced all ₹500/free-shipping calculations and storefront wording with the required weight bands.
-- Replaced GST-inclusive calculations and labels with GST-added calculations.
-- Updated admin order summaries and commerce settings to the same rules.
+Production catalogue search returned:
 
-## Verification
+- `Fluke 115`: one result with Rs 11,700 base price, official 550 g weight, and official primary image.
+- `Fluke 101 Kit`: one result with Rs 4,387.50 base price and normal image fallback.
+- `Fluke 374 FC`: one result with Rs 28,125 base price and official primary image.
+- `Fluke VT06`: zero results because HSN remains blocked.
+- `Raytek MT4`: zero results because it remains excluded.
 
-Passed locally:
+The storefront products route returned HTTP 200. The compiled admin Products and Inventory routes remain available; authenticated UI mutation was not needed for verification because the live database and production API expose the same persisted records.
 
-- Fluke catalogue pricing/freight test
-- Sprint 4A payment trust test
-- Sprint 4B payment finalization test (30 checks)
-- Server TypeScript check
-- Web TypeScript check
-- Production web compilation
-- Manifest count assertion: 76 total / 75 Fluke / 1 Raytek
-- Weight enrichment: 36 official / 39 unresolved
-- HSN research: 59 resolved / 16 unresolved
+## Checkout and payment regression
 
-The freight test covers:
+Passed:
 
-1. under 1 kg → ₹60;
-2. exactly 1 kg → ₹60;
-3. above 1 kg → ₹120;
-4. combined cart weight above 1 kg → ₹120;
-5. quantity multiplication above 1 kg → ₹120;
-6. unknown weight → controlled checkout rejection;
-7. exact Fluke 101 GST, freight, payable total, and Razorpay paise amount.
+- under 1 kg -> Rs 60 freight;
+- exactly 1 kg -> Rs 60 freight;
+- above 1 kg -> Rs 120 freight;
+- combined products above 1 kg -> Rs 120 freight;
+- quantity multiplication above 1 kg -> Rs 120 freight;
+- missing weight -> controlled rejection;
+- Fluke 101 -> Rs 3,577.50 base + Rs 643.95 GST + Rs 60 freight = Rs 4,281.45 / 428145 paise;
+- browser-submitted price ignored;
+- Razorpay signature, binding, amount, currency, captured-state, reservation, finalization, replay, and convergence regressions: 30/30 passed.
 
-## Live apply / deployment status
+No Razorpay order or real payment was created.
 
-- Database writes during this run: 0
-- Existing products updated during this run: 0
-- New products inserted during this run: 0
-- Inventory/images/orders/payments changed: 0
-- Read-only live connection: pass
-- Dry-run result: stopped safely with `Apply the weight_grams migration before running the catalogue importer.`
-- Migration/apply/deployment: pending Supabase migration credentials
+## Build verification
 
-Required live sequence once external access is available:
+- Server typecheck: passed
+- Web typecheck: passed
+- Server build: passed
+- Web production build: passed (existing lint warnings only)
+- Fluke pricing/freight regression: passed
+- Payment trust regression: passed
+- Payment finalization regression: 30/30 passed
+- Live inventory invariants: passed
+- Production catalogue/search smoke: passed
 
-1. apply `supabase/migrations/20261008150957_add_product_weight_grams.sql`;
-2. run `pnpm import:fluke` and confirm six unique existing matches;
-3. run `pnpm import:fluke -- --apply`;
-4. rerun the dry run and confirm six unchanged rows and zero conflicts;
-5. deploy web and API services;
-6. complete storefront/admin/checkout/Razorpay smoke checks.
+## Deployment
+
+- Data apply: complete and live in Supabase.
+- Main branch push: pending final commit.
+- Frontend/API deployment verification: pending the main push.
+
+## Remaining manual review
+
+Sixteen rows remain `HSN_REVIEW_REQUIRED`: TC01A, TC01B, TC01C, TC03A, VT06, VT08, TL75, TL175, TPAK, i2500-18, i410, i1010, Fuse 315mA 1pc, Fuse 15B+/17B+ 1 unit, Fuse 179 combo 5 pack, and Fuse 115/15B+/17B+/179 combo 5 pack.
+
+No HSN, weight, stock, duplicate brand/vendor, or Raytek-to-Fluke mapping was invented.
