@@ -218,6 +218,7 @@ export type ProductView = Partial<ProductDto> & {
   gstIncluded?: boolean;
   secondaryAction?: string;
   technicalSpecs?: string;
+  inventory_quantity?: number;
   compare_at_price?: number | null;
 };
 

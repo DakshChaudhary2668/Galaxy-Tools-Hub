@@ -16,9 +16,9 @@ import { getProducts } from '../services/product.service';
 
 export default async function HomePage() {
   const [featuredRes, discountedRes, trendingRes] = await Promise.all([
-    getProducts({ active: 'true', homepage: 'true', featured: 'true', limit: '4' }),
-    getProducts({ active: 'true', homepage: 'true', discounted: 'true', limit: '4' }),
-    getProducts({ active: 'true', homepage: 'true', sort: 'latest', limit: '4' }),
+    getProducts({ active: 'true', homepage: 'true', featured: 'true', limit: '5' }),
+    getProducts({ active: 'true', homepage: 'true', discounted: 'true', limit: '5' }),
+    getProducts({ active: 'true', homepage: 'true', sort: 'latest', limit: '5' }),
   ]);
 
   const featured = featuredRes?.data || [];

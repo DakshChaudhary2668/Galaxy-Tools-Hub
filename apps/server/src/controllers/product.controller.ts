@@ -72,6 +72,18 @@ export async function getProducts(req: Request, res: Response, next: NextFunctio
       return next(new AppError('Invalid product query', 400, parsed.error.flatten().fieldErrors as Record<string, string[]>));
     }
     const result = await productRepository.findProductsWithFilters(parsed.data);
+    const productIds = result.products.map((product) => product.id).filter(Boolean);
+    const inventoryByProduct = new Map<string, number>();
+    if (productIds.length) {
+      const { data: inventory, error: inventoryError } = await supabaseAdmin
+        .from('inventory')
+        .select('product_id, quantity, reserved_quantity')
+        .in('product_id', productIds);
+      if (inventoryError) throw new AppError('Failed to retrieve product availability', 500);
+      for (const row of inventory || []) {
+        inventoryByProduct.set(row.product_id, Math.max(0, Number(row.quantity || 0) - Number(row.reserved_quantity || 0)));
+      }
+    }
 
     // Map product_images from DB join to images array and top-level image/image_url for ProductCard
     const mappedProducts = result.products.map((p: any) => {
@@ -86,7 +98,8 @@ export async function getProducts(req: Request, res: Response, next: NextFunctio
         ...p,
         image: primaryUrl,
         image_url: primaryUrl,
-        images
+        images,
+        inventory_quantity: inventoryByProduct.get(p.id)
       };
     });
 
@@ -116,19 +129,21 @@ export async function getProductBySlug(req: Request, res: Response, next: NextFu
     }
     if (!product) return next(new AppError('Product not found', 404));
 
-    const [categoryRes, brandRes, imagesRes] = await Promise.allSettled([
+    const [categoryRes, brandRes, imagesRes, inventoryRes] = await Promise.allSettled([
       product.category_id
         ? supabaseAdmin.from('categories').select('id, name, slug, image_url').eq('id', product.category_id).single()
         : Promise.resolve({ data: null }),
       product.brand_id
         ? supabaseAdmin.from('brands').select('id, name, slug, logo_url').eq('id', product.brand_id).single()
         : Promise.resolve({ data: null }),
-      supabaseAdmin.from('product_images').select('*').eq('product_id', product.id).order('sort_order').order('created_at')
+      supabaseAdmin.from('product_images').select('*').eq('product_id', product.id).order('sort_order').order('created_at'),
+      supabaseAdmin.from('inventory').select('quantity, reserved_quantity').eq('product_id', product.id).maybeSingle()
     ]);
 
     const category = categoryRes.status === 'fulfilled' && 'data' in categoryRes.value ? categoryRes.value.data : null;
     const brand = brandRes.status === 'fulfilled' && 'data' in brandRes.value ? brandRes.value.data : null;
     const images = imagesRes.status === 'fulfilled' && 'data' in imagesRes.value ? (imagesRes.value.data || []) : [];
+    const inventory = inventoryRes.status === 'fulfilled' && 'data' in inventoryRes.value ? inventoryRes.value.data : null;
 
     const normalizedImages = sortProductImages((images || []).map((img: any) => ({
       ...img,
@@ -145,7 +160,10 @@ export async function getProductBySlug(req: Request, res: Response, next: NextFu
       images: normalizedImages,
       brand,
       category,
-      specifications: product.specifications || {}
+      specifications: product.specifications || {},
+      inventory_quantity: inventory
+        ? Math.max(0, Number(inventory.quantity || 0) - Number(inventory.reserved_quantity || 0))
+        : undefined
     };
 
     sendSuccess(res, { data: productDetail, message: 'Product details retrieved successfully' });

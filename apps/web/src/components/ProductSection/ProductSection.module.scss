@@ -53,20 +53,22 @@
 
 .productsGrid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 16px;
 
-  @include laptop {
+  @media (max-width: 1199px) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  @media (max-width: 991px) {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  @include tablet {
+  @media (max-width: 767px) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
   }
 
-  @include mobile {
+  @media (max-width: 479px) {
     grid-template-columns: 1fr;
-    gap: 16px;
   }
 }

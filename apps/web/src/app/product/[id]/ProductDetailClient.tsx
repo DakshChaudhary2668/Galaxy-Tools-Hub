@@ -4,12 +4,13 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
-  Star, ShoppingCart, Zap, ShieldCheck, RefreshCw, Headphones, AlertCircle
+  ShoppingCart, Zap, RefreshCw, AlertCircle
 } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
 import { ProductView } from '@galaxy/types';
 import { useProduct, useProducts } from '@/hooks/useProducts';
 import { ProductCard } from '@/components/ProductCard/ProductCard';
+import { formatBasePrice, getAvailability, getProductInformation } from '@/lib/productDisplay';
 import styles from './ProductDetail.module.scss';
 
 export default function ProductDetailClient({ id }: { id: string }) {
@@ -56,21 +57,19 @@ export default function ProductDetailClient({ id }: { id: string }) {
   const mappedProduct: ProductView = {
     ...product,
     image: (product.images && product.images.length > 0) ? (product.images[0] as any).image_url : '/images/placeholder.jpg',
-    statusLabel: (product.inventory_quantity ?? 1) > 0 ? 'IN STOCK' : 'OUT OF STOCK',
     currency: '₹',
     gstIncluded: false
   };
+  const availability = getAvailability(mappedProduct);
+  const productInformation = getProductInformation(mappedProduct);
 
   const thumbs = (product.images && product.images.length > 0)
     ? (product.images as any[]).map(img => img.image_url).slice(0, 6)
     : ['/images/placeholder.jpg'];
 
-  const specifications = product.specifications as Record<string, string>;
-  const specKeys = specifications ? Object.keys(specifications) : [];
-
   const relatedProducts = (relatedData?.data || [])
     .filter((p: any) => p.id !== product.id)
-    .slice(0, 4);
+    .slice(0, 5);
 
   return (
     <main className={styles.container}>
@@ -94,7 +93,7 @@ export default function ProductDetailClient({ id }: { id: string }) {
               event.currentTarget.style.setProperty('--zoom-y', `${((event.clientY - bounds.top) / bounds.height) * 100}%`);
             }}
           >
-            <span className={styles.stockTag}>{mappedProduct.statusLabel}</span>
+            {availability.label && <span className={styles.stockTag}>{availability.label}</span>}
             <Image
               src={thumbs[selectedThumb] || thumbs[0]}
               alt={product.name}
@@ -112,6 +111,7 @@ export default function ProductDetailClient({ id }: { id: string }) {
                   key={idx}
                   className={`${styles.thumbCard} ${selectedThumb === idx ? styles.active : ''}`}
                   onClick={() => setSelectedThumb(idx)}
+                  aria-label={`View image ${idx + 1} of ${product.name}`}
                 >
                   <Image
                     src={thumb}
@@ -137,46 +137,36 @@ export default function ProductDetailClient({ id }: { id: string }) {
             {product.name}
           </h1>
 
-          <div className={styles.ratingRow}>
-            <div className={styles.stars}>
-              <Star size={16} fill="#F59E0B" stroke="#F59E0B" />
-              <Star size={16} fill="#F59E0B" stroke="#F59E0B" />
-              <Star size={16} fill="#F59E0B" stroke="#F59E0B" />
-              <Star size={16} fill="#F59E0B" stroke="#F59E0B" />
-              <Star size={16} fill="#F59E0B" stroke="#F59E0B" />
-            </div>
-            <span className={styles.reviewText}>Model: {product.source_model_no || 'N/A'}</span>
-          </div>
+          {product.source_model_no && <div className={styles.modelText}>Model: {product.source_model_no}</div>}
 
           <div className={styles.priceBlock}>
-            <div className={styles.priceVal}>₹{new Intl.NumberFormat('en-IN').format(product.price || 0)}</div>
-            {product.compare_at_price && product.price != null && product.compare_at_price > product.price && (
-               <div style={{ textDecoration: 'line-through', color: '#999', fontSize: '16px', marginLeft: '12px', display: 'flex', alignItems: 'center' }}>
-                 ₹{new Intl.NumberFormat('en-IN').format(product.compare_at_price)}
-               </div>
-            )}
-            <div className={styles.gstSub} style={{ marginLeft: product.compare_at_price && product.price != null && product.compare_at_price > product.price ? '12px' : '0' }}>INCL. GST & SHIPPING</div>
+            <div className={styles.priceVal}>{formatBasePrice(product.price)}</div>
+            <div className={styles.priceDisclosure}>Base price <span>+ {product.tax_rate ?? 18}% GST</span></div>
+            <div className={styles.freightDisclosure}>Freight calculated at checkout</div>
           </div>
 
           <div className={styles.divider} />
 
-          <p style={{ color: '#555', fontSize: '14px', lineHeight: '1.6', marginBottom: '24px' }}>
-            {product.short_description || product.description || 'Professional grade industrial equipment.'}
-          </p>
+          {(product.short_description || product.description) && (
+            <p className={styles.summaryText}>{product.short_description || product.description}</p>
+          )}
 
           {/* CTAs */}
           <div className={styles.ctaStack}>
             <button
               className={styles.addToCartBtn}
-              onClick={() => addToCart(mappedProduct)}
+              onClick={() => availability.available && addToCart(mappedProduct)}
+              disabled={!availability.available}
             >
               <ShoppingCart size={18} />
-              <span>ADD TO CART</span>
+              <span>{availability.available ? 'ADD TO CART' : availability.label?.toUpperCase()}</span>
             </button>
 
             <button
               className={styles.buyNowBtn}
+              disabled={!availability.available}
               onClick={() => {
+                if (!availability.available) return;
                 addToCart(mappedProduct);
                 window.location.href = '/checkout';
               }}
@@ -186,56 +176,78 @@ export default function ProductDetailClient({ id }: { id: string }) {
             </button>
           </div>
 
-          {/* Guarantees Strip */}
-          <div className={styles.guaranteesRow}>
-            <div className={styles.guaranteeItem}>
-              <ShieldCheck size={16} />
-              <span>1 YR WARRANTY</span>
+          {productInformation.warranty && (
+            <div className={styles.warrantyNote}>
+              <strong>Manufacturer warranty</strong>
+              <span>{productInformation.warranty}</span>
             </div>
-            <div className={styles.guaranteeItem}>
-              <RefreshCw size={16} />
-              <span>7 DAY RETURN</span>
-            </div>
-            <div className={styles.guaranteeItem}>
-              <Headphones size={16} />
-              <span>24/7 SUPPORT</span>
-            </div>
-          </div>
+          )}
         </section>
       </div>
 
-      {/* Technical Specifications Table */}
-      {specKeys.length > 0 && (
-        <section className={styles.specsTableSection}>
-          <h2 className={styles.tableTitle}>Technical Specifications</h2>
-          <table className={styles.specsTable}>
-            <tbody>
-              {specKeys.map(key => (
-                <tr key={key}>
-                  <th style={{ textTransform: 'capitalize' }}>{key.replace(/_/g, ' ')}</th>
-                  <td>{specifications[key]}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
-      )}
+      {(product.description || productInformation.technicalSpecifications.length > 0 || productInformation.features.length > 0 || productInformation.packageIncludes.length > 0 || productInformation.applications.length > 0 || productInformation.warranty) && (
+        <section className={styles.productInformation}>
+          <header className={styles.informationHeader}>
+            <span>Product information</span>
+            <h2>Everything you need to know</h2>
+          </header>
 
-      {/* Description */}
-      {product.description && (
-         <section className={styles.specsTableSection} style={{ marginTop: '40px' }}>
-            <h2 className={styles.tableTitle}>Product Description</h2>
-            <div style={{ fontSize: '15px', color: '#444', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
-              {product.description}
+          {product.description && (
+            <div className={styles.informationRow}>
+              <h3>Overview</h3>
+              <p className={styles.descriptionText}>{product.description}</p>
             </div>
-         </section>
+          )}
+
+          {productInformation.technicalSpecifications.length > 0 && (
+            <div className={styles.informationRow}>
+              <h3>Technical specifications</h3>
+              <dl className={styles.specificationGrid}>
+                {productInformation.technicalSpecifications.map(({ label, value }) => (
+                  <div key={label} className={styles.specificationItem}>
+                    <dt>{label}</dt>
+                    <dd>{value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          )}
+
+          {productInformation.features.length > 0 && (
+            <div className={styles.informationRow}>
+              <h3>Features</h3>
+              <ul className={styles.detailList}>{productInformation.features.map((feature) => <li key={feature}>{feature}</li>)}</ul>
+            </div>
+          )}
+
+          {productInformation.packageIncludes.length > 0 && (
+            <div className={styles.informationRow}>
+              <h3>Package includes</h3>
+              <ul className={styles.detailList}>{productInformation.packageIncludes.map((item) => <li key={item}>{item}</li>)}</ul>
+            </div>
+          )}
+
+          {productInformation.applications.length > 0 && (
+            <div className={styles.informationRow}>
+              <h3>Applications</h3>
+              <ul className={styles.detailList}>{productInformation.applications.map((application) => <li key={application}>{application}</li>)}</ul>
+            </div>
+          )}
+
+          {productInformation.warranty && (
+            <div className={styles.informationRow}>
+              <h3>Warranty</h3>
+              <p>{productInformation.warranty}</p>
+            </div>
+          )}
+        </section>
       )}
 
       {/* Related Products */}
       {relatedProducts.length > 0 && (
-         <section style={{ marginTop: '60px' }}>
-           <h2 className={styles.tableTitle} style={{ marginBottom: '24px' }}>Related Instruments</h2>
-           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '20px' }}>
+         <section className={styles.relatedSection}>
+           <h2 className={styles.tableTitle}>Related Instruments</h2>
+           <div className={styles.relatedGrid}>
              {relatedProducts.map(p => (
                 <ProductCard key={p.id} product={p as unknown as ProductView} />
              ))}

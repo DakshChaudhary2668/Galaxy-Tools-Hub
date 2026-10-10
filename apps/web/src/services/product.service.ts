@@ -1,6 +1,7 @@
 import { apiClient } from './api';
 import {
   ProductDto,
+  ProductView,
   ProductDetailDto,
   ProductImageDto,
   CreateProductDto,
@@ -11,7 +12,7 @@ import {
 
 
 export interface AdminProductsResponse {
-  data: ProductDto[];
+  data: Array<ProductDto & ProductView>;
   meta: {
     page: number;
     limit: number;
