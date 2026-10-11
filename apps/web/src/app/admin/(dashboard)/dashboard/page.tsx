@@ -29,6 +29,7 @@ export default function AdminDashboardPage() {
   const [data, setData] = useState<DashboardSummaryData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   const fetchData = useCallback(async (selectedRange: string) => {
     setLoading(true);
@@ -37,6 +38,7 @@ export default function AdminDashboardPage() {
       const res = await getDashboardSummary(selectedRange);
       if (res) {
         setData(res);
+        setLastUpdated(new Date());
       } else {
         setError('No summary data returned from the server.');
       }
@@ -91,11 +93,16 @@ export default function AdminDashboardPage() {
           className={styles.refreshBtn}
           onClick={() => fetchData(range)}
           disabled={loading}
+          aria-busy={loading}
         >
           <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
-          <span>Refresh Data</span>
+          <span>{loading ? 'Refreshing...' : 'Refresh Data'}</span>
         </button>
       </div>
+
+      {lastUpdated && !error && (
+        <p className={styles.lastUpdated}>Last updated {formatDate(lastUpdated.toISOString())}</p>
+      )}
 
       {error ? (
         /* Error State */

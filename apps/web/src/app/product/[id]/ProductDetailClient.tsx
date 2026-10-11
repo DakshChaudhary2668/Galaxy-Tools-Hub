@@ -56,7 +56,7 @@ export default function ProductDetailClient({ id }: { id: string }) {
 
   const mappedProduct: ProductView = {
     ...product,
-    image: (product.images && product.images.length > 0) ? (product.images[0] as any).image_url : '/images/placeholder.jpg',
+    image: (product.images?.[0] as { image_url?: string } | undefined)?.image_url,
     currency: '₹',
     gstIncluded: false
   };
@@ -64,8 +64,8 @@ export default function ProductDetailClient({ id }: { id: string }) {
   const productInformation = getProductInformation(mappedProduct);
 
   const thumbs = (product.images && product.images.length > 0)
-    ? (product.images as any[]).map(img => img.image_url).slice(0, 6)
-    : ['/images/placeholder.jpg'];
+    ? (product.images as { image_url: string }[]).map(img => img.image_url).filter(Boolean).slice(0, 6)
+    : [];
 
   const relatedProducts = (relatedData?.data || [])
     .filter((p: any) => p.id !== product.id)
@@ -94,14 +94,18 @@ export default function ProductDetailClient({ id }: { id: string }) {
             }}
           >
             {availability.label && <span className={styles.stockTag}>{availability.label}</span>}
-            <Image
-              src={thumbs[selectedThumb] || thumbs[0]}
-              alt={product.name}
-              width={420}
-              height={380}
-              className={styles.mainImg}
-              priority
-            />
+            {thumbs.length ? (
+              <Image
+                src={thumbs[selectedThumb] || thumbs[0]}
+                alt={product.name}
+                width={420}
+                height={380}
+                className={styles.mainImg}
+                priority
+              />
+            ) : (
+              <span className={styles.imageFallback}>Product image unavailable</span>
+            )}
           </div>
 
           {thumbs.length > 1 && (

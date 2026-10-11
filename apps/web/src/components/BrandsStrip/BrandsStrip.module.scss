@@ -97,6 +97,14 @@
   }
 }
 
+.brandName {
+  color: $color-black;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 @keyframes brand-marquee {
   from { transform: translate3d(0, 0, 0); }
   to { transform: translate3d(-50%, 0, 0); }

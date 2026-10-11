@@ -19,6 +19,11 @@
     "test:sprint7c5:live": "tsx src/test_sprint7c5_live.ts",
     "test:fluke": "tsx src/test_fluke_import.ts",
     "test:commerce-ui": "tsx tests/test_commerce_ui.ts",
+    "test:catalogue-quality": "tsx tests/test_catalogue_quality.ts",
+    "audit:catalogue": "tsx src/scripts/audit-catalogue-quality.ts",
+    "sync:catalogue-partners": "tsx src/scripts/sync-catalogue-partners.ts",
+    "sync:fluke-quality": "tsx src/scripts/sync-fluke-quality.ts",
+    "sync:fluke-images": "tsx src/scripts/sync-fluke-images.ts",
     "import:fluke": "tsx src/scripts/import-fluke-catalogue.ts",
     "reservations:expire": "tsx src/scripts/expire-reservations.ts"
   },

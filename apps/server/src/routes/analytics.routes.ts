@@ -10,7 +10,12 @@ import { Roles } from '@galaxy/constants';
 export const analyticsRouter: Router = Router();
 
 // Analytics summary endpoints
-analyticsRouter.get('/dashboard-summary', getDashboardSummary);
+analyticsRouter.get(
+  '/dashboard-summary',
+  adminAuthGuard,
+  rbacGuard([Roles.OWNER, Roles.MANAGER, Roles.STAFF]),
+  getDashboardSummary
+);
 analyticsRouter.get(
   '/detailed',
   adminAuthGuard,

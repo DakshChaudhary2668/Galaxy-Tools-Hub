@@ -55,6 +55,17 @@
   }
 }
 
+.imageFallback {
+  max-width: 150px;
+  color: #777777;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  line-height: 1.5;
+  text-align: center;
+  text-transform: uppercase;
+}
+
 .contentArea {
   padding: 16px;
   display: flex;

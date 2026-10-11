@@ -14,6 +14,11 @@
     "type-check": "turbo run type-check",
     "test:fluke": "pnpm --filter galaxy-server test:fluke",
     "test:commerce-ui": "pnpm --filter galaxy-server test:commerce-ui",
+    "test:catalogue-quality": "pnpm --filter galaxy-server test:catalogue-quality",
+    "audit:catalogue": "pnpm --filter galaxy-server audit:catalogue",
+    "sync:catalogue-partners": "pnpm --filter galaxy-server sync:catalogue-partners",
+    "sync:fluke-quality": "pnpm --filter galaxy-server sync:fluke-quality",
+    "sync:fluke-images": "pnpm --filter galaxy-server sync:fluke-images",
     "import:fluke": "pnpm --filter galaxy-server import:fluke",
     "clean": "turbo run clean && rm -rf node_modules"
   },

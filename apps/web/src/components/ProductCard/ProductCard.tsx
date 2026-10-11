@@ -15,7 +15,7 @@ interface ProductCardProps {
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { addToCart } = useCartStore();
-  const imageUrl = product.image || (product as any).image_url || (product.images && product.images.length > 0 ? (product.images[0] as any).image_url : null) || '/images/placeholder.jpg';
+  const imageUrl = product.image || product.image_url || (product.images?.[0] as { image_url?: string } | undefined)?.image_url;
   const productHref = `/product/${product.id}`;
   const availability = getAvailability(product);
 
@@ -23,13 +23,17 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     <div className={styles.card}>
       <Link className={styles.imageArea} href={productHref} aria-label={`View ${product.name}`}>
         {availability.label && <span className={styles.statusBadge}>{availability.label}</span>}
-        <Image
-          src={imageUrl}
-          alt={product.name || 'Product Image'}
-          width={220}
-          height={180}
-          className={styles.productImage}
-        />
+        {imageUrl ? (
+          <Image
+            src={imageUrl}
+            alt={product.name || 'Product Image'}
+            width={220}
+            height={180}
+            className={styles.productImage}
+          />
+        ) : (
+          <span className={styles.imageFallback}>Product image unavailable</span>
+        )}
       </Link>
 
       {/* Content Area */}

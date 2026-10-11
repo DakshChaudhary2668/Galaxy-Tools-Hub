@@ -21,6 +21,7 @@ import { adjustAdminInventory, getAdminInventory } from '@/services/inventory.se
 import { ImageUploadWidget } from '@/components/admin/ImageUploadWidget';
 import { useCategories } from '@/hooks/useCategories';
 import { useBrands } from '@/hooks/useBrands';
+import { useVendors } from '@/hooks/useVendors';
 import { CategoryWithProductCount } from '@/services/category.service';
 import { BrandDto } from '@galaxy/types';
 import styles from '../../Products.module.scss';
@@ -40,6 +41,7 @@ export default function AdminEditProductPage({
 
   const { data: rawCategories = [] } = useCategories();
   const { data: rawBrands = [] } = useBrands();
+  const { data: vendors = [] } = useVendors();
   const categories: CategoryWithProductCount[] = rawCategories;
   const brands: BrandDto[] = rawBrands;
 
@@ -52,7 +54,7 @@ export default function AdminEditProductPage({
   const [slug, setSlug] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [brandId, setBrandId] = useState('');
-  const [customBrandName, setCustomBrandName] = useState('');
+  const [vendorId, setVendorId] = useState('');
   const [price, setPrice] = useState<string>('');
   const [compareAtPrice, setCompareAtPrice] = useState<string>('');
   const [hsnCode, setHsnCode] = useState('');
@@ -96,6 +98,7 @@ export default function AdminEditProductPage({
         setSlug(p.slug || '');
         setCategoryId(p.category_id || '');
         setBrandId(p.brand_id || '');
+        setVendorId(p.source_vendor_id || '');
         setPrice(p.price !== null && p.price !== undefined ? String(p.price) : '');
         setCompareAtPrice(p.compare_at_price ? String(p.compare_at_price) : '');
         setHsnCode(p.hsn_code || '');
@@ -159,8 +162,8 @@ export default function AdminEditProductPage({
       setError('Product SKU is required.');
       return;
     }
-    if (!sourceModelNo.trim() || !hsnCode.trim() || taxRate === '') {
-      setError('Model number, HSN code, and GST rate are required.');
+    if (!sourceModelNo.trim() || !brandId || !vendorId || !hsnCode.trim() || taxRate === '') {
+      setError('Model number, brand, source vendor, HSN code, and GST rate are required.');
       return;
     }
     if (!price || Number(price) <= 0) {
@@ -200,8 +203,8 @@ export default function AdminEditProductPage({
         source_model_no: sourceModelNo.trim(),
         slug: (slug || name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
         category_id: categoryId || undefined,
-        brand_id: brandId === '__other__' ? undefined : brandId || undefined,
-        custom_brand_name: brandId === '__other__' ? customBrandName.trim() : undefined,
+        brand_id: brandId,
+        source_vendor_id: vendorId,
         price: Number(price),
         compare_at_price: compareAtPrice ? Number(compareAtPrice) : null,
         hsn_code: hsnCode.trim(),
@@ -415,18 +418,16 @@ export default function AdminEditProductPage({
                       {b.name}
                     </option>
                   ))}
-                  <option value="__other__">Other / Add new brand</option>
                 </select>
-                {brandId === '__other__' && (
-                  <input
-                    type="text"
-                    value={customBrandName}
-                    onChange={(e) => setCustomBrandName(e.target.value)}
-                    placeholder="Enter brand name"
-                    required
-                  />
-                )}
               </div>
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="sourceVendor">Source Vendor *</label>
+              <select id="sourceVendor" value={vendorId} onChange={(e) => setVendorId(e.target.value)} required>
+                <option value="">Select Vendor...</option>
+                {vendors.map((vendor) => <option key={vendor.id} value={vendor.id}>{vendor.name}</option>)}
+              </select>
             </div>
           </div>
 

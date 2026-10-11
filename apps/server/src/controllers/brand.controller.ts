@@ -3,12 +3,18 @@ import { BaseRepository } from '../repositories/base.repository';
 import { BrandDto } from '@galaxy/types';
 import { sendSuccess } from '../utils/response';
 import { AppError } from '../utils/app-error';
+import { supabaseAdmin } from '../config/supabase';
 
 const brandRepository = new BaseRepository<BrandDto>('brands');
 
 export async function getBrands(_req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const brands = await brandRepository.list(100);
+    const { data: brands, error } = await supabaseAdmin
+      .from('brands')
+      .select('*')
+      .eq('is_active', true)
+      .order('name');
+    if (error) throw error;
     sendSuccess(res, { data: brands, message: 'Brands retrieved successfully' });
   } catch (error) {
     next(error);
@@ -17,7 +23,13 @@ export async function getBrands(_req: Request, res: Response, next: NextFunction
 
 export async function getBrandBySlug(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const brand = await brandRepository.findBySlug(req.params.slug);
+    const { data: brand, error } = await supabaseAdmin
+      .from('brands')
+      .select('*')
+      .eq('slug', req.params.slug)
+      .eq('is_active', true)
+      .maybeSingle();
+    if (error) throw error;
     if (!brand) {
       return next(new AppError('Brand not found', 404));
     }

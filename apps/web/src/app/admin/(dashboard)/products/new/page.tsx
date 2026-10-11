@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -23,9 +22,9 @@ import { supabase } from '@/lib/supabase';
 import { ImageUploadWidget } from '@/components/admin/ImageUploadWidget';
 import { useCategories } from '@/hooks/useCategories';
 import { useBrands } from '@/hooks/useBrands';
+import { useVendors } from '@/hooks/useVendors';
 import { CategoryWithProductCount } from '@/services/category.service';
-import { BrandDto, VendorDto } from '@galaxy/types';
-import { apiClient } from '@/services/api';
+import { BrandDto } from '@galaxy/types';
 import styles from '../Products.module.scss';
 
 interface SpecPair {
@@ -38,10 +37,7 @@ export default function AdminNewProductPage() {
   const router = useRouter();
   const { data: rawCategories = [] } = useCategories();
   const { data: rawBrands = [] } = useBrands();
-  const { data: vendors = [] } = useQuery({
-    queryKey: ['vendors'],
-    queryFn: async () => (await apiClient.get<{ data: VendorDto[] }>('/vendors')).data
-  });
+  const { data: vendors = [] } = useVendors();
   const categories: CategoryWithProductCount[] = rawCategories;
   const brands: BrandDto[] = rawBrands;
 
@@ -51,7 +47,6 @@ export default function AdminNewProductPage() {
   const [slug, setSlug] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [brandId, setBrandId] = useState('');
-  const [customBrandName, setCustomBrandName] = useState('');
   const [vendorId, setVendorId] = useState('');
   const [price, setPrice] = useState<string>('');
   const [compareAtPrice, setCompareAtPrice] = useState<string>('');
@@ -168,7 +163,7 @@ export default function AdminNewProductPage() {
       setError('Product SKU is required.');
       return;
     }
-    if (!sourceModelNo.trim() || !categoryId || (brandId === '__other__' ? !customBrandName.trim() : !brandId) || !vendorId) {
+    if (!sourceModelNo.trim() || !categoryId || !brandId || !vendorId) {
       setError('Model number, category, brand, and source vendor are required.');
       return;
     }
@@ -208,8 +203,7 @@ export default function AdminNewProductPage() {
         source_model_no: sourceModelNo.trim(),
         source_vendor_id: vendorId,
         category_id: categoryId,
-        brand_id: brandId === '__other__' ? undefined : brandId,
-        custom_brand_name: brandId === '__other__' ? customBrandName.trim() : undefined,
+        brand_id: brandId,
         price: Number(price),
         compare_at_price: compareAtPrice ? Number(compareAtPrice) : null,
         hsn_code: hsnCode.trim(),
@@ -428,17 +422,7 @@ export default function AdminNewProductPage() {
                       {b.name}
                     </option>
                   ))}
-                  <option value="__other__">Other / Add new brand</option>
                 </select>
-                {brandId === '__other__' && (
-                  <input
-                    type="text"
-                    value={customBrandName}
-                    onChange={(e) => setCustomBrandName(e.target.value)}
-                    placeholder="Enter brand name"
-                    required
-                  />
-                )}
               </div>
             </div>
 

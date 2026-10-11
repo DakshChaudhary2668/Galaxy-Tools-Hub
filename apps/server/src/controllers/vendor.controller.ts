@@ -3,12 +3,18 @@ import { BaseRepository } from '../repositories/base.repository';
 import { VendorDto } from '@galaxy/types';
 import { sendSuccess } from '../utils/response';
 import { AppError } from '../utils/app-error';
+import { supabaseAdmin } from '../config/supabase';
 
 const vendorRepository = new BaseRepository<VendorDto>('vendors');
 
 export async function getVendors(_req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const vendors = await vendorRepository.list(100);
+    const { data: vendors, error } = await supabaseAdmin
+      .from('vendors')
+      .select('*')
+      .eq('is_active', true)
+      .order('name');
+    if (error) throw error;
     sendSuccess(res, { data: vendors, message: 'Vendors retrieved successfully' });
   } catch (error) {
     next(error);
@@ -17,7 +23,13 @@ export async function getVendors(_req: Request, res: Response, next: NextFunctio
 
 export async function getVendorById(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const vendor = await vendorRepository.findById(req.params.id);
+    const { data: vendor, error } = await supabaseAdmin
+      .from('vendors')
+      .select('*')
+      .eq('id', req.params.id)
+      .eq('is_active', true)
+      .maybeSingle();
+    if (error) throw error;
     if (!vendor) {
       return next(new AppError('Vendor not found', 404));
     }
