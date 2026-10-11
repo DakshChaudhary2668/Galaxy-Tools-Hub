@@ -12,6 +12,8 @@ import { apiRouter } from './routes';
 export function createServer(): express.Application {
   const app = express();
 
+  if (env.NODE_ENV === 'production') app.set('trust proxy', 1);
+
   // Security Headers & CORS
   app.use(helmet());
   app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
@@ -36,6 +38,7 @@ export function createServer(): express.Application {
   const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 200,
+    skip: (req) => ['GET', 'HEAD', 'OPTIONS'].includes(req.method),
     standardHeaders: true,
     legacyHeaders: false,
     message: {

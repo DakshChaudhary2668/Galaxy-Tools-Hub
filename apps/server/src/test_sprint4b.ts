@@ -69,6 +69,10 @@ const server = fs.readFileSync(path.join(repoRoot, 'apps/server/src/server.ts'),
 const routes = fs.readFileSync(path.join(repoRoot, 'apps/server/src/routes/payment.routes.ts'), 'utf8');
 
 test('raw webhook bytes are retained before parsing', () => assert.match(server, /verify:[\s\S]*rawBody = Buffer\.from\(buffer\)/));
+test('production trusts the Hostinger proxy and public reads cannot exhaust mutation limits', () => {
+  assert.match(server, /NODE_ENV === 'production'[\s\S]*set\('trust proxy', 1\)/);
+  assert.match(server, /skip: \(req\) => \['GET', 'HEAD', 'OPTIONS'\]\.includes\(req\.method\)/);
+});
 test('Razorpay webhook route is public and registered', () => assert.match(routes, /post\('\/webhook\/razorpay', handleRazorpayWebhook\)/));
 test('public status response contains no private order details', () => {
   const statusHandler = controller.slice(controller.indexOf('export async function getPublicOrderStatus'));
@@ -103,5 +107,5 @@ test('expiry is idempotent and captured payments can recover released stock', ()
   assert.match(migration, /v_reservation\.status in \('RELEASED', 'EXPIRED'\)/);
 });
 
-assert.equal(passed, 30);
+assert.equal(passed, 31);
 console.log(`Sprint 4B payment finalization tests: ${passed} passed`);
