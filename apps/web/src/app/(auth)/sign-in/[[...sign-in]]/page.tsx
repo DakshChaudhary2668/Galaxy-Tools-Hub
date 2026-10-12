@@ -10,7 +10,8 @@ import styles from '../../Auth.module.scss';
 export default function SignInPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectUrl = searchParams.get('redirect') || '/';
+  const requestedRedirect = searchParams.get('redirect');
+  const redirectUrl = requestedRedirect?.startsWith('/') && !requestedRedirect.startsWith('//') ? requestedRedirect : '/';
   const { signInWithPassword } = useAuth();
 
   const [email, setEmail] = useState('');
@@ -109,6 +110,10 @@ export default function SignInPage() {
             )}
           </button>
         </form>
+
+        <div className={styles.footerLinks}>
+          <Link href="/forgot-password">Forgot your password?</Link>
+        </div>
 
         <div className={styles.footerLinks}>
           <span>Don&apos;t have an enterprise account?</span>

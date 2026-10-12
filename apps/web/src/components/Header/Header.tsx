@@ -51,9 +51,9 @@ export const Header: React.FC = () => {
                   <ShieldCheck className={styles.icon} />
                 </Link>
               )}
-              <span style={{ fontSize: '12px', fontWeight: 700, color: '#E2E8F0', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <Link href={isAdmin ? '/admin/dashboard' : '/account'} style={{ fontSize: '12px', fontWeight: 700, color: '#E2E8F0', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {userDisplayName}
-              </span>
+              </Link>
               <button
                 type="button"
                 onClick={() => signOut()}

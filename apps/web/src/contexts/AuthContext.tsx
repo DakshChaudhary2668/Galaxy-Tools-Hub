@@ -5,6 +5,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { getCustomerMe, getAdminMe, CustomerMeResponse, AdminMeResponse } from '@/services/auth.service';
 import { ProfileDto, AdminUserDto } from '@galaxy/types';
+import { authErrorMessage } from '@/lib/auth-errors';
 
 export interface AuthContextType {
   user: User | null;
@@ -49,7 +50,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setRole(adminRes.role.toUpperCase());
         return;
       }
-    } catch (err) {
+    } catch {
       // Not an admin or request failed, continue to customer check
     }
 
@@ -60,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setProfile(profileRes as ProfileDto);
         setRole('CUSTOMER');
       }
-    } catch (err) {
+    } catch {
       // Profile fetch failed
       setRole('CUSTOMER');
     }
@@ -86,8 +87,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     // 2. Auth State Change Listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, newSession) => {
-      console.log(`[AUTH_TRACE] onAuthStateChange fired! event: ${event}`);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
       if (!isMounted) return;
       setSession(newSession);
       setUser(newSession?.user ?? null);
@@ -98,7 +98,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setAdminUser(null);
         setRole(null);
       }
-      console.log(`[AUTH_TRACE] onAuthStateChange setting isLoading to false`);
       setIsLoading(false);
     });
 
@@ -110,24 +109,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithPassword = async ({ email, password }: { email: string; password: string }) => {
     try {
-      console.log(`[AUTH_TRACE] signInWithPassword initiated`);
       setIsLoading(true);
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: authErrorMessage(error, 'Unable to sign in. Please try again.') };
       }
       if (data.session) {
-        console.log(`[AUTH_TRACE] signInWithPassword manual session set`);
         setSession(data.session);
         setUser(data.user);
-        console.log(`[AUTH_TRACE] signInWithPassword calling fetchUserDetails manually`);
         await fetchUserDetails(data.session);
       }
-      console.log(`[AUTH_TRACE] signInWithPassword returning success`);
       return { success: true };
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'An unexpected error occurred during sign-in';
-      return { success: false, error: message };
+    } catch {
+      return { success: false, error: 'Unable to sign in. Please try again.' };
     } finally {
       setIsLoading(false);
     }
@@ -140,6 +134,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email,
         password,
         options: {
+          emailRedirectTo: `${window.location.origin}/account`,
           data: {
             full_name: fullName,
             phone: phone || ''
@@ -147,7 +142,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       });
       if (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: authErrorMessage(error, 'Unable to create the account. Please try again.') };
       }
       if (data.session) {
         setSession(data.session);
@@ -155,9 +150,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await fetchUserDetails(data.session);
       }
       return { success: true };
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'An unexpected error occurred during registration';
-      return { success: false, error: message };
+    } catch {
+      return { success: false, error: 'Unable to create the account. Please try again.' };
     } finally {
       setIsLoading(false);
     }

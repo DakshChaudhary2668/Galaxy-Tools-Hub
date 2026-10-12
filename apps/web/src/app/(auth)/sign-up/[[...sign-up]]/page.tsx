@@ -2,13 +2,11 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { Mail, Lock, User, Phone, ShieldCheck, ArrowRight, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import styles from '../../Auth.module.scss';
 
 export default function SignUpPage() {
-  const router = useRouter();
   const { signUp } = useAuth();
 
   const [fullName, setFullName] = useState('');
@@ -39,11 +37,8 @@ export default function SignUpPage() {
         return;
       }
 
-      setSuccessMsg('Account registered successfully! Redirecting...');
-      setTimeout(() => {
-        router.push('/');
-        router.refresh();
-      }, 1500);
+      setSuccessMsg('Check your email to confirm your account, then sign in.');
+      setIsSubmitting(false);
     } catch {
       setErrorMsg('An unexpected error occurred during registration.');
       setIsSubmitting(false);
@@ -125,14 +120,14 @@ export default function SignUpPage() {
           </div>
 
           <div className={styles.inputGroup}>
-            <label htmlFor="password">Password (Minimum 6 characters)</label>
+            <label htmlFor="password">Password (Minimum 8 characters)</label>
             <div className={styles.inputWrapper}>
               <Lock size={16} className={styles.inputIcon} />
               <input
                 id="password"
                 type="password"
                 required
-                minLength={6}
+                minLength={8}
                 placeholder="••••••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
