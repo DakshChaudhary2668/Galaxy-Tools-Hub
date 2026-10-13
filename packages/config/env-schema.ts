@@ -6,6 +6,8 @@ export const ServerEnvSchema = z.object({
   SUPABASE_URL: z.string().url(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
   CORS_ORIGIN: z.string().url().default('http://localhost:3000'),
+  RESEND_API_KEY: z.string().min(1).optional(),
+  ENQUIRY_RECIPIENT_EMAIL: z.string().email().default('galaxyinstruments9@gmail.com'),
   RAZORPAY_KEY_ID: z.string().optional(),
   RAZORPAY_KEY_SECRET: z.string().optional(),
   RAZORPAY_WEBHOOK_SECRET: z.string().optional()

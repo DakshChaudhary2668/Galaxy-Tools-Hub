@@ -33,6 +33,7 @@ function compactProduct(product: ProductView): ProductView {
     price: product.price,
     tax_rate: product.tax_rate,
     weight_grams: product.weight_grams,
+    is_purchasable: product.is_purchasable,
     compare_at_price: product.compare_at_price,
     image: product.image,
     image_url: product.image_url,
@@ -81,7 +82,7 @@ export const useCartStore = create<CartStore>()(
       items: [],
       isOpen: false,
       addToCart: (product: ProductView) => {
-        if (!product.id) return;
+        if (!product.id || product.is_purchasable === false || !Number.isFinite(Number(product.weight_grams)) || Number(product.weight_grams) <= 0) return;
 
         set((state) => {
           const existing = state.items.find((item) => item.product.id === product.id);

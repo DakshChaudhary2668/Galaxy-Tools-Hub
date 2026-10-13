@@ -1,4 +1,6 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { Award, Briefcase, TrendingUp, ChevronRight, Check } from 'lucide-react';
 import { AnnouncementBar } from '../../components/AnnouncementBar/AnnouncementBar';
@@ -6,8 +8,34 @@ import { Header } from '../../components/Header/Header';
 import { CategoryNav } from '../../components/CategoryNav/CategoryNav';
 import { Footer } from '../../components/Footer/Footer';
 import styles from './DealerPage.module.scss';
+import { submitEnquiry } from '@/services/enquiry.service';
 
 export default function DealerProgramPage() {
+  const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setStatus('sending');
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
+    try {
+      await submitEnquiry({
+        type: 'dealer',
+        name: String(form.get('name') || ''),
+        company: String(form.get('company') || ''),
+        email: String(form.get('email') || ''),
+        phone: String(form.get('phone') || ''),
+        subject: 'Dealer application',
+        message: `GSTIN: ${String(form.get('gstin') || '')}\nOperating region: ${String(form.get('region') || '')}`,
+        website: String(form.get('website') || '')
+      });
+      formElement.reset();
+      setStatus('sent');
+    } catch {
+      setStatus('error');
+    }
+  };
+
   return (
     <div className={styles.pageWrapper}>
       <AnnouncementBar />
@@ -23,7 +51,7 @@ export default function DealerProgramPage() {
 
         <header className={styles.pageHeader}>
           <h1>Authorized Dealer & Reseller Wholesale Program</h1>
-          <p>Join India&apos;s leading B2B distributor network for wholesale margins on Fluke, MECO, HTC & G-Tech.</p>
+          <p>Send your business details for dealer and reseller programme review.</p>
         </header>
 
         <div className={styles.contentGrid}>
@@ -33,24 +61,24 @@ export default function DealerProgramPage() {
               <div className={styles.benefitItem}>
                 <Award size={20} color="#111827" />
                 <div>
-                  <strong>Exclusive Wholesale Margins</strong>
-                  <p>Up to 35% margin on catalog prices with tiered volume rebates for authorized regional dealers.</p>
+                  <strong>Commercial Review</strong>
+                  <p>Commercial terms are shared after the business application is reviewed.</p>
                 </div>
               </div>
 
               <div className={styles.benefitItem}>
                 <Briefcase size={20} color="#111827" />
                 <div>
-                  <strong>Dedicated Credit Lines (Net 30/60)</strong>
-                  <p>Flexible commercial credit terms available for verified electrical contractors and distributors.</p>
+                  <strong>Verified Business Accounts</strong>
+                  <p>Applications are assessed using the submitted business and GST information.</p>
                 </div>
               </div>
 
               <div className={styles.benefitItem}>
                 <TrendingUp size={20} color="#111827" />
                 <div>
-                  <strong>Tender & Project Price Protection</strong>
-                  <p>Special project support and OEM price locks for institutional government tender submissions.</p>
+                  <strong>Project Enquiries</strong>
+                  <p>Product availability and quotation support are confirmed for each enquiry.</p>
                 </div>
               </div>
             </div>
@@ -59,31 +87,38 @@ export default function DealerProgramPage() {
           <div className={styles.formCol}>
             <div className={styles.formCard}>
               <h3>Apply for Authorized Dealership</h3>
-              <form onSubmit={(e) => { e.preventDefault(); alert('Dealership application received! Our dealer channel manager will contact you.'); }}>
+              <form onSubmit={handleSubmit}>
                 <div className={styles.formGroup}>
                   <label>Business / Distributorship Legal Name *</label>
-                  <input type="text" required placeholder="e.g. Modern Electricals & Instruments" />
+                  <input name="company" type="text" required maxLength={150} autoComplete="organization" placeholder="Registered business name" />
                 </div>
                 <div className={styles.formGroup}>
                   <label>GSTIN (Mandatory for Wholesale Accounts) *</label>
-                  <input type="text" required maxLength={15} placeholder="15-digit GSTIN" />
+                  <input name="gstin" type="text" required minLength={15} maxLength={15} placeholder="15-digit GSTIN" />
                 </div>
                 <div className={styles.formGroup}>
                   <label>Authorized Signatory Name *</label>
-                  <input type="text" required placeholder="Proprietor / Managing Partner" />
+                  <input name="name" type="text" required maxLength={100} autoComplete="name" placeholder="Proprietor / managing partner" />
                 </div>
                 <div className={styles.formGroup}>
                   <label>Official Business Email *</label>
-                  <input type="email" required placeholder="dealer@domain.com" />
+                  <input name="email" type="email" required maxLength={254} autoComplete="email" placeholder="dealer@domain.com" />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Official Phone Number *</label>
+                  <input name="phone" type="tel" required maxLength={30} autoComplete="tel" placeholder="Business phone number" />
                 </div>
                 <div className={styles.formGroup}>
                   <label>Operating State / Region *</label>
-                  <input type="text" required placeholder="e.g. Gujarat & Maharashtra" />
+                  <input name="region" type="text" required maxLength={150} placeholder="Operating state or region" />
                 </div>
-                <button type="submit" className={styles.applyBtn}>
+                <input name="website" type="text" tabIndex={-1} autoComplete="off" aria-hidden="true" style={{ display: 'none' }} />
+                <button type="submit" className={styles.applyBtn} disabled={status === 'sending'}>
                   <Check size={14} />
-                  <span>Submit Dealership Application</span>
+                  <span>{status === 'sending' ? 'Sending…' : 'Submit Dealership Application'}</span>
                 </button>
+                {status === 'sent' && <p role="status">Your dealer application has been sent successfully.</p>}
+                {status === 'error' && <p role="alert">We could not send the application. Please contact the sales desk directly.</p>}
               </form>
             </div>
           </div>

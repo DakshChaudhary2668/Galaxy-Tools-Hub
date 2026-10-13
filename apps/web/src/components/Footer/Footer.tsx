@@ -10,7 +10,7 @@ export const Footer: React.FC = () => {
           <div className={styles.brandCol}>
             <div className={styles.brandTitle}>GALAXY TOOLS HUB</div>
             <p className={styles.copyright}>
-              © 2024 Galaxy Tools Hub. Industrial Grade Precision.
+              © {new Date().getFullYear()} Galaxy Tools Hub. Industrial Grade Precision.
             </p>
           </div>
 
@@ -19,6 +19,10 @@ export const Footer: React.FC = () => {
             <Link href="/contact" className={styles.link}>Contact Sales</Link>
             <Link href="/track" className={styles.link}>Track Order</Link>
             <Link href="/refund" className={styles.link}>Refund Policy</Link>
+            <Link href="/privacy" className={styles.link}>Privacy</Link>
+            <Link href="/terms" className={styles.link}>Terms</Link>
+            <Link href="/shipping" className={styles.link}>Shipping</Link>
+            <Link href="/cancellation" className={styles.link}>Cancellation</Link>
             <Link href="/gst" className={styles.link}>GST Compliance</Link>
             <Link href="/dealer" className={styles.link}>Authorized Dealer</Link>
           </div>

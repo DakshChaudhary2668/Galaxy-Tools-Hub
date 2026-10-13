@@ -13,6 +13,7 @@ import { customerRouter } from './customer.routes';
 import { settingsRouter } from './settings.routes';
 import { inventoryRouter } from './inventory.routes';
 import { couponRouter } from './coupon.routes';
+import { enquiryRouter } from './enquiry.routes';
 
 export const apiRouter: Router = Router();
 
@@ -30,3 +31,4 @@ apiRouter.use('/customers', customerRouter);
 apiRouter.use('/settings', settingsRouter);
 apiRouter.use('/inventory', inventoryRouter);
 apiRouter.use('/coupons', couponRouter);
+apiRouter.use('/enquiries', enquiryRouter);

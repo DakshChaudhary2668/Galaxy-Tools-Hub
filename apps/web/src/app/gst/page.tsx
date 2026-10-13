@@ -23,35 +23,35 @@ export default function GstCompliancePage() {
 
         <header className={styles.pageHeader}>
           <h1>B2B GST Billing & Input Tax Credit (ITC) Guidelines</h1>
-          <p>Official tax invoicing compliance for corporate procurement, defense contractors, and institutions.</p>
+          <p>How base prices and GST are displayed on the storefront.</p>
         </header>
 
         <section className={styles.contentSection}>
           <div className={styles.prose}>
-            <h2>100% Tax Invoicing with Full ITC Eligibility</h2>
+            <h2>GST display and calculation</h2>
             <p>
-              Every transaction made through <strong>Galaxy Tools Hub</strong> generates a legally compliant Indian Goods and Services Tax (GST) commercial invoice. All testing, measurement, and calibration instruments sold on our portal are classified under standardized Harmonized System of Nomenclature (HSN) codes (primarily <strong>HSN 9030</strong> for electrical measurement apparatus).
+              Product prices are displayed before GST. The checkout calculates GST separately using the product tax rate stored by the server.
             </p>
             <p>
-              Corporate buyers who provide their 15-digit GSTIN during checkout will have their GST tax invoices auto-filed to the GSTN portal for seamless monthly GSTR-2B Input Tax Credit (ITC) reconciliation.
+              Seller legal identity, GSTIN and invoice-process details are awaiting final owner approval and must be confirmed before live payment acceptance.
             </p>
           </div>
 
           <div className={styles.valuesGrid}>
             <div className={styles.valueCard}>
               <FileText size={24} color="#111827" />
-              <h3>HSN Code Classification</h3>
-              <p>Instruments are categorized under HSN 9030 (18% GST rate) with itemized CGST + SGST or IGST breakdowns.</p>
+              <h3>Product Tax Data</h3>
+              <p>Each product record carries its applicable tax rate and HSN information where verified.</p>
             </div>
             <div className={styles.valueCard}>
               <CheckCircle2 size={24} color="#059669" />
-              <h3>Direct GSTR-1 Auto-Filing</h3>
-              <p>B2B invoices are uploaded to the GST portal on the 10th of every month for instant tax credit reflection.</p>
+              <h3>Invoice Configuration Pending</h3>
+              <p>GSTIN and invoice identity must be approved before customer tax invoices are issued.</p>
             </div>
             <div className={styles.valueCard}>
               <ShieldCheck size={24} color="#111827" />
-              <h3>E-Way Bill Generation</h3>
-              <p>Compliant E-Way bills generated for all consignments exceeding ₹50,000 value across state borders.</p>
+              <h3>Contact the Sales Desk</h3>
+              <p>Confirm any tax-document or e-way-bill requirement before ordering.</p>
             </div>
           </div>
         </section>

@@ -351,7 +351,7 @@ export default function AdminProductsPage() {
                       <td className={styles.amountCell}>₹{formatPrice(prod.price)}</td>
                       <td>
                         <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748B' }}>
-                          {prod.tax_rate || 18}% Incl.
+                          GST {prod.tax_rate || 18}% Extra
                         </span>
                       </td>
                       <td>

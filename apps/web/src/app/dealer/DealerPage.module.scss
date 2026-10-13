@@ -168,4 +168,6 @@
   &:hover {
     background-color: #E6C200;
   }
+
+  &:disabled { cursor: wait; opacity: 0.7; }
 }

@@ -20,6 +20,7 @@
     "test:fluke": "tsx src/test_fluke_import.ts",
     "test:commerce-ui": "tsx tests/test_commerce_ui.ts",
     "test:catalogue-quality": "tsx tests/test_catalogue_quality.ts",
+    "test:enquiry": "tsx src/test_enquiry.ts",
     "audit:catalogue": "tsx src/scripts/audit-catalogue-quality.ts",
     "sync:catalogue-partners": "tsx src/scripts/sync-catalogue-partners.ts",
     "sync:fluke-quality": "tsx src/scripts/sync-fluke-quality.ts",

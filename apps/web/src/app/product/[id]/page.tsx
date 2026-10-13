@@ -7,6 +7,7 @@ import { CategoryNav } from '@/components/CategoryNav/CategoryNav';
 import { Footer } from '@/components/Footer/Footer';
 import { CartDrawer } from '@/components/CartDrawer/CartDrawer';
 import styles from './ProductDetail.module.scss';
+import { notFound } from 'next/navigation';
 
 // Type params as a Promise for Next.js 15 compatibility
 type Props = {
@@ -38,6 +39,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ProductPage({ params }: Props) {
   const resolvedParams = await params;
+  const product = await getProductById(resolvedParams.id);
+  if (!product) notFound();
 
   return (
     <div className={styles.pageWrapper}>

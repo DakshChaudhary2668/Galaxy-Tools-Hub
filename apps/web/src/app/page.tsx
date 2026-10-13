@@ -8,7 +8,6 @@ import { Hero } from '../components/Hero/Hero';
 import { TrustStrip } from '../components/TrustStrip/TrustStrip';
 import { ProductSection } from '../components/ProductSection/ProductSection';
 import { TopCategories } from '../components/TopCategories/TopCategories';
-import { LatestBlogs } from '../components/LatestBlogs/LatestBlogs';
 import { BrandsStrip } from '../components/BrandsStrip/BrandsStrip';
 import { Footer } from '../components/Footer/Footer';
 import { CartDrawer } from '../components/CartDrawer/CartDrawer';
@@ -36,7 +35,6 @@ export default async function HomePage() {
       <ProductSection title="TRENDING PRODUCTS" products={trending} viewAllHref="/products" />
       <ProductSection title="DISCOUNTED PRODUCTS" products={discounted} viewAllHref="/products" />
       <TopCategories />
-      <LatestBlogs />
       <BrandsStrip />
       <Footer />
       <CartDrawer />

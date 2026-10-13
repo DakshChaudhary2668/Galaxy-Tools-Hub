@@ -28,7 +28,7 @@ export default function CartPage() {
   }, 0);
 
   const handleProceedToCheckout = () => {
-    if (items.length === 0) return;
+    if (items.length === 0 || grandTotal === null) return;
     router.push('/checkout');
   };
 
@@ -212,7 +212,7 @@ export default function CartPage() {
               <button
                 className={styles.checkoutBtn}
                 onClick={handleProceedToCheckout}
-                disabled={items.length === 0}
+                disabled={items.length === 0 || grandTotal === null}
               >
                 <span>Proceed to Checkout</span>
                 <ArrowRight size={18} />

@@ -166,7 +166,7 @@ export default function AdminOrderDetailPage({
             onClick={() => window.print()}
           >
             <Printer size={15} />
-            <span>Print Invoice</span>
+            <span>Print Order Summary</span>
           </button>
         </div>
       </div>
@@ -190,6 +190,10 @@ export default function AdminOrderDetailPage({
           <span>{feedback.message}</span>
         </div>
       )}
+
+      <div style={{ background: '#FFF7ED', border: '1px solid #FDBA74', color: '#9A3412', padding: '12px 16px', borderRadius: '6px', fontSize: '13px' }}>
+        This is an order summary, not a tax invoice. Verified legal name, registered address and GSTIN must be configured before invoice issuance.
+      </div>
 
       {/* 2-Column Grid */}
       <div className={styles.layoutGrid}>

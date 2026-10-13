@@ -23,35 +23,35 @@ export default function AboutPage() {
 
         <header className={styles.pageHeader}>
           <h1>About Galaxy Tools Hub India</h1>
-          <p>Premier Authorized Industrial Calibration, Testing Equipment & Tooling Distributor.</p>
+          <p>Testing, measurement, soldering and industrial tool supplier.</p>
         </header>
 
         <section className={styles.contentSection}>
           <div className={styles.prose}>
             <h2>Engineering Precision & Industrial Reliability</h2>
             <p>
-              Founded to serve electrical contractors, power generation plants, aerospace research labs, and manufacturing facilities across India, <strong>Galaxy Tools Hub</strong> is an authorized procurement distributor for world-leading testing and measurement brands including Fluke, UNI-T, MECO, Kyoritsu, HTC Instruments, and G-Tech Industrial.
+              <strong>Galaxy Tools Hub</strong> supplies testing, measurement, soldering and industrial tools through its online catalogue and Delhi sales office.
             </p>
             <p>
-              Every instrument dispatched from our central New Delhi logistics warehouse undergoes serial number inspection, battery health verification, and factory calibration checks.
+              Product availability, warranty coverage and calibration requirements are confirmed for each order.
             </p>
           </div>
 
           <div className={styles.valuesGrid}>
             <div className={styles.valueCard}>
               <Award size={24} color="#111827" />
-              <h3>100% OEM Direct Guarantee</h3>
-              <p>Direct manufacturer sourcing with genuine serial numbers and authorized Indian warranties.</p>
+              <h3>Product Catalogue</h3>
+              <p>Browse instruments by product, category and brand.</p>
             </div>
             <div className={styles.valueCard}>
               <Wrench size={24} color="#111827" />
-              <h3>NABL 17025 Calibration</h3>
-              <p>Optional accredited traceable calibration certificates available on all precision instruments.</p>
+              <h3>Requirement Support</h3>
+              <p>Ask the sales desk about model selection and calibration requirements.</p>
             </div>
             <div className={styles.valueCard}>
               <Building size={24} color="#111827" />
-              <h3>B2B GST & Corporate Billing</h3>
-              <p>Itemized tax invoices with full 18% Input Tax Credit (ITC) compliance for enterprises.</p>
+              <h3>Clear Checkout</h3>
+              <p>Base price, GST and weight-based freight are shown separately.</p>
             </div>
           </div>
         </section>

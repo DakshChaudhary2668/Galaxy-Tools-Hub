@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Menu, ChevronDown } from 'lucide-react';
 const CATEGORIES = [
   { id: 'testing', label: 'TESTING & MEASUREMENT' },
   { id: 'environmental', label: 'ENVIRONMENT' },
@@ -15,6 +16,7 @@ const MENU_IDS = new Set(Object.keys(CATEGORY_MENUS));
 
 export const CategoryNav: React.FC = () => {
   const [openCategory, setOpenCategory] = useState<string | null>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const navRef = useRef<HTMLDivElement>(null);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -28,7 +30,10 @@ export const CategoryNav: React.FC = () => {
     closeTimerRef.current = setTimeout(() => setOpenCategory(null), 120);
   }, []);
 
-  const close = useCallback(() => setOpenCategory(null), []);
+  const close = useCallback(() => {
+    setOpenCategory(null);
+    setMobileOpen(false);
+  }, []);
 
   // ── outside click ───────────────────────────────────────────────────────
   useEffect(() => {
@@ -53,7 +58,10 @@ export const CategoryNav: React.FC = () => {
   return (
     <div ref={navRef} style={{ position: 'relative', width: '100%' }}>
       <nav className={styles.navContainer} aria-label="Category Navigation">
-        <div className={styles.inner}>
+        <button type="button" className={styles.mobileToggle} onClick={() => setMobileOpen((value) => !value)} aria-expanded={mobileOpen}>
+          <Menu size={17} /><span>Browse categories</span><ChevronDown size={16} />
+        </button>
+        <div className={`${styles.inner} ${mobileOpen ? styles.mobileOpen : ''}`}>
           {CATEGORIES.map((cat) => {
             const isOpen = cat.id === openCategory;
             const hasMenu = MENU_IDS.has(cat.id);
@@ -61,7 +69,10 @@ export const CategoryNav: React.FC = () => {
               <button
                 key={cat.id}
                 className={`${styles.navigationItem} ${isOpen ? styles.active : ''}`}
-                onClick={() => { isOpen ? close() : open(cat.id); }}
+                onClick={() => {
+                  if (isOpen) close();
+                  else open(cat.id);
+                }}
                 onMouseEnter={() => open(cat.id)}
                 onMouseLeave={scheduleClose}
                 aria-haspopup={hasMenu ? 'true' : undefined}

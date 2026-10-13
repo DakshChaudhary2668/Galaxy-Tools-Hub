@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { Mail, Phone, MapPin, UserRound, ChevronRight, Send } from 'lucide-react';
 import { AnnouncementBar } from '../../components/AnnouncementBar/AnnouncementBar';
@@ -8,8 +8,34 @@ import { Header } from '../../components/Header/Header';
 import { CategoryNav } from '../../components/CategoryNav/CategoryNav';
 import { Footer } from '../../components/Footer/Footer';
 import styles from './ContactPage.module.scss';
+import { submitEnquiry } from '@/services/enquiry.service';
 
 export default function ContactPage() {
+  const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setStatus('sending');
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
+    try {
+      await submitEnquiry({
+        type: 'contact',
+        name: String(form.get('name') || ''),
+        company: String(form.get('company') || ''),
+        email: String(form.get('email') || ''),
+        phone: String(form.get('phone') || ''),
+        subject: String(form.get('subject') || ''),
+        message: String(form.get('message') || ''),
+        website: String(form.get('website') || '')
+      });
+      formElement.reset();
+      setStatus('sent');
+    } catch {
+      setStatus('error');
+    }
+  };
+
   return (
     <div className={styles.pageWrapper}>
       <AnnouncementBar />
@@ -25,7 +51,7 @@ export default function ContactPage() {
 
         <header className={styles.pageHeader}>
           <h1>Contact B2B Sales & Procurement Desk</h1>
-          <p>Get instant quotations, calibration consultation, and logistics dispatch support.</p>
+          <p>Request quotations and product or dispatch assistance from our sales desk.</p>
         </header>
 
         <div className={styles.contactGrid}>
@@ -43,7 +69,7 @@ export default function ContactPage() {
                 <Phone size={20} color="#111827" />
                 <div>
                   <strong>Contact Numbers</strong>
-                  <p>+91 90151 33267 / 011-43603957</p>
+                  <p><a href="tel:+919015133267">+91 90151 33267</a> / <a href="tel:+911143603957">011-43603957</a></p>
                 </div>
               </div>
 
@@ -51,7 +77,7 @@ export default function ContactPage() {
                 <Mail size={20} color="#111827" />
                 <div>
                   <strong>Sales Email</strong>
-                  <p>galaxyinstruments9@gmail.com</p>
+                  <p><a href="mailto:galaxyinstruments9@gmail.com">galaxyinstruments9@gmail.com</a></p>
                 </div>
               </div>
 
@@ -68,43 +94,47 @@ export default function ContactPage() {
           <div className={styles.formCol}>
             <div className={styles.formCard}>
               <h2>Send Direct Inquiry / Tender Request</h2>
-              <form onSubmit={(e) => { e.preventDefault(); alert('Inquiry submitted! Our technical desk will contact you within 2 business hours.'); }}>
+              <form onSubmit={handleSubmit}>
                 <div className={styles.formRow}>
                   <div className={styles.formGroup}>
                     <label>Full Name *</label>
-                    <input type="text" required placeholder="e.g. Vikram Singhania" />
+                    <input name="name" type="text" required maxLength={100} autoComplete="name" placeholder="Your full name" />
                   </div>
                   <div className={styles.formGroup}>
                     <label>Company / Institution *</label>
-                    <input type="text" required placeholder="Organization Name" />
+                    <input name="company" type="text" required maxLength={150} autoComplete="organization" placeholder="Organization name" />
                   </div>
                 </div>
 
                 <div className={styles.formRow}>
                   <div className={styles.formGroup}>
                     <label>Official Email *</label>
-                    <input type="email" required placeholder="name@company.com" />
+                    <input name="email" type="email" required maxLength={254} autoComplete="email" placeholder="name@company.com" />
                   </div>
                   <div className={styles.formGroup}>
                     <label>Phone Number *</label>
-                    <input type="tel" required placeholder="+91 98765 43210" />
+                    <input name="phone" type="tel" required maxLength={30} autoComplete="tel" placeholder="Your phone number" />
                   </div>
                 </div>
 
                 <div className={styles.formGroup}>
                   <label>Subject / Instrument Requirement *</label>
-                  <input type="text" required placeholder="e.g. Quotation for 10x Fluke 117 Multimeters + NABL Certs" />
+                  <input name="subject" type="text" required maxLength={200} placeholder="Product or quotation requirement" />
                 </div>
 
                 <div className={styles.formGroup}>
                   <label>Message / Specifications *</label>
-                  <textarea rows={4} required placeholder="Detail specific testing ranges, calibration requirements, or delivery site..."></textarea>
+                  <textarea name="message" rows={4} required maxLength={5000} placeholder="Include the models, quantities or assistance you need."></textarea>
                 </div>
 
-                <button type="submit" className={styles.submitBtn}>
+                <input name="website" type="text" tabIndex={-1} autoComplete="off" aria-hidden="true" style={{ display: 'none' }} />
+
+                <button type="submit" className={styles.submitBtn} disabled={status === 'sending'}>
                   <Send size={14} />
-                  <span>Submit Technical Inquiry</span>
+                  <span>{status === 'sending' ? 'Sending…' : 'Submit Technical Inquiry'}</span>
                 </button>
+                {status === 'sent' && <p role="status">Your enquiry has been sent successfully.</p>}
+                {status === 'error' && <p role="alert">We could not send your enquiry. Please use the phone or email shown on this page.</p>}
               </form>
             </div>
           </div>

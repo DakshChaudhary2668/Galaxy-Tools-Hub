@@ -138,7 +138,7 @@ export default function AdminSettingsPage() {
       };
 
       await updateStoreSettings(payload);
-      setFeedback('Configuration updated successfully!');
+      setFeedback('Changed in memory only. These settings are not saved and may reset at any time.');
       setTimeout(() => setFeedback(null), 3000);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to save settings.';
@@ -272,7 +272,7 @@ export default function AdminSettingsPage() {
                   </div>
 
                   <div className={styles.formGroup}>
-                    <label htmlFor="bName">Legal Entity Name</label>
+                    <label htmlFor="bName">Business Display Name</label>
                     <input
                       id="bName"
                       type="text"
@@ -309,7 +309,7 @@ export default function AdminSettingsPage() {
 
                 <div className={styles.grid2}>
                   <div className={styles.formGroup}>
-                    <label htmlFor="gstin">GSTIN / Tax ID</label>
+                    <label htmlFor="gstin">GSTIN / Tax ID — confirm before launch</label>
                     <input
                       id="gstin"
                       type="text"

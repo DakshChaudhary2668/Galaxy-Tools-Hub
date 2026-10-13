@@ -6,6 +6,24 @@
   border-bottom: 1px solid #EAEAEA;
 }
 
+.mobileToggle {
+  @include button-reset;
+  display: none;
+
+  @include mobile {
+    width: 100%;
+    height: 44px;
+    padding: 0 16px;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+
+    span { flex: 1; text-align: left; }
+  }
+}
+
 .inner {
   @include container;
   display: flex;
@@ -18,9 +36,17 @@
   @include hide-scrollbar;
 
   @include mobile {
-    gap: 20px;
-    padding-left: 16px;
-    padding-right: 16px;
+    display: none;
+    height: auto;
+    padding: 4px 16px 12px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    white-space: normal;
+  }
+
+  &.mobileOpen {
+    @include mobile { display: flex; }
   }
 }
 
@@ -37,6 +63,12 @@
   text-transform: uppercase;
   transition: color $transition-fast;
   padding: 0 4px;
+
+  @include mobile {
+    min-height: 40px;
+    width: 100%;
+    justify-content: flex-start;
+  }
 
   &:hover {
     color: $color-black;

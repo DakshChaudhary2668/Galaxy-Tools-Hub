@@ -89,6 +89,9 @@ export function getAvailability(product: ProductView): {
   label: string | null;
 } {
   if (product.is_purchasable === false) return { available: false, label: 'Unavailable' };
+  if (!Number.isFinite(Number(product.weight_grams)) || Number(product.weight_grams) <= 0) {
+    return { available: false, label: 'Weight pending' };
+  }
   const stock = getAvailableStock(product);
   if (stock !== null && stock <= 0) return { available: false, label: 'Out of stock' };
   return { available: true, label: null };

@@ -7,11 +7,11 @@ import { env } from '../config/env';
 const storeSettings = {
   general: {
     storeName: 'Galaxy Tools Hub',
-    businessName: 'Galaxy Tools & Instruments Private Limited',
-    businessEmail: 'sales@galaxytools.in',
-    supportPhone: '+91 98765 43210',
-    address: 'Plot 42, Industrial Area Phase II, Okhla, New Delhi, 110020',
-    gstin: '07AAAAA0000A1Z5',
+    businessName: 'Galaxy Tools Hub',
+    businessEmail: 'galaxyinstruments9@gmail.com',
+    supportPhone: '+91 90151 33267 / 011-43603957',
+    address: '1674/4, Ground Floor, Bhagirath Palace, Delhi 110006',
+    gstin: '',
     supportHours: 'Mon - Sat: 9:00 AM - 7:00 PM IST'
   },
   commerce: {
@@ -57,10 +57,10 @@ export async function getSettings(_req: Request, res: Response, next: NextFuncti
           isConfigured: hasRazorpay,
           mode: razorpayMode,
           keyIdMasked: maskedKeyId,
-          bankTransferEnabled: true,
-          neftAccountName: 'Galaxy Tools & Instruments Pvt Ltd',
-          neftAccountNumber: '••••••••8901',
-          neftIfscCode: 'HDFC0001234'
+          bankTransferEnabled: false,
+          neftAccountName: '',
+          neftAccountNumber: '',
+          neftIfscCode: ''
         },
         system
       },
@@ -94,7 +94,7 @@ export async function updateSettings(req: Request, res: Response, next: NextFunc
 
     sendSuccess(res, {
       data: storeSettings,
-      message: 'Settings updated successfully'
+      message: 'Settings changed in memory only; they are not persisted and may reset at any time.'
     });
   } catch (error) {
     next(error);
@@ -108,26 +108,7 @@ export async function getAdminTeam(_req: Request, res: Response, next: NextFunct
       .select('id, name, email, role, status, created_at');
 
     if (error || !adminUsers || adminUsers.length === 0) {
-      // Fallback dev admin team
-      const fallbackTeam = [
-        {
-          id: 'adm-owner-1',
-          name: 'Daksh Chaudhary (Owner)',
-          email: 'admin@galaxytools.in',
-          role: 'OWNER',
-          status: 'ACTIVE',
-          created_at: new Date(2025, 0, 1).toISOString()
-        },
-        {
-          id: 'adm-mgr-2',
-          name: 'Store Manager',
-          email: 'manager@galaxytools.in',
-          role: 'MANAGER',
-          status: 'ACTIVE',
-          created_at: new Date(2025, 1, 15).toISOString()
-        }
-      ];
-      sendSuccess(res, { data: fallbackTeam, message: 'Admin team retrieved successfully' });
+      sendSuccess(res, { data: [], message: 'No admin team records found' });
       return;
     }
 

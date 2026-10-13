@@ -135,7 +135,7 @@ function OrderSuccessContent() {
         <div className={styles.dispatchNotice}>
           <Truck size={20} />
           <span>
-            Standard Insured Dispatch: Dispatches in 24–48 business hours. Full GST Tax Invoice with ITC details included in shipment.
+            Dispatch and tracking details will be shared after the order is processed.
           </span>
         </div>
 

@@ -86,8 +86,7 @@ pnpm type-check
 pnpm build
 ```
 
-To seed the database with industrial tools:
-Execute [docs/seed.sql](file:///Users/dakshchaudhary/Developer/GalaxyToolsHub/docs/seed.sql) in your Supabase SQL Editor.
+For a disposable development database only, review and execute [`Docs/seed.sql`](Docs/seed.sql) in the matching Supabase project. Never run this seed script against production.
 
 ### 4. Running Development Servers
 ```bash

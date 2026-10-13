@@ -36,7 +36,8 @@ test('base price formatting retains paise', () => {
 });
 
 test('zero stock and disabled products cannot be purchased', () => {
-  assert.deepEqual(getAvailability({ is_purchasable: true, inventory_quantity: 0 }), { available: false, label: 'Out of stock' });
+  assert.deepEqual(getAvailability({ is_purchasable: true, weight_grams: 100, inventory_quantity: 0 }), { available: false, label: 'Out of stock' });
+  assert.deepEqual(getAvailability({ is_purchasable: true, inventory_quantity: 10 }), { available: false, label: 'Weight pending' });
   assert.deepEqual(getAvailability({ is_purchasable: false, inventory_quantity: 10 }), { available: false, label: 'Unavailable' });
 });
 
