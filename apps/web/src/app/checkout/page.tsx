@@ -640,15 +640,15 @@ export default function CheckoutPage() {
               <div className={styles.trustBadgesBox}>
                 <div className={styles.trustItem}>
                   <CheckCircle2 size={16} color="#16A34A" />
-                  <span>GST Invoice with Input Tax Credit</span>
+                  <span>GST calculated separately at checkout</span>
                 </div>
                 <div className={styles.trustItem}>
                   <Truck size={16} color="#16A34A" />
-                  <span>Safe & Insured Doorstep Delivery</span>
+                  <span>Delivery charges based on total cart weight</span>
                 </div>
                 <div className={styles.trustItem}>
                   <ShieldCheck size={16} color="#16A34A" />
-                  <span>Official Manufacturer Warranty</span>
+                  <span>Warranty coverage varies by model</span>
                 </div>
               </div>
             </aside>

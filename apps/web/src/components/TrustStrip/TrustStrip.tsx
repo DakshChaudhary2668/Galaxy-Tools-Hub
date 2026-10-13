@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Award, ShieldCheck, Box, Wrench, FileCheck, Target, FlaskConical } from 'lucide-react';
+import { ShieldCheck, Box, FileCheck } from 'lucide-react';
 export interface TrustBadgeItem {
   id: string;
   icon: string;
@@ -9,24 +9,16 @@ export interface TrustBadgeItem {
 }
 
 const TRUST_BADGES: TrustBadgeItem[] = [
-  { id: 'iso', icon: 'Award', label: 'ISO 9001' },
-  { id: 'secure', icon: 'ShieldCheck', label: 'SECURE' },
-  { id: 'oem', icon: 'Box', label: 'OEM DIRECT' },
-  { id: 'calibrated', icon: 'Wrench', label: 'CALIBRATED' },
-  { id: 'compliant', icon: 'FileCheck', label: 'COMPLIANT' },
-  { id: 'precise', icon: 'Target', label: 'PRECISE' },
-  { id: 'tested', icon: 'FlaskConical', label: 'TESTED' },
+  { id: 'freight', icon: 'Box', label: 'WEIGHT-BASED FREIGHT' },
+  { id: 'gst', icon: 'FileCheck', label: 'GST SHOWN AT CHECKOUT' },
+  { id: 'warranty', icon: 'ShieldCheck', label: 'WARRANTY BY MODEL' },
 ];
 import styles from './TrustStrip.module.scss';
 
 const ICON_MAP: Record<string, React.FC<{ className?: string }>> = {
-  Award,
   ShieldCheck,
   Box,
-  Wrench,
   FileCheck,
-  Target,
-  FlaskConical,
 };
 
 export const TrustStrip: React.FC = () => {
@@ -35,7 +27,7 @@ export const TrustStrip: React.FC = () => {
       <div className={styles.container}>
         <div className={styles.trustGrid}>
           {TRUST_BADGES.map((item) => {
-            const IconComponent = ICON_MAP[item.icon] || Award;
+            const IconComponent = ICON_MAP[item.icon] || ShieldCheck;
             return (
               <div key={item.id} className={styles.trustItem}>
                 <div className={styles.iconSquare}>

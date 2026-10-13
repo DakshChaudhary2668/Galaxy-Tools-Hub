@@ -7,7 +7,7 @@ export const AnnouncementBar: React.FC = () => {
     <div className={styles.bar}>
       <div className={styles.content}>
         <Truck className={styles.icon} />
-        <span>WEIGHT-BASED FREIGHT | GST INVOICE AVAILABLE</span>
+        <span>WEIGHT-BASED FREIGHT | GST CALCULATED AT CHECKOUT</span>
       </div>
     </div>
   );
