@@ -1,10 +1,10 @@
 # Galaxy Tools Hub — Client Handover
 
-Audit snapshot: 13 October 2026. The production build and focused checks now pass, but changes remain uncommitted and not deployed; this is not a declaration that payment is cleared for live charges.
+Audit snapshot: 13 October 2026. Final reviewed commit: `06864f5` (`fix: approve required pnpm build scripts`). Hostinger reports successful production builds/publishing for both apps from this commit. Payment mode, customer/admin journeys, and direct post-deployment API health checks remain unverified; this is not a declaration that payment is cleared for live charges.
 
 ## Overview and delivered scope
 
-Galaxy Tools Hub is an industrial-tools storefront with a Next.js customer/admin interface, an Express API, and Supabase for Postgres, Auth, and product storage. Existing repository work includes customer authentication and recovery, catalogue/cart/checkout, order tracking, admin product and inventory workflows, Resend-backed enquiries, and customer-facing policy/SEO routes. The current local changes also include content cleanup, enquiry handling, category fallbacks, cart weight checks, and UI/error handling; these are uncommitted and not yet production-verified.
+Galaxy Tools Hub is an industrial-tools storefront with a Next.js customer/admin interface, an Express API, and Supabase for Postgres, Auth, and product storage. Existing repository work includes customer authentication and recovery, catalogue/cart/checkout, order tracking, admin product and inventory workflows, Resend-backed enquiries, and customer-facing policy/SEO routes. The final commit also includes content cleanup, enquiry handling, category fallbacks, cart weight checks, and UI/error handling.
 
 ## Production URLs and architecture
 
@@ -12,8 +12,8 @@ Galaxy Tools Hub is an industrial-tools storefront with a Next.js customer/admin
 - API: <https://api.galaxytoolshub.com>
 - Source: `DakshChaudhary2668/Galaxy-Tools-Hub`, branch `main`
 - Host: Hostinger Node.js apps, Node 22, pnpm. Frontend is the configured Express entry `server.js` with output/root `.`, backend entry `apps/server/dist/index.js`. Keep these settings; this is not a generic Next.js-only deployment.
-- Last confirmed deployment for both apps: commit `a11fd20` (`feat: complete customer auth recovery flow`, 12 Oct 2026). Current local work is uncommitted on `main` and must be reviewed, committed, then deployed before it is considered live.
-- Read-only availability check during this audit: storefront returned HTTP 200; API `/health` and `/api/v1/health` returned HTTP 200. This confirms only the currently deployed baseline is reachable, not the uncommitted changes or customer journeys.
+- Hostinger reports both production builds/publishes completed for commit `06864f5`. The frontend build used Node 22, Express, output `.`, and `server.js`; the backend used Node 22, Express, and `apps/server/dist/index.js`.
+- A fresh direct post-deployment HTTP check could not be completed from this environment (outbound DNS resolution is unavailable; browser retrieval of API health URLs was also inaccessible). A cached storefront crawl is not treated as live verification. Customer/admin journeys remain untested.
 
 ## Local setup and checks
 
@@ -45,21 +45,21 @@ Before data changes, export the affected rows and storage assets and verify that
 
 ## Known limits and owner decisions
 
-- Full production build passes via `pnpm build` (Next.js 15.5.23, all seven Turbo packages). The earlier validation stall was caused by running the worker build inside the restricted sandbox: the child stayed idle at lint/type validation, while the same repository build completed outside it. A clean offline build also exposed `next/font/google` fetching Inter from Google Fonts; removing that build-time network dependency lets the build complete without external font access. Hostinger confirmed pnpm 11.24.0 and required explicit build-script approval for the four existing native/tooling packages (`@parcel/watcher`, `esbuild`, `sharp`, `unrs-resolver`); these are explicitly approved in `pnpm-workspace.yaml`. The project pin is aligned to Hostinger's pnpm 11.24.0, with the lockfile unchanged. This development machine has Node 25.8.2 while Hostinger is configured for Node 22; the Hostinger build remains the final runtime compatibility check.
+- Full production build passes locally and on Hostinger via `pnpm build` (Next.js 15.5.23, all seven Turbo packages). The earlier validation stall was caused by running the worker build inside the restricted sandbox: the child stayed idle at lint/type validation, while the same repository build completed outside it. A clean offline build also exposed `next/font/google` fetching Inter from Google Fonts; removing that build-time network dependency lets the build complete without external font access. Hostinger confirmed pnpm 11.24.0 and required explicit build-script approval for the four existing native/tooling packages (`@parcel/watcher`, `esbuild`, `sharp`, `unrs-resolver`); these are explicitly approved in `pnpm-workspace.yaml`. The project pin is aligned to Hostinger's pnpm 11.24.0, with the lockfile unchanged. Hostinger builds completed under Node 22.
 - Standalone web typecheck and lint pass. Web lint/build report three existing `any` warnings. Backend TypeScript build passes; backend lint has 34 warnings and no errors. Focused payment, checkout/inventory, reservation/finalization, Fluke pricing, catalogue, commerce UI, and enquiry validation tests pass.
 - Live Razorpay mode and webhook configuration need owner verification; do not claim live cutover.
 - Resend auth-email delivery flows need controlled end-to-end verification. Enquiry email requires a backend-only `RESEND_API_KEY` in Hostinger.
 - Final legal seller/GST/invoice, returns/refunds/cancellations, dispatch, warranty, support destinations, and related claims still require client approval; see [CLIENT_PRE_LAUNCH_APPROVALS.md](CLIENT_PRE_LAUNCH_APPROVALS.md) and [CLIENT_LAUNCH_INFORMATION_REQUIRED.md](CLIENT_LAUNCH_INFORMATION_REQUIRED.md).
-- Production smoke tests for these local changes cannot be claimed until deployment; the last deployed commit remains `a11fd20`.
+- Hostinger reports deploy completion for `06864f5`, but direct post-deployment health checks and customer/admin flow smoke tests remain open.
 
 ## Handover checklist
 
-- [ ] Review and commit the current local changes; confirm `.npmrc` remains `production=false`.
+- [x] Review and commit the changes; `.npmrc` remains `production=false`.
 - [x] Complete the full production build and focused regression checks.
-- [ ] Run post-deployment production customer/admin journey smoke tests.
+- [ ] Run post-deployment production health checks and customer/admin journey smoke tests.
 - [ ] Account owner: verify payment mode and Live webhook settings without initiating a charge; update the matched credential variables only if cutover is approved.
 - [ ] Securely configure the required server-only enquiry email key and test actual delivery.
 - [ ] Complete signup/confirmation/reset email flows and production storefront/API smoke tests.
-- [ ] Resolve the test-data dependency/backup question; preserve linked historical records.
+- [x] Remove only the approved unreferenced QA product and preserve linked historical records; evidence and backup are documented.
 - [ ] Obtain client approvals listed in the pre-launch checklist.
-- [ ] Deploy through the existing Hostinger configuration and verify both live apps.
+- [x] Hostinger reports deployment completion for both apps using the existing configuration; direct smoke verification remains open.
