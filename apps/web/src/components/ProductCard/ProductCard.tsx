@@ -27,8 +27,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <Image
             src={imageUrl}
             alt={product.name || 'Product Image'}
-            width={220}
-            height={180}
+            fill
+            sizes="(max-width: 479px) 100vw, (max-width: 767px) 50vw, (max-width: 991px) 33vw, 20vw"
             className={styles.productImage}
           />
         ) : (
