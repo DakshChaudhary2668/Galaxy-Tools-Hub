@@ -69,7 +69,7 @@ export default function ProductDetailClient({ id }: { id: string }) {
     : [];
 
   const relatedProducts = (relatedData?.data || [])
-    .filter((p: any) => p.id !== product.id)
+    .filter((p: { id: string }) => p.id !== product.id)
     .slice(0, 5);
 
   return (
