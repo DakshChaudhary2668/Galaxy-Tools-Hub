@@ -33,10 +33,7 @@ export const Hero: React.FC = () => {
           </div>
 
           {/* Center Promo Card: MECO Precision */}
-          <div
-            className={styles.promoCard}
-            style={{ backgroundImage: `url('/images/hero-meco.jpg')` }}
-          >
+          <div className={`${styles.promoCard} ${styles.mecoCard}`}>
             <div className={styles.promoContent}>
               <h2 className={styles.promoTitle}>MECO Precision</h2>
               <p className={styles.promoSubtitle}>CAT III 600V | TRUE RMS</p>
@@ -44,10 +41,7 @@ export const Hero: React.FC = () => {
           </div>
 
           {/* Right Promo Card: HTC Diagnostics */}
-          <div
-            className={styles.promoCard}
-            style={{ backgroundImage: `url('/images/hero-htc.jpg')` }}
-          >
+          <div className={`${styles.promoCard} ${styles.htcCard}`}>
             <div className={styles.promoContent}>
               <h2 className={styles.promoTitle}>HTC Diagnostics</h2>
               <p className={styles.promoSubtitle}>HEAVY DUTY | NCV</p>
