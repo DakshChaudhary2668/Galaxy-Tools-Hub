@@ -15,6 +15,7 @@ import styles from './ProductDetail.module.scss';
 
 export default function ProductDetailClient({ id }: { id: string }) {
   const [selectedThumb, setSelectedThumb] = useState(0);
+  const [isFeaturesExpanded, setIsFeaturesExpanded] = useState(false);
   const { addToCart } = useCartStore();
 
   const { data: productData, isLoading, error } = useProduct(id);
@@ -132,28 +133,65 @@ export default function ProductDetailClient({ id }: { id: string }) {
 
         {/* Info Section Right */}
         <section className={styles.infoSection}>
-          <div className={styles.brandSkuRow}>
-            <div className={styles.brandText}>{product.brand?.name || 'GALAXY TOOLS'}</div>
-            <span className={styles.skuBadge}>SKU: {product.sku}</span>
-          </div>
-
           <h1 className={styles.productTitle}>
             {product.name}
           </h1>
 
-          {product.source_model_no && <div className={styles.modelText}>Model: {product.source_model_no}</div>}
+          <div className={styles.metaRow}>
+            <span className={styles.modelText}>Model#: {product.source_model_no || product.sku}</span>
+            <span className={styles.skuText}>SKU: {product.sku}</span>
+          </div>
 
           <div className={styles.priceBlock}>
             <div className={styles.priceVal}>{formatBasePrice(product.price)}</div>
             <div className={styles.priceDisclosure}>Base price <span>+ {product.tax_rate ?? 18}% GST</span></div>
-            <div className={styles.freightDisclosure}>Freight calculated at checkout</div>
           </div>
 
           <div className={styles.divider} />
 
-          {(product.short_description || product.description) && (
-            <p className={styles.summaryText}>{product.short_description || product.description}</p>
-          )}
+          {/* Key Features Block */}
+          <div className={styles.keyFeaturesBlock}>
+            <h2 className={styles.keyFeaturesTitle}>Key features</h2>
+            {(product.short_description || (product.description && !product.description.startsWith('•') && !product.description.startsWith('-') && !product.description.startsWith('*'))) && (
+              <p className={styles.keyFeaturesIntro}>
+                {product.short_description || product.description?.split(/\r?\n/)[0]}
+              </p>
+            )}
+
+            {(() => {
+              const featuresList = productInformation.features.length > 0
+                ? productInformation.features
+                : (product.description || '')
+                    .split(/\r?\n/)
+                    .map(line => line.trim())
+                    .filter(line => line.startsWith('•') || line.startsWith('-') || line.startsWith('*'))
+                    .map(line => line.replace(/^[•\-\*]\s*/, '').trim())
+                    .filter(Boolean);
+
+              if (featuresList.length === 0) return null;
+
+              const visibleFeatures = isFeaturesExpanded ? featuresList : featuresList.slice(0, 3);
+
+              return (
+                <>
+                  <ul className={styles.keyFeaturesList}>
+                    {visibleFeatures.map((feat, idx) => (
+                      <li key={idx}>{feat}</li>
+                    ))}
+                  </ul>
+                  {featuresList.length > 3 && (
+                    <button
+                      type="button"
+                      className={styles.readMoreBtn}
+                      onClick={() => setIsFeaturesExpanded(!isFeaturesExpanded)}
+                    >
+                      {isFeaturesExpanded ? '− Read less' : '+ Read more'}
+                    </button>
+                  )}
+                </>
+              );
+            })()}
+          </div>
 
           {/* CTAs */}
           <div className={styles.ctaStack}>

@@ -499,3 +499,69 @@
     color: $color-black;
   }
 }
+
+.authAlertCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background-color: #FFFBEB;
+  border: 1px solid #FDE68A;
+  border-left: 4px solid #F59E0B;
+  border-radius: 4px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.authAlertText {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  strong {
+    display: block;
+    font-size: 14px;
+    font-weight: 800;
+    color: #92400E;
+    margin-bottom: 2px;
+  }
+
+  p {
+    font-size: 13px;
+    color: #78350F;
+    margin: 0;
+  }
+}
+
+.authLockIcon {
+  color: #B45309;
+  flex-shrink: 0;
+}
+
+.signInCheckoutBtn {
+  @include button-reset;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  background-color: #111111;
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 4px;
+  text-decoration: none;
+  transition: background-color $transition-fast;
+
+  &:hover {
+    background-color: #F5C710;
+    color: #111111;
+  }
+}

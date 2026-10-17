@@ -57,6 +57,7 @@ export default function AdminEditProductPage({
   const [vendorId, setVendorId] = useState('');
   const [price, setPrice] = useState<string>('');
   const [compareAtPrice, setCompareAtPrice] = useState<string>('');
+  const [isDiscounted, setIsDiscounted] = useState(false);
   const [hsnCode, setHsnCode] = useState('');
   const [taxRate, setTaxRate] = useState('');
   const [weightGrams, setWeightGrams] = useState('');
@@ -101,6 +102,7 @@ export default function AdminEditProductPage({
         setVendorId(p.source_vendor_id || '');
         setPrice(p.price !== null && p.price !== undefined ? String(p.price) : '');
         setCompareAtPrice(p.compare_at_price ? String(p.compare_at_price) : '');
+        setIsDiscounted(Boolean(p.compare_at_price && Number(p.compare_at_price) > 0));
         setHsnCode(p.hsn_code || '');
         setTaxRate(p.tax_rate !== null && p.tax_rate !== undefined ? String(p.tax_rate) : '');
         setWeightGrams(p.weight_grams ? String(p.weight_grams) : '');
@@ -162,8 +164,8 @@ export default function AdminEditProductPage({
       setError('Product SKU is required.');
       return;
     }
-    if (!sourceModelNo.trim() || !brandId || !vendorId || !hsnCode.trim() || taxRate === '') {
-      setError('Model number, brand, source vendor, HSN code, and GST rate are required.');
+    if (!brandId || !vendorId || !hsnCode.trim() || taxRate === '') {
+      setError('Brand, source vendor, HSN code, and GST rate are required.');
       return;
     }
     if (!price || Number(price) <= 0) {
@@ -200,13 +202,13 @@ export default function AdminEditProductPage({
       const payload = {
         name: name.trim(),
         sku: sku.trim(),
-        source_model_no: sourceModelNo.trim(),
+        source_model_no: sourceModelNo.trim() || undefined,
         slug: (slug || name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
         category_id: categoryId || undefined,
         brand_id: brandId,
         source_vendor_id: vendorId,
         price: Number(price),
-        compare_at_price: compareAtPrice ? Number(compareAtPrice) : null,
+        compare_at_price: isDiscounted ? (compareAtPrice ? Number(compareAtPrice) : (price ? Math.round(Number(price) * 1.15) : null)) : null,
         hsn_code: hsnCode.trim(),
         tax_rate: Number(taxRate),
         weight_grams: weightGrams ? Number(weightGrams) : null,
@@ -378,13 +380,13 @@ export default function AdminEditProductPage({
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="sourceModelNo">Manufacturer / Source Model Number *</label>
+              <label htmlFor="sourceModelNo">Manufacturer / Source Model Number (Optional)</label>
               <input
                 id="sourceModelNo"
                 type="text"
+                placeholder="e.g. 177 or FLUKE-177 (Optional)"
                 value={sourceModelNo}
                 onChange={(e) => setSourceModelNo(e.target.value)}
-                required
               />
             </div>
 
@@ -457,7 +459,10 @@ export default function AdminEditProductPage({
                   id="comparePrice"
                   type="number"
                   value={compareAtPrice}
-                  onChange={(e) => setCompareAtPrice(e.target.value)}
+                  onChange={(e) => {
+                    setCompareAtPrice(e.target.value);
+                    if (Number(e.target.value) > 0) setIsDiscounted(true);
+                  }}
                   min="0"
                 />
               </div>
@@ -599,6 +604,23 @@ export default function AdminEditProductPage({
               <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>
                 <input type="checkbox" checked={showOnHomepage} onChange={(e) => setShowOnHomepage(e.target.checked)} />
                 <span>Show on Homepage</span>
+              </label>
+
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>
+                <input
+                  type="checkbox"
+                  checked={isDiscounted}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setIsDiscounted(checked);
+                    if (checked && !compareAtPrice && price) {
+                      setCompareAtPrice(String(Math.round(Number(price) * 1.15)));
+                    } else if (!checked) {
+                      setCompareAtPrice('');
+                    }
+                  }}
+                />
+                <span>Show in Discounted Products</span>
               </label>
 
               <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>

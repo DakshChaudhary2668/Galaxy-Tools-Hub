@@ -20,6 +20,7 @@ import { CategoryNav } from '../../components/CategoryNav/CategoryNav';
 import { Footer } from '../../components/Footer/Footer';
 import { CartDrawer } from '../../components/CartDrawer/CartDrawer';
 import { useCartStore } from '../../store/useCartStore';
+import { useAuth } from '@/hooks/useAuth';
 import { createCheckoutSession, verifyPayment } from '../../services/payment.service';
 import { calculateCartTotals } from '../../lib/cartTotals';
 import styles from './Checkout.module.scss';
@@ -81,6 +82,22 @@ export default function CheckoutPage() {
   const [sameAsContact, setSameAsContact] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
+
+  const { isAuthenticated, isLoading: authLoading, profile, user } = useAuth();
+
+  // Auto-fill contact details if user is logged in
+  useEffect(() => {
+    if (profile || user) {
+      setFormData((prev) => ({
+        ...prev,
+        fullName: prev.fullName || profile?.full_name || '',
+        email: prev.email || profile?.email || user?.email || '',
+        phone: prev.phone || profile?.phone || '',
+        shippingName: prev.shippingName || (sameAsContact ? (prev.fullName || profile?.full_name || '') : prev.shippingName),
+        shippingPhone: prev.shippingPhone || (sameAsContact ? (prev.phone || profile?.phone || '') : prev.shippingPhone),
+      }));
+    }
+  }, [profile, user, sameAsContact]);
 
   // Load Razorpay Script dynamically
   useEffect(() => {
@@ -165,6 +182,12 @@ export default function CheckoutPage() {
 
   const handlePlaceOrder = async () => {
     setPaymentError(null);
+
+    if (!isAuthenticated) {
+      setPaymentError('You must be logged in to proceed to payment. Redirecting to sign in...');
+      router.push('/sign-in?redirect=/checkout');
+      return;
+    }
 
     if (items.length === 0) {
       setPaymentError('Your cart is empty. Please add items before checking out.');
@@ -309,6 +332,21 @@ export default function CheckoutPage() {
           <div className={styles.errorAlert}>
             <AlertCircle size={18} />
             <span>{paymentError}</span>
+          </div>
+        )}
+
+        {!isAuthenticated && !authLoading && (
+          <div className={styles.authAlertCard}>
+            <div className={styles.authAlertText}>
+              <Lock size={20} className={styles.authLockIcon} />
+              <div>
+                <strong>Account Login Required</strong>
+                <p>Please log in or register before proceeding to payment to ensure order security and tracking.</p>
+              </div>
+            </div>
+            <Link href="/sign-in?redirect=/checkout" className={styles.signInCheckoutBtn}>
+              Sign In / Register
+            </Link>
           </div>
         )}
 
@@ -615,21 +653,32 @@ export default function CheckoutPage() {
                 <span className={styles.totalAmount}>{grandTotal === null ? 'Confirmed at payment' : `₹${formatPrice(grandTotal)}`}</span>
               </div>
 
-              <button
-                type="button"
-                className={styles.payBtn}
-                onClick={handlePlaceOrder}
-                disabled={isProcessing || items.length === 0}
-              >
-                {isProcessing ? (
-                  <span>Processing Payment...</span>
-                ) : (
-                  <>
-                    <Lock size={16} />
-                    <span>{grandTotal === null ? 'Place Order & Confirm Total' : `Place Order & Pay ₹${formatPrice(grandTotal)}`}</span>
-                  </>
-                )}
-              </button>
+              {!isAuthenticated && !authLoading ? (
+                <button
+                  type="button"
+                  className={styles.payBtn}
+                  onClick={() => router.push('/sign-in?redirect=/checkout')}
+                >
+                  <Lock size={16} />
+                  <span>Sign In to Proceed to Payment</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className={styles.payBtn}
+                  onClick={handlePlaceOrder}
+                  disabled={isProcessing || items.length === 0}
+                >
+                  {isProcessing ? (
+                    <span>Processing Payment...</span>
+                  ) : (
+                    <>
+                      <Lock size={16} />
+                      <span>{grandTotal === null ? 'Place Order & Confirm Total' : `Place Order & Pay ₹${formatPrice(grandTotal)}`}</span>
+                    </>
+                  )}
+                </button>
+              )}
 
               <Link href="/cart" className={styles.returnCartLink}>
                 <ArrowLeft size={14} />

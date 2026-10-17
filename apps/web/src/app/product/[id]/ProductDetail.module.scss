@@ -168,33 +168,30 @@
   flex-direction: column;
 }
 
-.brandSkuRow {
-  @include flex-between;
-  margin-bottom: 12px;
+.metaRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
 }
 
-.brandLogo {
-  height: 28px;
-  width: auto;
-  object-fit: contain;
-}
-
-.brandText {
-  font-size: 18px;
-  font-weight: 900;
-  color: #1E3A8A;
-  letter-spacing: 0.05em;
-}
-
-.skuBadge {
-  background-color: #F4F4F5;
-  border: 1px solid #E5E7EB;
-  font-size: 11px;
+.modelText {
+  font-size: 13px;
   font-weight: 700;
   color: #555555;
-  padding: 4px 10px;
+  letter-spacing: 0.01em;
+}
+
+.skuText {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #666666;
+  background-color: #F4F4F5;
+  border: 1px solid #E5E7EB;
+  padding: 3px 8px;
   border-radius: 2px;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
 }
 
 .productTitle {
@@ -202,19 +199,12 @@
   font-weight: 800;
   color: $color-black;
   line-height: 1.2;
-  margin-bottom: 12px;
-  letter-spacing: -0.01em;
-}
-
-.modelText {
-  font-size: 12.5px;
-  font-weight: 700;
-  color: #555555;
-  margin-bottom: 20px;
+  margin-bottom: 8px;
+  letter-spacing: -0.015em;
 }
 
 .priceBlock {
-  margin-bottom: 20px;
+  margin-bottom: 22px;
 }
 
 .priceVal {
@@ -224,17 +214,16 @@
   letter-spacing: -0.02em;
 }
 
-.priceDisclosure,
-.freightDisclosure {
-  font-size: 13px;
-  font-weight: 650;
+.priceDisclosure {
+  font-size: 13.5px;
+  font-weight: 600;
   color: #555555;
-  margin-top: 5px;
-}
+  margin-top: 4px;
 
-.priceDisclosure span {
-  color: $color-black;
-  font-weight: 800;
+  span {
+    color: $color-black;
+    font-weight: 800;
+  }
 }
 
 .divider {
@@ -243,11 +232,55 @@
   margin-bottom: 24px;
 }
 
-.summaryText {
-  margin: 0 0 24px;
-  color: #555555;
+.keyFeaturesBlock {
+  margin-bottom: 28px;
+}
+
+.keyFeaturesTitle {
+  font-size: 17px;
+  font-weight: 800;
+  color: $color-black;
+  margin-bottom: 10px;
+  letter-spacing: -0.01em;
+}
+
+.keyFeaturesIntro {
   font-size: 14px;
-  line-height: 1.65;
+  line-height: 1.6;
+  color: #4B5563;
+  margin-bottom: 12px;
+}
+
+.keyFeaturesList {
+  margin: 0 0 12px;
+  padding-left: 20px;
+  list-style-type: disc;
+
+  li {
+    font-size: 14px;
+    line-height: 1.65;
+    color: #374151;
+    margin-bottom: 6px;
+  }
+}
+
+.readMoreBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #0056B3;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: color $transition-fast;
+
+  &:hover {
+    color: #003875;
+    text-decoration: underline;
+  }
 }
 
 .optionSection {
