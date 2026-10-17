@@ -8,7 +8,7 @@ const images: Record<string, string> = {
   safetyequipment: '/images/categories/safety-tools.jpg',
   testingmeasurement: '/images/categories/testing-measurement.jpg',
   testingandmeasurement: '/images/categories/testing-measurement.jpg',
-  environment: '/images/cat-thermal.jpg',
+  environment: '/images/categories/environment.jpg',
   laboratortlabtesting: '/images/cat-oscilloscope.jpg',
   measuringinstruments: '/images/cat-calibrators.jpg',
   testingequipment: '/images/categories/testing-measurement.jpg',
