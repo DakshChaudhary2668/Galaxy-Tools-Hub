@@ -46,7 +46,9 @@ export default function AdminNewProductPage() {
   const [sourceModelNo, setSourceModelNo] = useState('');
   const [slug, setSlug] = useState('');
   const [categoryId, setCategoryId] = useState('');
+  const [customCategory, setCustomCategory] = useState('');
   const [brandId, setBrandId] = useState('');
+  const [customBrand, setCustomBrand] = useState('');
   const [vendorId, setVendorId] = useState('');
   const [price, setPrice] = useState<string>('');
   const [compareAtPrice, setCompareAtPrice] = useState<string>('');
@@ -164,8 +166,16 @@ export default function AdminNewProductPage() {
       setError('Product SKU is required.');
       return;
     }
-    if (!categoryId || !brandId || !vendorId) {
-      setError('Category, brand, and source vendor are required.');
+    if (!categoryId || (categoryId === '__other__' && !customCategory.trim())) {
+      setError('Select a category or type a custom category name.');
+      return;
+    }
+    if (!brandId || (brandId === '__other__' && !customBrand.trim())) {
+      setError('Select a brand or type a custom brand name.');
+      return;
+    }
+    if (!vendorId) {
+      setError('Source vendor is required.');
       return;
     }
     if (!price || Number(price) <= 0) {
@@ -399,7 +409,7 @@ export default function AdminNewProductPage() {
                 <select
                   id="productCategory"
                   value={categoryId}
-                  onChange={(e) => setCategoryId(e.target.value)}
+                  onChange={(e) => { setCategoryId(e.target.value); if (e.target.value !== '__other__') setCustomCategory(''); }}
                 >
                   <option value="">Select Category...</option>
                   {categories.map((c) => (
@@ -407,7 +417,17 @@ export default function AdminNewProductPage() {
                       {c.name}
                     </option>
                   ))}
+                  <option value="__other__">Other (Custom)...</option>
                 </select>
+                {categoryId === '__other__' && (
+                  <input
+                    type="text"
+                    placeholder="Type custom category name"
+                    value={customCategory}
+                    onChange={(e) => setCustomCategory(e.target.value)}
+                    style={{ marginTop: '8px' }}
+                  />
+                )}
               </div>
 
               <div className={styles.formGroup}>
@@ -415,7 +435,7 @@ export default function AdminNewProductPage() {
                 <select
                   id="productBrand"
                   value={brandId}
-                  onChange={(e) => setBrandId(e.target.value)}
+                  onChange={(e) => { setBrandId(e.target.value); if (e.target.value !== '__other__') setCustomBrand(''); }}
                 >
                   <option value="">Select Brand...</option>
                   {brands.map((b) => (
@@ -423,7 +443,17 @@ export default function AdminNewProductPage() {
                       {b.name}
                     </option>
                   ))}
+                  <option value="__other__">Other (Custom)...</option>
                 </select>
+                {brandId === '__other__' && (
+                  <input
+                    type="text"
+                    placeholder="Type custom brand name"
+                    value={customBrand}
+                    onChange={(e) => setCustomBrand(e.target.value)}
+                    style={{ marginTop: '8px' }}
+                  />
+                )}
               </div>
             </div>
 

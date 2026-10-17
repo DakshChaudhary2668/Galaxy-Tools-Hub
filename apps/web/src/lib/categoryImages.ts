@@ -1,16 +1,17 @@
 import type { CategoryDto } from '@galaxy/types';
 
 const images: Record<string, string> = {
-  testingmeasurement: '/images/cat-multimeter.jpg',
+  accessories: '/images/categories/accessories.jpg',
+  handtools: '/images/categories/hand-tools.jpg',
+  powertools: '/images/categories/power-tools.jpg',
+  safetytools: '/images/categories/safety-tools.jpg',
+  safetyequipment: '/images/categories/safety-tools.jpg',
+  testingmeasurement: '/images/categories/testing-measurement.jpg',
+  testingandmeasurement: '/images/categories/testing-measurement.jpg',
   environment: '/images/cat-thermal.jpg',
-  accessories: '/images/placeholder.jpg',
   laboratortlabtesting: '/images/cat-oscilloscope.jpg',
-  powertools: '/images/categories/power-tools.webp',
-  handtools: '/images/categories/hand-tools.webp',
   measuringinstruments: '/images/cat-calibrators.jpg',
-  testingequipment: '/images/cat-oscilloscope.jpg',
-  safetyequipment: '/images/categories/safety-equipment.jpg',
-  safetytools: '/images/categories/safety-equipment.jpg',
+  testingequipment: '/images/categories/testing-measurement.jpg',
   electricaltools: '/images/cat-insulation.jpg',
 };
 
