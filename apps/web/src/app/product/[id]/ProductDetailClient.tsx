@@ -138,7 +138,6 @@ export default function ProductDetailClient({ id }: { id: string }) {
           </h1>
 
           <div className={styles.metaRow}>
-            <span className={styles.modelText}>Model#: {product.source_model_no || product.sku}</span>
             <span className={styles.skuText}>SKU: {product.sku}</span>
           </div>
 
