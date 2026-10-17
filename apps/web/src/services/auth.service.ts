@@ -6,6 +6,7 @@ export interface CustomerMeResponse {
   userId: string;
   email: string;
   fullName: string;
+  full_name?: string | null;
   phone?: string | null;
   avatar_url?: string | null;
 }

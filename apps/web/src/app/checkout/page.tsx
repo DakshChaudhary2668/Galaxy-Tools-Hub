@@ -88,12 +88,14 @@ export default function CheckoutPage() {
   // Auto-fill contact details if user is logged in
   useEffect(() => {
     if (profile || user) {
+      const displayName =
+        (profile && ('full_name' in profile ? profile.full_name : profile.fullName)) || '';
       setFormData((prev) => ({
         ...prev,
-        fullName: prev.fullName || profile?.full_name || '',
+        fullName: prev.fullName || displayName || '',
         email: prev.email || profile?.email || user?.email || '',
         phone: prev.phone || profile?.phone || '',
-        shippingName: prev.shippingName || (sameAsContact ? (prev.fullName || profile?.full_name || '') : prev.shippingName),
+        shippingName: prev.shippingName || (sameAsContact ? (prev.fullName || displayName || '') : prev.shippingName),
         shippingPhone: prev.shippingPhone || (sameAsContact ? (prev.phone || profile?.phone || '') : prev.shippingPhone),
       }));
     }
