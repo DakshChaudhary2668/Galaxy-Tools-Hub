@@ -32,18 +32,18 @@ export const Hero: React.FC = () => {
             </div>
           </div>
 
-          {/* Center Promo Card: MECO Precision */}
+          {/* Center Promo Card: Testing & Measurement */}
           <div className={`${styles.promoCard} ${styles.mecoCard}`}>
             <div className={styles.promoContent}>
-              <h2 className={styles.promoTitle}>MECO Precision</h2>
+              <h2 className={styles.promoTitle}>Testing & Measurement</h2>
               <p className={styles.promoSubtitle}>CAT III 600V | TRUE RMS</p>
             </div>
           </div>
 
-          {/* Right Promo Card: HTC Diagnostics */}
+          {/* Right Promo Card: Environment Tools */}
           <div className={`${styles.promoCard} ${styles.htcCard}`}>
             <div className={styles.promoContent}>
-              <h2 className={styles.promoTitle}>HTC Diagnostics</h2>
+              <h2 className={styles.promoTitle}>Environment Tools</h2>
               <p className={styles.promoSubtitle}>HEAVY DUTY | NCV</p>
             </div>
           </div>
